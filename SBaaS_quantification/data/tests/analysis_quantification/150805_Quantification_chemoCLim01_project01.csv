@@ -1,0 +1,9 @@
+project_id,analysis_id,data_export_id,container_export_id,used_,comment_,pipeline_id
+chemoCLim01,chemoCLim01,export_dataStage02QuantificationDescriptiveStats_js,,t,,quantification
+chemoCLim01,chemoCLim01,export_dataStage02QuantificationPairWiseTest_js,,t,,quantification
+chemoCLim01,chemoCLim01,export_dataStage02QuantificationHeatmap_js,,t,,quantification
+chemoCLim01,chemoCLim01,export_dataStage02QuantificationPca_js,,t,,quantification
+chemoNLim01,chemoNLim01,export_dataStage02QuantificationDescriptiveStats_js,,t,,quantification
+chemoNLim01,chemoNLim01,export_dataStage02QuantificationPairWiseTest_js,,t,,quantification
+chemoNLim01,chemoNLim01,export_dataStage02QuantificationHeatmap_js,,t,,quantification
+chemoNLim01,chemoNLim01,export_dataStage02QuantificationPca_js,,t,,quantification
