@@ -602,6 +602,31 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             return sample_names_O;
         except SQLAlchemyError as e:
             print(e);
+    # query sample names from data_stage01_quantification_mqresultstable
+    def get_sampleNamesAndSampleIDs_experimentIDAndSampleType(self,experiment_id_I,sample_type_I,exp_type_I=4):
+        '''Querry sample names and sample ids (i.e. unknowns) that are used from
+        the experiment'''
+        try:
+            sample_names = self.session.query(data_stage01_quantification_MQResultsTable.sample_name,
+                    sample.sample_id).filter(
+                    data_stage01_quantification_MQResultsTable.sample_type.like(sample_type_I),
+                    experiment.id.like(experiment_id_I),
+                    #experiment.exp_type_id == exp_type_I,
+                    data_stage01_quantification_MQResultsTable.used_.is_(True),
+                    experiment.sample_name.like(data_stage01_quantification_MQResultsTable.sample_name),
+                    experiment.sample_name.like(sample.sample_name)).group_by(
+                    data_stage01_quantification_MQResultsTable.sample_name,
+                    sample.sample_id).order_by(
+                    data_stage01_quantification_MQResultsTable.sample_name.asc(),
+                    sample.sample_id.asc()).all();
+            sample_names_O = [];
+            sample_ids_O = [];
+            for sn in sample_names:
+                sample_names_O.append(sn.sample_name);
+                sample_ids_O.append(sn.sample_id);
+            return sample_names_O,sample_ids_O;
+        except SQLAlchemyError as e:
+            print(e);
     def get_sampleNames_experimentIDAndSampleID(self,experiment_id_I,sample_id_I,exp_type_I=4):
         '''Querry sample names (i.e. unknowns) that are used from
         the experiment'''
@@ -918,6 +943,30 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             component_names_O = [];
             for cn in component_names: component_names_O.append(cn.component_name);
             return component_names_O;
+        except SQLAlchemyError as e:
+            print(e);
+    def get_componentsNamesAndComponentGroupNames_experimentIDAndSampleName(self,experiment_id_I,sample_name_I,exp_type_I=4):
+        '''Querry component names that are used and not internal standards from
+        the experiment and sample_name'''
+        try:
+            component_names = self.session.query(data_stage01_quantification_MQResultsTable.component_name,
+                    data_stage01_quantification_MQResultsTable.component_group_name).filter(
+                    experiment.sample_name.like(sample_name_I),
+                    experiment.id.like(experiment_id_I),
+                    experiment.exp_type_id == exp_type_I,
+                    experiment.sample_name.like(data_stage01_quantification_MQResultsTable.sample_name),                   
+                    data_stage01_quantification_MQResultsTable.used_.is_(True),                   
+                    data_stage01_quantification_MQResultsTable.is_.is_(False)).group_by(
+                    data_stage01_quantification_MQResultsTable.component_name,
+                    data_stage01_quantification_MQResultsTable.component_group_name).order_by(
+                    data_stage01_quantification_MQResultsTable.component_name.asc(),
+                    data_stage01_quantification_MQResultsTable.component_group_name.asc()).all();
+            component_names_O = [];
+            component_group_names_O = [];
+            for cn in component_names:
+                component_names_O.append(cn.component_name);
+                component_group_names_O.append(cn.component_group_name);
+            return component_names_O,component_group_names_O;
         except SQLAlchemyError as e:
             print(e);
     def get_componentsNames_experimentIDAndSampleType(self,experiment_id_I,sample_type_I):

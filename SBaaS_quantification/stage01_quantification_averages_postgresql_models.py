@@ -16,8 +16,21 @@ class data_stage01_quantification_averagesMI(Base):
 
     __table_args__ = (UniqueConstraint('experiment_id','sample_name_abbreviation','time_point','component_name'),
             )
+    def __init__(self,
+                row_dict_I,
+                ):
+        self.experiment_id=row_dict_I['experiment_id'];
+        self.sample_name_abbreviation=row_dict_I['sample_name_abbreviation'];
+        self.time_point=row_dict_I['time_point'];
+        self.component_group_name=row_dict_I['component_group_name'];
+        self.component_name=row_dict_I['component_name'];
+        self.n_replicates=row_dict_I['n_replicates'];
+        self.calculated_concentration_average=row_dict_I['calculated_concentration_average'];
+        self.calculated_concentration_cv=row_dict_I['calculated_concentration_cv'];
+        self.calculated_concentration_units=row_dict_I['calculated_concentration_units'];
+        self.used_=row_dict_I['used_'];
 
-    def __init__(self, experiment_id_I, sample_name_abbreviation_I, time_point_I, component_group_name_I, component_name_I,
+    def __set__row__(self, experiment_id_I, sample_name_abbreviation_I, time_point_I, component_group_name_I, component_name_I,
                     n_replicates_I, calculated_concentration_average_I, calculated_concentration_cv_I,
                     calculated_concentration_units_I, used_I):
         self.experiment_id = experiment_id_I;
@@ -63,8 +76,23 @@ class data_stage01_quantification_averagesMIgeo(Base):
 
     __table_args__ = (UniqueConstraint('experiment_id','sample_name_abbreviation','time_point','component_name'),
             )
+    def __init__(self,
+                row_dict_I,
+                ):
+        self.n_replicates=row_dict_I['n_replicates'];
+        self.calculated_concentration_average=row_dict_I['calculated_concentration_average'];
+        self.calculated_concentration_var=row_dict_I['calculated_concentration_var'];
+        self.calculated_concentration_lb=row_dict_I['calculated_concentration_lb'];
+        self.calculated_concentration_ub=row_dict_I['calculated_concentration_ub'];
+        self.calculated_concentration_units=row_dict_I['calculated_concentration_units'];
+        self.used_=row_dict_I['used_'];
+        self.component_name=row_dict_I['component_name'];
+        self.component_group_name=row_dict_I['component_group_name'];
+        self.time_point=row_dict_I['time_point'];
+        self.sample_name_abbreviation=row_dict_I['sample_name_abbreviation'];
+        self.experiment_id=row_dict_I['experiment_id'];
 
-    def __init__(self, experiment_id_I, sample_name_abbreviation_I, time_point_I, component_group_name_I, component_name_I,
+    def __set__row__(self, experiment_id_I, sample_name_abbreviation_I, time_point_I, component_group_name_I, component_name_I,
                     n_replicates_I, calculated_concentration_average_I, calculated_concentration_var_I,
                     calculated_concentration_lb_I, calculated_concentration_ub_I,
                     calculated_concentration_units_I, used_I):

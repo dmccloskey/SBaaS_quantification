@@ -82,8 +82,86 @@ class data_stage01_quantification_MQResultsTable(Base):
     #__table_args__ = (
     #        UniqueConstraint('component_name','sample_name','acquisition_date_and_time'),
     #        )
+    def __init__(self,
+                row_dict_I,
+                ):
+        self.component_name=row_dict_I['component_name'];
+        self.component_comment=row_dict_I['component_comment'];
+        self.is_comment=row_dict_I['is_comment'];
+        self.mass_info=row_dict_I['mass_info'];
+        self.is_mass=row_dict_I['is_mass'];
+        self.is_name=row_dict_I['is_name'];
+        self.component_group_name=row_dict_I['component_group_name'];
+        self.conc_units=row_dict_I['conc_units'];
+        self.failed_query=row_dict_I['failed_query'];
+        self.is_failed_query=row_dict_I['is_failed_query'];
+        self.peak_comment=row_dict_I['peak_comment'];
+        self.is_peak_comment=row_dict_I['is_peak_comment'];
+        self.actual_concentration=row_dict_I['actual_concentration'];
+        self.is_actual_concentration=row_dict_I['is_actual_concentration'];
+        self.concentration_ratio=row_dict_I['concentration_ratio'];
+        self.expected_rt=row_dict_I['expected_rt'];
+        self.is_expected_rt=row_dict_I['is_expected_rt'];
+        self.integration_type=row_dict_I['integration_type'];
+        self.is_integration_type=row_dict_I['is_integration_type'];
+        self.area=row_dict_I['area'];
+        self.is_area=row_dict_I['is_area'];
+        self.corrected_area=row_dict_I['corrected_area'];
+        self.is_corrected_area=row_dict_I['is_corrected_area'];
+        self.area_ratio=row_dict_I['area_ratio'];
+        self.height=row_dict_I['height'];
+        self.is_height=row_dict_I['is_height'];
+        self.corrected_height=row_dict_I['corrected_height'];
+        self.is_corrected_height=row_dict_I['is_corrected_height'];
+        self.height_ratio=row_dict_I['height_ratio'];
+        self.area_2_height=row_dict_I['area_2_height'];
+        self.is_area_2_height=row_dict_I['is_area_2_height'];
+        self.corrected_area2height=row_dict_I['corrected_area2height'];
+        self.is_corrected_area2height=row_dict_I['is_corrected_area2height'];
+        self.region_height=row_dict_I['region_height'];
+        self.is_region_height=row_dict_I['is_region_height'];
+        self.quality=row_dict_I['quality'];
+        self.is_quality=row_dict_I['is_quality'];
+        self.retention_time=row_dict_I['retention_time'];
+        self.is_retention_time=row_dict_I['is_retention_time'];
+        self.start_time=row_dict_I['start_time'];
+        self.is_start_time=row_dict_I['is_start_time'];
+        self.end_time=row_dict_I['end_time'];
+        self.is_end_time=row_dict_I['is_end_time'];
+        self.total_width=row_dict_I['total_width'];
+        self.is_total_width=row_dict_I['is_total_width'];
+        self.width_at_50=row_dict_I['width_at_50'];
+        self.is_width_at_50=row_dict_I['is_width_at_50'];
+        self.signal_2_noise=row_dict_I['signal_2_noise'];
+        self.is_signal_2_noise=row_dict_I['is_signal_2_noise'];
+        self.baseline_delta_2_height=row_dict_I['baseline_delta_2_height'];
+        self.is_baseline_delta_2_height=row_dict_I['is_baseline_delta_2_height'];
+        self.modified_=row_dict_I['modified_'];
+        self.relative_rt=row_dict_I['relative_rt'];
+        self.used_=row_dict_I['used_'];
+        self.calculated_concentration=row_dict_I['calculated_concentration'];
+        self.accuracy_=row_dict_I['accuracy_'];
+        self.comment_=row_dict_I['comment_'];
+        self.use_calculated_concentration=row_dict_I['use_calculated_concentration'];
+        self.acquisition_date_and_time=row_dict_I['acquisition_date_and_time'];
+        self.rack_number=row_dict_I['rack_number'];
+        self.plate_number=row_dict_I['plate_number'];
+        self.vial_number=row_dict_I['vial_number'];
+        self.dilution_factor=row_dict_I['dilution_factor'];
+        self.injection_volume=row_dict_I['injection_volume'];
+        self.operator_name=row_dict_I['operator_name'];
+        self.acq_method_name=row_dict_I['acq_method_name'];
+        self.is_=row_dict_I['is_'];
+        self.component_index=row_dict_I['component_index'];
+        self.sample_comment=row_dict_I['sample_comment'];
+        self.sample_id=row_dict_I['sample_id'];
+        self.sample_name=row_dict_I['sample_name'];
+        self.original_filename=row_dict_I['original_filename'];
+        self.sample_index=row_dict_I['sample_index'];
+        self.index_=row_dict_I['index_'];
+        self.sample_type=row_dict_I['sample_type'];
 
-    def __init__(self,index__I,sample_index_I,original_filename_I,
+    def __set__row__(self,index__I,sample_index_I,original_filename_I,
                  sample_name_I,sample_id_I,sample_comment_I,sample_type_I,
                  acquisition_date_and_time_I,rack_number_I,plate_number_I,
                  vial_number_I,dilution_factor_I,injection_volume_I,

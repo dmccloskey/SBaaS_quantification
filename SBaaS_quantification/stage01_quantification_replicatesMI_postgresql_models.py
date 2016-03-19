@@ -20,8 +20,22 @@ class data_stage01_quantification_replicatesMI(Base):
                                        #'imputation_method',
                                        'calculated_concentration_units'),
             )
+    def __init__(self,
+                row_dict_I,
+                ):
+        self.calculated_concentration=row_dict_I['calculated_concentration'];
+        self.experiment_id=row_dict_I['experiment_id'];
+        self.sample_name_short=row_dict_I['sample_name_short'];
+        self.time_point=row_dict_I['time_point'];
+        self.component_group_name=row_dict_I['component_group_name'];
+        self.component_name=row_dict_I['component_name'];
+        self.calculated_concentration_units=row_dict_I['calculated_concentration_units'];
+        self.used_=row_dict_I['used_'];
+        self.imputation_options=row_dict_I['imputation_options'];
+        self.imputation_method=row_dict_I['imputation_method'];
+        self.comment_=row_dict_I['comment_'];
 
-    def __init__(self, experiment_id_I, sample_name_short_I,
+    def __set__row__(self, experiment_id_I, sample_name_short_I,
                  #sample_name_abbreviation_I,
                  time_point_I, 
                  #time_point_units_I,

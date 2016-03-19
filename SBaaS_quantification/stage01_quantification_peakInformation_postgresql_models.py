@@ -21,8 +21,26 @@ class data_stage01_quantification_peakInformation(Base):
 
     __table_args__ = (UniqueConstraint('experiment_id','component_name','peakInfo_parameter'),
             )
-
     def __init__(self,
+                row_dict_I,
+                ):
+        self.experiment_id=row_dict_I['experiment_id'];
+        self.component_group_name=row_dict_I['component_group_name'];
+        self.component_name=row_dict_I['component_name'];
+        self.peakInfo_parameter=row_dict_I['peakInfo_parameter'];
+        self.peakInfo_ave=row_dict_I['peakInfo_ave'];
+        self.peakInfo_cv=row_dict_I['peakInfo_cv'];
+        self.peakInfo_lb=row_dict_I['peakInfo_lb'];
+        self.peakInfo_ub=row_dict_I['peakInfo_ub'];
+        self.peakInfo_units=row_dict_I['peakInfo_units'];
+        self.sample_names=row_dict_I['sample_names'];
+        self.sample_types=row_dict_I['sample_types'];
+        self.acqusition_date_and_times=row_dict_I['acqusition_date_and_times'];
+        self.peakInfo_data=row_dict_I['peakInfo_data'];
+        self.used_=row_dict_I['used_'];
+        self.comment_=row_dict_I['comment_'];
+
+    def __set__row__(self,
                  experiment_id_I,
                 component_group_name_I,
                 component_name_I,
@@ -95,8 +113,26 @@ class data_stage01_quantification_peakResolution(Base):
 
     __table_args__ = (UniqueConstraint('experiment_id','component_name_pair','peakInfo_parameter'),
             )
-
     def __init__(self,
+                row_dict_I,
+                ):
+        self.peakInfo_units=row_dict_I['peakInfo_units'];
+        self.peakInfo_ub=row_dict_I['peakInfo_ub'];
+        self.peakInfo_lb=row_dict_I['peakInfo_lb'];
+        self.peakInfo_cv=row_dict_I['peakInfo_cv'];
+        self.peakInfo_ave=row_dict_I['peakInfo_ave'];
+        self.peakInfo_parameter=row_dict_I['peakInfo_parameter'];
+        self.experiment_id=row_dict_I['experiment_id'];
+        self.component_group_name_pair=row_dict_I['component_group_name_pair'];
+        self.comment_=row_dict_I['comment_'];
+        self.used_=row_dict_I['used_'];
+        self.peakInfo_data=row_dict_I['peakInfo_data'];
+        self.acqusition_date_and_times=row_dict_I['acqusition_date_and_times'];
+        self.component_name_pair=row_dict_I['component_name_pair'];
+        self.sample_types=row_dict_I['sample_types'];
+        self.sample_names=row_dict_I['sample_names'];
+
+    def __set__row__(self,
                  experiment_id_I,
                 component_group_name_pair_I,
                 component_name_pair_I,

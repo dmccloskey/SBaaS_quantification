@@ -13,15 +13,15 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
                             component_names_I=[],
                             peakInfo_I = ['height','retention_time','width_at_50','signal_2_noise'],
                             acquisition_date_and_time_I=[None,None]):
-        '''Analyze retention-time, height, s/n, and assymetry'''
-
-        #INPUT:
-        #   experiment_id_I
-        #   sample_names_I
-        #   sample_types_I
-        #   component_names_I
-        #   peakInfo_I
-        #   acquisition_date_and_time_I = ['%m/%d/%Y %H:%M','%m/%d/%Y %H:%M']
+        '''Analyze retention-time, height, s/n, and assymetry
+        INPUT:
+        experiment_id_I
+        sample_names_I
+        sample_types_I
+        component_names_I
+        peakInfo_I
+        acquisition_date_and_time_I = ['%m/%d/%Y %H:%M','%m/%d/%Y %H:%M']
+        '''
 
         print('execute_peakInformation...')
         
@@ -77,6 +77,7 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
         # 1. make a calculation method
         # 2. make a table add method
         # calculate statistics for specific parameters
+        data_add = [];
         component_names_unique = list(set(component_names_all));
         component_names_unique.sort();
         # math utilities
@@ -105,34 +106,34 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
                 if ave:
                     cv = sqrt(var)/ave*100;
                     data_parameters_stats[parameter] = {'ave':ave,'var':var,'cv':cv,'lb':lb,'ub':ub};
-                    # add data to the database:
-                    row = None;
-                    row = data_stage01_quantification_peakInformation(experiment_id_I,
-                                            component_group_name,
-                                            cn,
-                                            parameter,
-                                            data_parameters_stats[parameter]['ave'],
-                                            data_parameters_stats[parameter]['cv'],
-                                            data_parameters_stats[parameter]['lb'],
-                                            data_parameters_stats[parameter]['ub'],
-                                            None,
-                                            sample_names_parameter,
-                                            sample_types_parameter,
-                                            acquisition_date_and_times,
-                                            data_parameters[parameter],
-                                            True,
-                                            None);
-                    self.session.add(row);
-        self.session.commit();
+                    # add data to the DB
+                    row = {'experiment_id':experiment_id_I,
+                        'component_group_name':component_group_name,
+                        'component_name':cn,
+                        'peakInfo_parameter':parameter,
+                        'peakInfo_ave':data_parameters_stats[parameter]['ave'],
+                        'peakInfo_cv':data_parameters_stats[parameter]['cv'],
+                        'peakInfo_lb':data_parameters_stats[parameter]['lb'],
+                        'peakInfo_ub':data_parameters_stats[parameter]['ub'],
+                        'peakInfo_units':None,
+                        'sample_names':sample_names_parameter,
+                        'sample_types':sample_types_parameter,
+                        'acqusition_date_and_times':acquisition_date_and_times,
+                        'peakInfo_data':data_parameters[parameter],
+                        'used_':True,
+                        'comment_':None,};
+                    data_add.append(row);
+        self.add_rows_table('data_stage01_quantification_peakInformation',data_add);
     def execute_analyzePeakResolution(self,experiment_id_I,sample_names_I=[],sample_types_I=['Standard'],component_name_pairs_I=[],
                             acquisition_date_and_time_I=[None,None]):
-        '''Analyze resolution for critical pairs'''
-        #Input:
-        #   experiment_id_I
-        #   sample_names_I
-        #   sample_types_I
-        #   component_name_pairs_I = [[component_name_1,component_name_2],...]
-        #   acquisition_date_and_time_I = ['%m/%d/%Y %H:%M','%m/%d/%Y %H:%M']
+        '''Analyze resolution for critical pairs
+        Input:
+        experiment_id_I
+        sample_names_I
+        sample_types_I
+        component_name_pairs_I = [[component_name_1,component_name_2],...]
+        acquisition_date_and_time_I = ['%m/%d/%Y %H:%M','%m/%d/%Y %H:%M']
+        '''
 
         print('execute_peakInformation_resolution...')
         #convert string date time to datetime
@@ -185,6 +186,7 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
         # 1. make a calculation method
         # 2. make a table add method
         # calculate statistics for specific parameters
+        data_add = [];
         calc = calculate_interface();
         for cnp in component_name_pairs_I:
             data_parameters = {};
@@ -210,23 +212,22 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
                     cv = sqrt(var)/ave*100;
                     data_parameters_stats[parameter] = {'ave':ave,'var':var,'cv':cv,'lb':lb,'ub':ub};
                     # add data to the database:
-                    row = None;
-                    row = data_stage01_quantification_peakResolution(experiment_id_I,
-                                            component_group_name_pair,
-                                            cnp,
-                                            parameter,
-                                            data_parameters_stats[parameter]['ave'],
-                                            data_parameters_stats[parameter]['cv'],
-                                            data_parameters_stats[parameter]['lb'],
-                                            data_parameters_stats[parameter]['ub'],
-                                            None,
-                                            sample_names_parameter,
-                                            sample_types_parameter,
-                                            acquisition_date_and_times,
-                                            data_parameters[parameter],
-                                            True,
-                                            None);
-                    self.session.add(row);
-        self.session.commit();
+                    row = {'experiment_id':experiment_id_I,
+                        'component_group_name_pair':component_group_name_pair,
+                        'component_name_pair':cnp,
+                        'peakInfo_parameter':parameter,
+                        'peakInfo_ave':data_parameters_stats[parameter]['ave'],
+                        'peakInfo_cv':data_parameters_stats[parameter]['cv'],
+                        'peakInfo_lb':data_parameters_stats[parameter]['lb'],
+                        'peakInfo_ub':data_parameters_stats[parameter]['ub'],
+                        'peakInfo_units':None,
+                        'sample_names':sample_names_parameter,
+                        'sample_types':sample_types_parameter,
+                        'acqusition_date_and_times':acquisition_date_and_times,
+                        'peakInfo_data':data_parameters[parameter],
+                        'used_':True,
+                        'comment_':None,};
+                    data_add.append(row);
+        self.add_rows_table('data_stage01_quantification_peakResolution',data_add);
 
     

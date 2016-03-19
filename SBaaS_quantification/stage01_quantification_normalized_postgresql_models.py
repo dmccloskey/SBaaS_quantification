@@ -18,8 +18,20 @@ class data_stage01_quantification_normalized(Base):
 
     __table_args__ = (UniqueConstraint('experiment_id','sample_name','component_name','calculated_concentration_units'),
             )
+    def __init__(self,
+                row_dict_I,
+                ):
+        self.experiment_id=row_dict_I['experiment_id'];
+        self.sample_name=row_dict_I['sample_name'];
+        self.sample_id=row_dict_I['sample_id'];
+        self.component_group_name=row_dict_I['component_group_name'];
+        self.component_name=row_dict_I['component_name'];
+        self.calculated_concentration=row_dict_I['calculated_concentration'];
+        self.calculated_concentration_units=row_dict_I['calculated_concentration_units'];
+        self.used_=row_dict_I['used_'];
+        self.comment_=row_dict_I['comment_'];
 
-    def __init__(self, experiment_id_I, sample_name_I, sample_id_I, 
+    def __set__row__(self, experiment_id_I, sample_name_I, sample_id_I, 
                  #sample_name_short_I,sample_name_abbreviation_I, time_point_I,
                  component_group_name_I, component_name_I,
                     calculated_concentration_I, calculated_concentration_units_I, used_I):
@@ -76,8 +88,28 @@ class data_stage01_quantification_averages(Base):
 
     __table_args__ = (UniqueConstraint('experiment_id','sample_name_abbreviation','time_point','component_name'),
             )
+    def __init__(self,
+                row_dict_I,
+                ):
+        self.n_replicates_broth=row_dict_I['n_replicates_broth'];
+        self.calculated_concentration_broth_average=row_dict_I['calculated_concentration_broth_average'];
+        self.calculated_concentration_broth_cv=row_dict_I['calculated_concentration_broth_cv'];
+        self.n_replicates_filtrate=row_dict_I['n_replicates_filtrate'];
+        self.calculated_concentration_filtrate_average=row_dict_I['calculated_concentration_filtrate_average'];
+        self.calculated_concentration_filtrate_cv=row_dict_I['calculated_concentration_filtrate_cv'];
+        self.n_replicates=row_dict_I['n_replicates'];
+        self.calculated_concentration_average=row_dict_I['calculated_concentration_average'];
+        self.experiment_id=row_dict_I['experiment_id'];
+        self.sample_name_abbreviation=row_dict_I['sample_name_abbreviation'];
+        self.calculated_concentration_cv=row_dict_I['calculated_concentration_cv'];
+        self.calculated_concentration_units=row_dict_I['calculated_concentration_units'];
+        self.extracellular_percent=row_dict_I['extracellular_percent'];
+        self.used_=row_dict_I['used_'];
+        self.time_point=row_dict_I['time_point'];
+        self.component_group_name=row_dict_I['component_group_name'];
+        self.component_name=row_dict_I['component_name'];
 
-    def __init__(self, experiment_id_I, sample_name_abbreviation_I, time_point_I, component_group_name_I, component_name_I,
+    def __set__row__(self, experiment_id_I, sample_name_abbreviation_I, time_point_I, component_group_name_I, component_name_I,
                     n_replicates_broth_I, calculated_concentration_broth_average_I, calculated_concentration_broth_cv_I,
                     n_replicates_filtrate_I, calculated_concentration_filtrate_average_I, calculated_concentration_filtrate_cv_I,
                     n_replicates_I, calculated_concentration_average_I, calculated_concentration_cv_I,

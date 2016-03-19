@@ -7,8 +7,6 @@ from SBaaS_LIMS.lims_biologicalMaterial_query import lims_biologicalMaterial_que
 from SBaaS_LIMS.lims_msMethod_query import lims_msMethod_query
 #Resources
 from python_statistics.calculate_interface import calculate_interface
-#TODO: remove after making add method
-from .stage01_quantification_normalized_postgresql_models import *
 #TODO: remove after implementing calc in averages
 from math import sqrt
 import numpy
@@ -35,31 +33,43 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
            calculated_concentration_units
            used_
         '''
-        #TODO: make add method
+
         data_O=[];
         calc = calculate_interface();
         
         print('execute_normalizeSamples2Biomass...')
         # get sample names
+        sample_names = [];
+        sample_ids = [];
+        for st in sample_types_I:
+            sample_names_tmp = [];
+            sample_ids_tmp = [];
+            #sample_names_tmp = self.get_sampleNames_experimentIDAndSampleType(experiment_id_I,st);
+            sample_names_tmp,sample_ids_tmp = self.get_sampleNamesAndSampleIDs_experimentIDAndSampleType(experiment_id_I,st);
+            sample_names.extend(sample_names_tmp);
+            sample_ids.extend(sample_ids_tmp); 
         if sample_names_I:
-            sample_names = sample_names_I;
-        else:
-            sample_names = [];
-            for st in sample_types_I:
-                sample_names_tmp = [];
-                sample_names_tmp = self.get_sampleNames_experimentIDAndSampleType(experiment_id_I,st);
-                sample_names.extend(sample_names_tmp);
+            sample_names_ind = [i for i,x in enumerate(sample_names) if x in sample_names_I];
+            sample_names_cpy = copy.copy(sample_names);
+            sample_ids = copy.copy(sample_ids);
+            sample_names = [x for i,x in enumerate(sample_names) if i in sample_names_ind]
+            sample_ids = [x for i,x in enumerate(sample_ids) if i in sample_names_ind]
         # create database table
-        for sn in sample_names:
+        for sn_cnt,sn in enumerate(sample_names):
             print('normalizing samples2Biomass for sample_name ' + sn);
             # get component names
-            if component_names_I:
-                component_names = component_names_I;
-            else:
-                component_names = [];
-                component_names = self.get_componentsNames_experimentIDAndSampleName(experiment_id_I,sn);
-            # get sample id
-            sample_id = self.get_sampleID_experimentIDAndSampleName(experiment_id_I,sn);
+            component_names = [];
+            component_group_names = [];
+            #component_names = self.get_componentsNames_experimentIDAndSampleName(experiment_id_I,sn);
+            component_names,component_group_names = self.get_componentsNamesAndComponentGroupNames_experimentIDAndSampleName(experiment_id_I,sn);
+            if component_names_I:                
+                component_names_ind = [i for i,x in enumerate(component_names) if x in component_names_I];
+                component_names_cpy = copy.copy(component_names);
+                component_group_names = copy.copy(component_group_names);
+                component_names = [x for i,x in enumerate(component_names) if i in component_names_ind]
+                component_group_names = [x for i,x in enumerate(component_group_names) if i in component_names_ind]
+            ## get sample id
+            #sample_id = self.get_sampleID_experimentIDAndSampleName(experiment_id_I,sn);
             if (biological_material_I and conversion_name_I):
                 # get physiological parameters
                 cvs = None;
@@ -82,11 +92,11 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
                     #calculate the cell volume or biomass depending on the conversion units
                     #cell_volume, cell_volume_units = calc.calculate_cellVolume_CVSAndCVSUnitsAndODAndConversionAndConversionUnits(cvs,cvs_units,od600,conversion,conversion_units);
                     cell_volume, cell_volume_units = calc.calculate_biomass_CVSAndCVSUnitsAndODAndConversionAndConversionUnits(cvs,cvs_units,od600,conversion,conversion_units);
-                for cn in component_names:
+                for cn_cnt,cn in enumerate(component_names):
                     print('normalizing samples2Biomass for component_name ' + cn);
                     # get component group name
                     #component_group_name = self.get_componentGroupName_experimentIDAndComponentName(experiment_id_I,cn);
-                    component_group_name = self.get_msGroup_componentName_MSComponents(cn);
+                    #component_group_name = self.get_msGroup_componentName_MSComponents(cn);
                     # get the calculated concentration
                     calc_conc = None;
                     calc_conc_units = None;
@@ -101,16 +111,21 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
                         norm_conc, norm_conc_units = calc.calculate_conc_concAndConcUnitsAndDilAndDilUnitsAndConversionAndConversionUnits(calc_conc,calc_conc_units,dil,dil_units,cell_volume, cell_volume_units);
                     # update data_stage01_quantification_normalized
                     if norm_conc:
-                        #TODO: make add method
-                        #data_O.append();
-                        row = data_stage01_quantification_normalized(experiment_id_I, sn,sample_id,component_group_name,cn,norm_conc,norm_conc_units,True);
-                        self.session.add(row);
+                        row = {'experiment_id':experiment_id_I,
+                                'sample_name':sn,
+                                'sample_id':sample_ids[sn_cnt],
+                                'component_group_name':component_group_names[cn_cnt],
+                                'component_name':cn,
+                                'calculated_concentration':norm_conc,
+                                'calculated_concentration_units':norm_conc_units,
+                                'used_':True,};
+                        data_O.append(row);
             else:
-                for cn in component_names:
+                for cn_cnt,cn in enumerate(component_names):
                     print('normalizing samples2Biomass for component_name ' + cn);
                     # get component group name
                     #component_group_name = self.get_componentGroupName_experimentIDAndComponentName(experiment_id_I,cn);
-                    component_group_name = self.get_msGroup_componentName_MSComponents(cn);
+                    #component_group_name = self.get_msGroup_componentName_MSComponents(cn);
                     # get the calculated concentration
                     calc_conc = None;
                     calc_conc_units = None;
@@ -118,11 +133,17 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
                         calc_conc, calc_conc_units = self.get_peakHeight_sampleNameAndComponentName(sn,cn);
                     else:
                         calc_conc, calc_conc_units = self.get_concAndConcUnits_sampleNameAndComponentName(sn,cn);
-                    #TODO: make add method
-                    #data_O.append();
-                    row = data_stage01_quantification_normalized(experiment_id_I, sn,sample_id,component_group_name,cn,calc_conc,calc_conc_units,True);
-                    self.session.add(row);
-            self.session.commit();
+                    # add data to the DB
+                    row = {'experiment_id':experiment_id_I,
+                            'sample_name':sn,
+                            'sample_id':sample_ids[sn_cnt],
+                            'component_group_name':component_group_names[cn_cnt],
+                            'component_name':cn,
+                            'calculated_concentration':calc_conc,
+                            'calculated_concentration_units':calc_conc_units,
+                            'used_':True,};
+                    data_O.append(row);
+        self.add_rows_table('data_stage01_quantification_normalized',data_O);
     def execute_removeDuplicateDilutions(self,experiment_id_I,component_names_dil_I = []):
         '''remove duplicate dilutions from data_stage01_quantification_normalized
         NOTE: rows are not removed, but the used value is changed to false
@@ -199,7 +220,6 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
         % extracellular
         '''
 
-        #TODO: make add method
         data_O=[];
         calc = calculate_interface();
         
@@ -303,16 +323,26 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
                     # calculate the % extracellular
                     extracellular_percent = conc_average_filtrate/conc_average_broth*100;
                     # add data to the session
-                    #TODO: make add method
-                    #data_O.append()
-                    row = data_stage01_quantification_averages(experiment_id_I, sna, tp, component_group_name, cn,
-                                                   n_replicates, conc_average_broth, conc_cv_broth,
-                                                   n_replicates_filtrate, conc_average_filtrate, conc_cv_filtrate,
-                                                   n_replicates, conc_average, conc_cv, conc_units, extracellular_percent, True);   
-                    self.session.add(row);
-        self.session.commit(); 
-        #TODO: make add method
-        #self.add_data_stage01_quantification_averages
+                    row = {};
+                    row = {'experiment_id':experiment_id_I,
+                        'sample_name_abbreviation':sna,
+                        'time_point':tp,
+                        'component_group_name':component_group_name,
+                        'component_name':cn,
+                        'n_replicates_broth':n_replicates,
+                        'calculated_concentration_broth_average':conc_average_broth,
+                        'calculated_concentration_broth_cv':conc_cv_broth,
+                        'n_replicates_filtrate':n_replicates_filtrate,
+                        'calculated_concentration_filtrate_average':conc_average_filtrate,
+                        'calculated_concentration_filtrate_cv':conc_cv_filtrate,
+                        'n_replicates':n_replicates,
+                        'calculated_concentration_average':conc_average,
+                        'calculated_concentration_cv':conc_cv,
+                        'calculated_concentration_units':conc_units,
+                        'extracellular_percent':extracellular_percent,
+                        'used_':True,};
+                    data_O.append(row)
+        self.add_rows_table('data_stage01_quantification_averages',data_O);
     def execute_analyzeAverages_blanks(self,experiment_id_I,sample_name_abbreviations_I=[],sample_names_I=[],component_names_I=[],blank_sample_names_I=[]):
         '''calculate the averages using the ave(broth),i - ave(blank,broth)
         NOTE: data_stage01_quantification_normalized must be populated
@@ -332,7 +362,6 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
         % extracellular
         '''
 
-        #TODO: make add method
         data_O=[];
         calc = calculate_interface();
         
@@ -435,11 +464,23 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
                     # calculate the % extracellular
                     extracellular_percent = conc_average_filtrate/conc_average_broth*100;
                     # add data to the session
-                    #TODO: make add method
-                    #data_O.append()
-                    row = data_stage01_quantification_averages(experiment_id_I, sna, tp, component_group_name, cn,
-                                                   n_replicates, conc_average_broth, conc_cv_broth,
-                                                   n_replicates_filtrate, conc_average_filtrate, conc_cv_filtrate,
-                                                   n_replicates, conc_average, conc_cv, conc_units, extracellular_percent, True);   
-                    self.session.add(row);
-        self.session.commit(); 
+                    row = {};
+                    row = {'experiment_id':experiment_id_I,
+                            'sample_name_abbreviation':sna,
+                            'time_point':tp,
+                            'component_group_name':component_group_name,
+                            'component_name':cn,
+                            'n_replicates_broth':n_replicates,
+                            'calculated_concentration_broth_average':conc_average_broth,
+                            'calculated_concentration_broth_cv':conc_cv_broth,
+                            'n_replicates_filtrate':n_replicates_filtrate,
+                            'calculated_concentration_filtrate_average':conc_average_filtrate,
+                            'calculated_concentration_filtrate_cv':conc_cv_filtrate,
+                            'n_replicates':n_replicates,
+                            'calculated_concentration_average':conc_average,
+                            'calculated_concentration_cv':conc_cv,
+                            'calculated_concentration_units':conc_units,
+                            'extracellular_percent':extracellular_percent,
+                            'used_':True,};
+                    data_O.append(row);
+        self.add_rows_table('data_stage01_quantification_averages',data_O);

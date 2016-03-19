@@ -17,16 +17,18 @@ class stage01_quantification_replicates_execute(stage01_quantification_replicate
                                                 lims_biologicalMaterial_query):
     def execute_analyzeReplicates(self,experiment_id_I,sample_name_abbreviations_I=[],sample_names_I=[],component_names_I=[]):
         '''calculate the replicates by subtracting out the filtrate
-        NOTE: data_stage01_quantification_normalized must be populated'''
-        # Input:
-        #   experiment_id
-        # Output:
-        #   sample_name_short
-        #   component_group_name
-        #   component_name
-        #   concentration
-        #   concentration units
-        
+        NOTE: data_stage01_quantification_normalized must be populated
+        Input:
+        experiment_id
+
+        Output:
+        sample_name_short
+        component_group_name
+        component_name
+        concentration
+        concentration units
+
+        '''
         print('execute_analyzeReplicates...')
         # get sample_name_abbreviations
         if sample_name_abbreviations_I:
@@ -99,7 +101,15 @@ class stage01_quantification_replicates_execute(stage01_quantification_replicate
                         # get sample name short
                         sample_name_short = self.get_sampleNameShort_experimentIDAndSampleName_dataStage01Normalized(experiment_id_I, sn);
                         # add data to the session 
-                        row = data_stage01_quantification_replicates(experiment_id_I, sample_name_short, tp, component_group_name, cn,
-                                                                conc_broth, conc_units, True,None);
-                        self.session.add(row);
-            self.session.commit();    
+                        # add data to the DB
+                        row = {'experiment_id':experiment_id_I,
+                            'sample_name_short':sample_name_short,
+                            'time_point':tp,
+                            'component_group_name':component_group_name,
+                            'component_name':cn,
+                            'calculated_concentration':conc_broth,
+                            'calculated_concentration_units':conc_units,
+                            'used_':True,
+                            'comment_':None,};
+                        data_O.append(row);
+            self.add_rows_table('data_stage01_quantification_replicates',data_O);

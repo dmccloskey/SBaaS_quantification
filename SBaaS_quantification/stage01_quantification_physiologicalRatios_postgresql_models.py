@@ -16,8 +16,21 @@ class data_stage01_quantification_physiologicalRatios_replicates(Base):
 
     __table_args__ = (UniqueConstraint('experiment_id','sample_name_short','time_point','physiologicalratio_id'),
             )
+    def __init__(self,
+                row_dict_I,
+                ):
+        self.time_point=row_dict_I['time_point'];
+        self.physiologicalratio_name=row_dict_I['physiologicalratio_name'];
+        self.physiologicalratio_value=row_dict_I['physiologicalratio_value'];
+        self.physiologicalratio_description=row_dict_I['physiologicalratio_description'];
+        self.used_=row_dict_I['used_'];
+        self.comment_=row_dict_I['comment_'];
+        self.id=row_dict_I['id'];
+        self.experiment_id=row_dict_I['experiment_id'];
+        self.sample_name_short=row_dict_I['sample_name_short'];
+        self.physiologicalratio_id=row_dict_I['physiologicalratio_id'];
 
-    def __init__(self, experiment_id_I,
+    def __set__row__(self, experiment_id_I,
                 sample_name_short_I,
                 #sample_name_abbreviation_I,
                 time_point_I,
@@ -77,8 +90,24 @@ class data_stage01_quantification_physiologicalRatios_averages(Base):
 
     __table_args__ = (UniqueConstraint('experiment_id','sample_name_abbreviation','time_point','physiologicalratio_id'),
             )
+    def __init__(self,
+                row_dict_I,
+                ):
+        self.physiologicalratio_name=row_dict_I['physiologicalratio_name'];
+        self.physiologicalratio_value_ave=row_dict_I['physiologicalratio_value_ave'];
+        self.physiologicalratio_value_cv=row_dict_I['physiologicalratio_value_cv'];
+        self.comment_=row_dict_I['comment_'];
+        self.physiologicalratio_description=row_dict_I['physiologicalratio_description'];
+        self.used_=row_dict_I['used_'];
+        self.physiologicalratio_value_ub=row_dict_I['physiologicalratio_value_ub'];
+        self.id=row_dict_I['id'];
+        self.physiologicalratio_value_lb=row_dict_I['physiologicalratio_value_lb'];
+        self.experiment_id=row_dict_I['experiment_id'];
+        self.sample_name_abbreviation=row_dict_I['sample_name_abbreviation'];
+        self.time_point=row_dict_I['time_point'];
+        self.physiologicalratio_id=row_dict_I['physiologicalratio_id'];
 
-    def __init__(self,experiment_id_I,
+    def __set__row__(self,experiment_id_I,
                 sample_name_abbreviation_I,
                 time_point_I,
                 physiologicalratio_id_I,
