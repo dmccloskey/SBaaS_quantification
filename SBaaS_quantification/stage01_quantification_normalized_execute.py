@@ -10,6 +10,7 @@ from python_statistics.calculate_interface import calculate_interface
 #TODO: remove after implementing calc in averages
 from math import sqrt
 import numpy
+import copy
 
 class stage01_quantification_normalized_execute(stage01_quantification_normalized_io,
                                                 stage01_quantification_MQResultsTable_query,

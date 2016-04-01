@@ -242,9 +242,6 @@ class stage01_quantification_peakInformation_query(sbaas_template_query):
             if experiment_id_I:
                 reset = self.session.query(data_stage01_quantification_peakInformation).filter(data_stage01_quantification_peakInformation.experiment_id.like(experiment_id_I)).delete(synchronize_session=False);
                 reset = self.session.query(data_stage01_quantification_peakResolution).filter(data_stage01_quantification_peakResolution.experiment_id.like(experiment_id_I)).delete(synchronize_session=False);
-            else:
-                reset = self.session.query(data_stage01_quantification_peakInformation).delete(synchronize_session=False);
-                reset = self.session.query(data_stage01_quantification_peakResolution).delete(synchronize_session=False);
-            self.session.commit();
+                self.session.commit();
         except SQLAlchemyError as e:
             print(e);

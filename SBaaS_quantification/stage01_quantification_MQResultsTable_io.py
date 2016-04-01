@@ -75,6 +75,7 @@ class stage01_quantification_MQResultsTable_io(stage01_quantification_MQResultsT
                 if rows:
                     rows['acquisition_date_and_time'] = self.convert_datetime2string(rows['acquisition_date_and_time'])
                     rows['index_'] = cnt;
+                    rows['experiment_id']=experiment_id_I;
                     data_O.append(rows);
                     cnt+=1;
         # get the sample_names_I    

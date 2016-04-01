@@ -27,6 +27,7 @@ sys.path.append(pg_settings.datadir_settings['github']+'/SBaaS_quantification')
 sys.path.append(pg_settings.datadir_settings['github']+'/io_utilities')
 sys.path.append(pg_settings.datadir_settings['github']+'/python_statistics')
 sys.path.append(pg_settings.datadir_settings['github']+'/r_statistics')
+sys.path.append(pg_settings.datadir_settings['github']+'/listDict')
 sys.path.append(pg_settings.datadir_settings['github']+'/ddt_python')
 sys.path.append(pg_settings.datadir_settings['github']+'/quantification_analysis')
 sys.path.append(pg_settings.datadir_settings['github']+'/matplotlib_utilities')
@@ -34,12 +35,17 @@ sys.path.append(pg_settings.datadir_settings['github']+'/matplotlib_utilities')
 #make the results table
 from SBaaS_quantification.stage01_quantification_MQResultsTable_execute import stage01_quantification_MQResultsTable_execute
 exmqrt01 = stage01_quantification_MQResultsTable_execute(session,engine,pg_settings.datadir_settings);
+exmqrt01.initialize_supportedTables();
+exmqrt01.initialize_dataStage01_quantification_MQResultsTable();
 #exmqrt01.drop_dataStage01_quantification_MQResultsTable();
 #exmqrt01.initialize_dataStage01_quantification_MQResultsTable();
 #exmqrt01.execute_deleteExperimentFromMQResultsTable('chemoCLim01',sample_types_I = ['Quality Control','Unknown','Standard','Blank'])
 #exmqrt01.import_dataStage01MQResultsTable_add('data/tests/analysis_quantification/150805_140521_Quantification_chemoCLim01_calibrators01.csv');
 #exmqrt01.import_dataStage01MQResultsTable_add('data/tests/analysis_quantification/150805_Quantification_chemoCLim01_samples02.csv');
 #exmqrt01.export_dataStage01MQResultsTable_metricPlot_js('chemoCLim01',component_names_I = ['fdp.fdp_1.Light'],measurement_I='calculated_concentration');
+
+#exmqrt01.import_dataStage01MQResultsTable_update(
+#        pg_settings.datadir_settings['workspace_data']+'/_input/160331_Quantification_ALEsKOs01_updates02.csv');
 
 ##export a metric plot
 #exmqrt01.export_dataStage01MQResultsTable_metricPlot_js(
@@ -92,9 +98,29 @@ exnorm01.initialize_supportedTables();
 exnorm01.initialize_dataStage01_quantification_normalized();
 
 # normalize samples to the measured biomass of the experiment
-exnorm01.execute_normalizeSamples2Biomass(
-    'IndustrialStrains02',
-    biological_material_I='MG1655',
-    conversion_name_I='gDW2OD_lab',
-    sample_names_I = [],
-    component_names_I = []);
+sampleName_componentName_listDict = [
+    {'sample_names':['140716_0_OxicEvo04pgiEcoliGlcM9_Broth-6-10.0x'],
+     'component_names':['glutacon.glutacon_1.Light']},
+    {'sample_names':['141022_3_OxicEvo04pgiEvo02J03EcoliGlcM9_Broth-1-10.0x',
+                     '141024_3_OxicEvo04pgiEvo02J03EcoliGlcM9_Broth-2-10.0x',
+                     '141024_3_OxicEvo04pgiEvo02J03EcoliGlcM9_Broth-3-10.0x',
+                     '141022_3_OxicEvo04pgiEvo02J03EcoliGlcM9_Broth-4-10.0x',
+                     '141024_3_OxicEvo04pgiEvo02J03EcoliGlcM9_Broth-5-10.0x',
+                     '141024_3_OxicEvo04pgiEvo02J03EcoliGlcM9_Broth-6-10.0x'],
+     'component_names':['orn.orn_1.Light']},
+    {'sample_names':['140801_11_OxicEvo04pgiEvo07EPEcoliGlcM9_Broth-5'],
+     'component_names':['dctp.dctp_1.Light']},
+    {'sample_names':['140808_11_OxicEvo04tpiAEvo02EPEcoliGlcM9_Broth-6-10.0x'],
+     'component_names':['glu-L.glu-L_1.Light']},
+    ]
+for row in sampleName_componentName_listDict:
+    exnorm01.reset_dataStage01_quantification_normalized(
+        experiment_id_I='ALEsKOs01',
+        sample_names_I = row['sample_names'],
+        component_names_I = row['component_names'])
+    exnorm01.execute_normalizeSamples2Biomass(
+        'ALEsKOs01',
+        biological_material_I='MG1655',
+        conversion_name_I='gDW2OD_lab',
+        sample_names_I = row['sample_names'],
+        component_names_I = row['component_names'])

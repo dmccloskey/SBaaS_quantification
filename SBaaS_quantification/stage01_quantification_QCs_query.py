@@ -29,15 +29,17 @@ class stage01_quantification_QCs_query(sbaas_template_query):
         if data_I:
             for d in data_I:
                 try:
-                    data_add = data_stage01_quantification_QCs(d['experiment_id'],
-                    d['sample_name_abbreviation'],
-                    d['sample_dilution'],
-                    d['component_group_name'],
-                    d['component_name'],
-                    d['n_replicates'],
-                    d['calculated_concentration_average'],
-                    d['calculated_concentration_CV'],
-                    d['calculated_concentration_units']);
+                    data_add = data_stage01_quantification_QCs(d
+                    #d['experiment_id'],
+                    #d['sample_name_abbreviation'],
+                    #d['sample_dilution'],
+                    #d['component_group_name'],
+                    #d['component_name'],
+                    #d['n_replicates'],
+                    #d['calculated_concentration_average'],
+                    #d['calculated_concentration_CV'],
+                    #d['calculated_concentration_units']
+                    );
                     self.session.add(data_add);
                 except SQLAlchemyError as e:
                     print(e);
@@ -47,14 +49,16 @@ class stage01_quantification_QCs_query(sbaas_template_query):
         if data_I:
             for d in data_I:
                 try:
-                    data_add = data_stage01_quantification_dilutions(d['experiment_id'],
-                        d['sample_id'],
-                        d['component_group_name'],
-                        d['component_name'],
-                        d['n_replicates'],
-                        d['calculated_concentration_average'],
-                        d['calculated_concentration_cv'],
-                        d['calculated_concentration_units']);
+                    data_add = data_stage01_quantification_dilutions(d
+                        #d['experiment_id'],
+                        #d['sample_id'],
+                        #d['component_group_name'],
+                        #d['component_name'],
+                        #d['n_replicates'],
+                        #d['calculated_concentration_average'],
+                        #d['calculated_concentration_cv'],
+                        #d['calculated_concentration_units']
+                        );
                     self.session.add(data_add);
                 except SQLAlchemyError as e:
                     print(e);
@@ -64,17 +68,19 @@ class stage01_quantification_QCs_query(sbaas_template_query):
         if data_I:
             for d in data_I:
                 try:
-                    data_add = data_stage01_quantification_LLOQAndULOQ(d['experiment_id'],
-                        d['sample_name'],
-                        d['component_group_name'],
-                        d['component_name'],
-                        d['calculated_concentration'],
-                        d['calculated_concentration_units'],
-                        d['correlation'],
-                        d['lloq'],
-                        d['uloq'],
-                        d['points'],
-                        d['used_']);
+                    data_add = data_stage01_quantification_LLOQAndULOQ(d
+                        #d['experiment_id'],
+                        #d['sample_name'],
+                        #d['component_group_name'],
+                        #d['component_name'],
+                        #d['calculated_concentration'],
+                        #d['calculated_concentration_units'],
+                        #d['correlation'],
+                        #d['lloq'],
+                        #d['uloq'],
+                        #d['points'],
+                        #d['used_']
+                        );
                     self.session.add(data_add);
                 except SQLAlchemyError as e:
                     print(e);
@@ -108,27 +114,21 @@ class stage01_quantification_QCs_query(sbaas_template_query):
         try:
             if experiment_id_I:
                 reset = self.session.query(data_stage01_quantification_LLOQAndULOQ).filter(data_stage01_quantification_LLOQAndULOQ.experiment_id.like(experiment_id_I)).delete(synchronize_session=False);
-            else:
-                reset = self.session.query(data_stage01_quantification_LLOQAndULOQ).delete(synchronize_session=False);
-            self.session.commit();
+                self.session.commit();
         except SQLAlchemyError as e:
             print(e);
     def reset_datastage01_quantification_QCs(self,experiment_id_I):
         try:
             if experiment_id_I:
                 reset = self.session.query(data_stage01_quantification_QCs).filter(data_stage01_quantification_QCs.experiment_id.like(experiment_id_I)).delete(synchronize_session=False);
-            else:
-                reset = self.session.query(data_stage01_quantification_QCs).delete(synchronize_session=False);
-            self.session.commit();
+                self.session.commit();
         except SQLAlchemyError as e:
             print(e);
     def reset_datastage01_quantification_dilutions(self,experiment_id_I):
         try:
             if experiment_id_I:
                 reset = self.session.query(data_stage01_quantification_dilutions).filter(data_stage01_quantification_dilutions.experiment_id.like(experiment_id_I)).delete(synchronize_session=False);
-            else:
-                reset = self.session.query(data_stage01_quantification_dilutions).delete(synchronize_session=False);
-            self.session.commit();
+                self.session.commit();
         except SQLAlchemyError as e:
             print(e);
     def drop_dataStage01_quantification_QCs(self):
@@ -151,11 +151,7 @@ class stage01_quantification_QCs_query(sbaas_template_query):
                 reset = self.session.query(data_stage01_quantification_LLOQAndULOQ).filter(data_stage01_quantification_LLOQAndULOQ.experiment_id.like(experiment_id_I)).delete(synchronize_session=False);
                 reset = self.session.query(data_stage01_quantification_dilutions).filter(data_stage01_quantification_dilutions.experiment_id.like(experiment_id_I)).delete(synchronize_session=False);
                 reset = self.session.query(data_stage01_quantification_QCs).filter(data_stage01_quantification_QCs.experiment_id.like(experiment_id_I)).delete(synchronize_session=False);
-            else:
-                reset = self.session.query(data_stage01_quantification_LLOQAndULOQ).delete(synchronize_session=False);
-                reset = self.session.query(data_stage01_quantification_dilutions).delete(synchronize_session=False);
-                reset = self.session.query(data_stage01_quantification_QCs).delete(synchronize_session=False);
-            self.session.commit();
+                self.session.commit();
         except SQLAlchemyError as e:
             print(e);
     

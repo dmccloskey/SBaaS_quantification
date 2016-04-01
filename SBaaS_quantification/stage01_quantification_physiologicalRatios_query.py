@@ -387,18 +387,19 @@ class stage01_quantification_physiologicalRatios_query(sbaas_template_query):
         if data_I:
             for d in data_I:
                 try:
-                    data_add = data_stage01_quantification_physiologicalRatios_replicates(
-                        d['experiment_id_I'],
-                        d['sample_name_short_I'],
-                        #d['sample_name_abbreviation_I'],
-                        d['time_point_I'],
-                        #d['time_point_units_I'],
-                        d['physiologicalratio_id_I'],
-                        d['physiologicalratio_name_I'],
-                        d['physiologicalratio_value_I'],
-                        d['physiologicalratio_description_I'],
-                        d['used__I'],
-                        d['comment__I']);
+                    data_add = data_stage01_quantification_physiologicalRatios_replicates(d
+                        #d['experiment_id_I'],
+                        #d['sample_name_short_I'],
+                        ##d['sample_name_abbreviation_I'],
+                        #d['time_point_I'],
+                        ##d['time_point_units_I'],
+                        #d['physiologicalratio_id_I'],
+                        #d['physiologicalratio_name_I'],
+                        #d['physiologicalratio_value_I'],
+                        #d['physiologicalratio_description_I'],
+                        #d['used__I'],
+                        #d['comment__I']
+                        );
                     self.session.add(data_add);
                 except SQLAlchemyError as e:
                     print(e);

@@ -779,19 +779,20 @@ class stage01_quantification_outliers_query(sbaas_base):
         if data_I:
             for d in data_I:
                 try:
-                    data_add = data_stage01_quantification_outliersDeviation_replicates(
-                        d['analysis_id'],
-                        d['experiment_id'],
-                        d['sample_name_short'],
-                        d['sample_name_abbreviation'],
-                        d['time_point'],
-                        #d['time_point_units'],
-                        d['component_group_name'],
-                        d['component_name'],
-                        d['calculated_concentration'],
-                        d['calculated_concentration_units'],
-                        d['used_'],
-                        d['comment_']);
+                    data_add = data_stage01_quantification_outliersDeviation_replicates(d
+                        #d['analysis_id'],
+                        #d['experiment_id'],
+                        #d['sample_name_short'],
+                        #d['sample_name_abbreviation'],
+                        #d['time_point'],
+                        ##d['time_point_units'],
+                        #d['component_group_name'],
+                        #d['component_name'],
+                        #d['calculated_concentration'],
+                        #d['calculated_concentration_units'],
+                        #d['used_'],
+                        #d['comment_']
+                        );
                     self.session.add(data_add);
                 except SQLAlchemyError as e:
                     print(e);
@@ -812,8 +813,6 @@ class stage01_quantification_outliers_query(sbaas_base):
         try:
             if analysis_id_I:
                 reset = self.session.query(data_stage01_quantification_outliersDeviation_replicates).filter(data_stage01_quantification_outliersDeviation_replicates.analysis_id.like(analysis_id_I)).delete(synchronize_session=False);
-            else:
-                reset = self.session.query(data_stage01_quantification_outliersDeviation_replicates).delete(synchronize_session=False);
-            self.session.commit();
+                self.session.commit();
         except SQLAlchemyError as e:
             print(e);

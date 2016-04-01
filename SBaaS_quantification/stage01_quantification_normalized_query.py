@@ -377,19 +377,25 @@ class stage01_quantification_normalized_query(sbaas_template_query):
             data_stage01_quantification_averages.__table__.create(self.engine,True);
         except SQLAlchemyError as e:
             print(e);
-    def reset_dataStage01_quantification_normalized(self,experiment_id_I=None,sample_names_I=None):
+    def reset_dataStage01_quantification_normalized(self,experiment_id_I=None,sample_names_I=None,component_names_I=None):
         try:
-            if experiment_id_I and sample_names_I:
+            if experiment_id_I and sample_names_I and component_names_I:
+                for sample_name in sample_names_I:
+                    for component_name in component_names_I:
+                        reset = self.session.query(data_stage01_quantification_normalized).filter(
+                            data_stage01_quantification_normalized.experiment_id.like(experiment_id_I),
+                            data_stage01_quantification_normalized.sample_name.like(sample_name),
+                            data_stage01_quantification_normalized.component_name.like(component_name)).delete(synchronize_session=False);
+                self.session.commit();
+            elif experiment_id_I and sample_names_I:
                 for sample_name in sample_names_I:
                     reset = self.session.query(data_stage01_quantification_normalized).filter(
                         data_stage01_quantification_normalized.experiment_id.like(experiment_id_I),
                         data_stage01_quantification_normalized.sample_name.like(sample_name)).delete(synchronize_session=False);
-
+                self.session.commit();
             elif experiment_id_I:
                 reset = self.session.query(data_stage01_quantification_normalized).filter(data_stage01_quantification_normalized.experiment_id.like(experiment_id_I)).delete(synchronize_session=False);
-            else:
-                reset = self.session.query(data_stage01_quantification_normalized).delete(synchronize_session=False);
-            self.session.commit();
+                self.session.commit();
         except SQLAlchemyError as e:
             print(e);
     def update_setUsed2False_experimentIDAndSampleName_dataStage01QuantificationNormalized(self,experiment_id_I=None,sample_names_I=None):

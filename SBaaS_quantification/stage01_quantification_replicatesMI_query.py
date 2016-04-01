@@ -643,20 +643,21 @@ class stage01_quantification_replicatesMI_query(sbaas_template_query):
         if data_I:
             for d in data_I:
                 try:
-                    data_add = data_stage01_quantification_replicatesMI(
-                        d['experiment_id_I'],
-                        d['sample_name_short_I'],
-                        #d['sample_name_abbreviation_I'],
-                        d['time_point_I '],
-                        #d['time_point_units_I'],
-                        d['component_group_name_I'],
-                        d['component_name_I'],
-                        d['imputation_method_I'],
-                        d['imputation_options_I'],
-                        d['calculated_concentration_I'],
-                        d['calculated_concentration_units_I'],
-                        d['used__I'],
-                        d['comment__I']);
+                    data_add = data_stage01_quantification_replicatesMI(d
+                        #d['experiment_id_I'],
+                        #d['sample_name_short_I'],
+                        ##d['sample_name_abbreviation_I'],
+                        #d['time_point_I '],
+                        ##d['time_point_units_I'],
+                        #d['component_group_name_I'],
+                        #d['component_name_I'],
+                        #d['imputation_method_I'],
+                        #d['imputation_options_I'],
+                        #d['calculated_concentration_I'],
+                        #d['calculated_concentration_units_I'],
+                        #d['used__I'],
+                        #d['comment__I']
+                        );
                     self.session.add(data_add);
                 except SQLAlchemyError as e:
                     print(e);

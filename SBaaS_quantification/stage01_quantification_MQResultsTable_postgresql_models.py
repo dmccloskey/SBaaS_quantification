@@ -18,7 +18,7 @@ class data_stage01_quantification_MQResultsTable(Base):
     injection_volume=Column(Float);
     operator_name=Column(String(100));
     acq_method_name=Column(String(100));
-    is_=Column(Boolean);
+    is_= Column(Boolean);
     component_name=Column(String(500),nullable=False, primary_key=True);
     component_index=Column(Integer);
     component_comment=Column(Text);

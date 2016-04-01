@@ -21,21 +21,64 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         tables_supported = {'data_stage01_quantification_mqresultstable':data_stage01_quantification_MQResultsTable,
                         };
         self.set_supportedTables(tables_supported);
-    def drop_dataStage01_quantification_MQResultsTable(self):
+
+    def initialize_dataStage01_quantification_MQResultsTable(self,
+            tables_I = [],):
         try:
-            data_stage01_quantification_MQResultsTable.__table__.drop(self.engine,True);
-        except SQLAlchemyError as e:
+            if not tables_I:
+                tables_I = list(self.get_supportedTables().keys());
+            queryinitialize = sbaas_base_query_initialize(session_I=self.session,engine_I=self.engine,settings_I=self.settings,data_I=self.data);
+            for table in tables_I:
+                model_I = self.convert_tableString2SqlalchemyModel(table);
+                queryinitialize.initialize_table_sqlalchemyModel(model_I);
+        except Exception as e:
             print(e);
-    def initialize_dataStage01_quantification_MQResultsTable(self):
+    def drop_dataStage01_quantification_MQResultsTable(self,
+            tables_I = [],):
         try:
-            data_stage01_quantification_MQResultsTable.__table__.create(self.engine,True);
-        except SQLAlchemyError as e:
+            if not tables_I:
+                tables_I = list(self.get_supportedTables().keys());
+            querydrop = sbaas_base_query_drop(session_I=self.session,engine_I=self.engine,settings_I=self.settings,data_I=self.data);
+            for table in tables_I:
+                model_I = self.convert_tableString2SqlalchemyModel(table);
+                querydrop.drop_table_sqlalchemyModel(model_I);
+        except Exception as e:
             print(e);
-    def reset_dataStage01_quantification_MQResultsTable(self,experiment_id_I = None):
+    def reset_dataStage01_quantification_MQResultsTable(self,
+            component_name,sample_name,acquisition_date_and_time,
+            tables_I = [],
+            warn_I=True):
         try:
-            reset = self.session.query(data_stage01_quantification_MQResultsTable).delete(synchronize_session=False);
-            self.session.commit();
-        except SQLAlchemyError as e:
+            if not tables_I:
+                tables_I = list(self.get_supportedTables().keys());
+            querydelete = sbaas_base_query_delete(session_I=self.session,engine_I=self.engine,settings_I=self.settings,data_I=self.data);
+            for table in tables_I:
+                query = {};
+                query['delete_from'] = [{'table_name':table}];
+                query['where'] = [{
+                        'table_name':table,
+                        'column_name':'component_name',
+                        'value':analysis_id_I,
+		                'operator':'LIKE',
+                        'connector':'AND'
+                        },{
+                        'table_name':table,
+                        'column_name':'sample_name',
+                        'value':analysis_id_I,
+		                'operator':'LIKE',
+                        'connector':'AND'
+                        },{
+                        'table_name':table,
+                        'column_name':'acquisition_date_and_time',
+                        'value':analysis_id_I,
+		                'operator':'LIKE',
+                        'connector':'AND'
+                        },
+	                ];
+                table_model = self.convert_tableStringList2SqlalchemyModelDict([table]);
+                query = querydelete.make_queryFromString(table_model,query);
+                querydelete.reset_table_sqlalchemyModel(query_I=query,warn_I=warn_I);
+        except Exception as e:
             print(e);
 
     def add_dataStage01MQResultsTable(self,data_I):
@@ -45,157 +88,235 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             for d in data_I:
                 try:
                     if 'Index' in d:
-                        data_add = data_stage01_quantification_MQResultsTable(d['Index'],
-                            d['Sample Index'],
-                            d['Original Filename'],
-                            d['Sample Name'],
-                            d['Sample ID'],
-                            d['Sample Comment'],
-                            d['Sample Type'],
-                            d['Acquisition Date & Time'],
-                            d['Rack Number'],
-                            d['Plate Number'],
-                            d['Vial Number'],
-                            d['Dilution Factor'],
-                            d['Injection Volume'],
-                            d['Operator Name'],
-                            d['Acq. Method Name'],
-                            d['IS'],
-                            d['Component Name'],
-                            d['Component Index'],
-                            d['Component Comment'],
-                            d['IS Comment'],
-                            d['Mass Info'],
-                            d['IS Mass Info'],
-                            d['IS Name'],
-                            d['Component Group Name'],
-                            d['Conc. Units'],
-                            d['Failed Query'],
-                            d['IS Failed Query'],
-                            d['Peak Comment'],
-                            d['IS Peak Comment'],
-                            d['Actual Concentration'],
-                            d['IS Actual Concentration'],
-                            d['Concentration Ratio'],
-                            d['Expected RT'],
-                            d['IS Expected RT'],
-                            d['Integration Type'],
-                            d['IS Integration Type'],
-                            d['Area'],
-                            d['IS Area'],
-                            d['Corrected Area'],
-                            d['IS Corrected Area'],
-                            d['Area Ratio'],
-                            d['Height'],
-                            d['IS Height'],
-                            d['Corrected Height'],
-                            d['IS Corrected Height'],
-                            d['Height Ratio'],
-                            d['Area / Height'],
-                            d['IS Area / Height'],
-                            d['Corrected Area/Height'],
-                            d['IS Corrected Area/Height'],
-                            d['Region Height'],
-                            d['IS Region Height'],
-                            d['Quality'],
-                            d['IS Quality'],
-                            d['Retention Time'],
-                            d['IS Retention Time'],
-                            d['Start Time'],
-                            d['IS Start Time'],
-                            d['End Time'],
-                            d['IS End Time'],
-                            d['Total Width'],
-                            d['IS Total Width'],
-                            d['Width at 50%'],
-                            d['IS Width at 50%'],
-                            d['Signal / Noise'],
-                            d['IS Signal / Noise'],
-                            d['Baseline Delta / Height'],
-                            d['IS Baseline Delta / Height'],
-                            d['Modified'],
-                            d['Relative RT'],
-                            d['Used'],
-                            d['Calculated Concentration'],
-                            d['Accuracy'],
-                            d['Comment'],
-                            d['Use_Calculated_Concentration']);
+                        d['index_']=d['Index'];
+                        d['sample_index']=d['Sample Index'];
+                        d['original_filename']=d['Original Filename'];
+                        d['sample_name']=d['Sample Name'];
+                        d['sample_id']=d['Sample ID'];
+                        d['sample_comment']=d['Sample Comment'];
+                        d['sample_type']=d['Sample Type'];
+                        d['acquisition_date_and_time']=d['Acquisition Date & Time'];
+                        d['rack_number']=d['Rack Number'];
+                        d['plate_number']=d['Plate Number'];
+                        d['vial_number']=d['Vial Number'];
+                        d['dilution_factor']=d['Dilution Factor'];
+                        d['injection_volume']=d['Injection Volume'];
+                        d['operator_name']=d['Operator Name'];
+                        d['acq_method_name']=d['Acq. Method Name'];
+                        d['is_']=d['IS'];
+                        d['component_name']=d['Component Name'];
+                        d['component_index']=d['Component Index'];
+                        d['component_comment']=d['Component Comment'];
+                        d['is_comment']=d['IS Comment'];
+                        d['mass_info']=d['Mass Info'];
+                        d['is_mass']=d['IS Mass Info'];
+                        d['is_name']=d['IS Name'];
+                        d['component_group_name']=d['Component Group Name'];
+                        d['conc_units']=d['Conc. Units'];
+                        d['failed_query']=d['Failed Query'];
+                        d['is_failed_query']=d['IS Failed Query'];
+                        d['peak_comment']=d['Peak Comment'];
+                        d['is_peak_comment']=d['IS Peak Comment'];
+                        d['actual_concentration']=d['Actual Concentration'];
+                        d['is_actual_concentration']=d['IS Actual Concentration'];
+                        d['concentration_ratio']=d['Concentration Ratio'];
+                        d['expected_rt']=d['Expected RT'];
+                        d['is_expected_rt']=d['IS Expected RT'];
+                        d['integration_type']=d['Integration Type'];
+                        d['is_integration_type']=d['IS Integration Type'];
+                        d['area']=d['Area'];
+                        d['is_area']=d['IS Area'];
+                        d['corrected_area']=d['Corrected Area'];
+                        d['is_corrected_area']=d['IS Corrected Area'];
+                        d['area_ratio']=d['Area Ratio'];
+                        d['height']=d['Height'];
+                        d['is_height']=d['IS Height'];
+                        d['corrected_height']=d['Corrected Height'];
+                        d['is_corrected_height']=d['IS Corrected Height'];
+                        d['height_ratio']=d['Height Ratio'];
+                        d['area_2_height']=d['Area / Height'];
+                        d['is_area_2_height']=d['IS Area / Height'];
+                        d['corrected_area2height']=d['Corrected Area/Height'];
+                        d['is_corrected_area2height']=d['IS Corrected Area/Height'];
+                        d['region_height']=d['Region Height'];
+                        d['is_region_height']=d['IS Region Height'];
+                        d['quality']=d['Quality'];
+                        d['is_quality']=d['IS Quality'];
+                        d['retention_time']=d['Retention Time'];
+                        d['is_retention_time']=d['IS Retention Time'];
+                        d['start_time']=d['Start Time'];
+                        d['is_start_time']=d['IS Start Time'];
+                        d['end_time']=d['End Time'];
+                        d['is_end_time']=d['IS End Time'];
+                        d['total_width']=d['Total Width'];
+                        d['is_total_width']=d['IS Total Width'];
+                        d['width_at_50']=d['Width at 50%'];
+                        d['is_width_at_50']=d['IS Width at 50%'];
+                        d['signal_2_noise']=d['Signal / Noise'];
+                        d['is_signal_2_noise']=d['IS Signal / Noise'];
+                        d['baseline_delta_2_height']=d['Baseline Delta / Height'];
+                        d['is_baseline_delta_2_height']=d['IS Baseline Delta / Height'];
+                        d['modified_']=d['Modified'];
+                        d['relative_rt']=d['Relative RT'];
+                        d['used_']=d['Used'];
+                        d['calculated_concentration']=d['Calculated Concentration'];
+                        d['accuracy_']=d['Accuracy'];
+                        d['comment_']=d['Comment'];
+                        d['use_calculated_concentration']=d['Use_Calculated_Concentration'];
+                        data_add = data_stage01_quantification_MQResultsTable(d
+                            #d['Index'],
+                            #d['Sample Index'],
+                            #d['Original Filename'],
+                            #d['Sample Name'],
+                            #d['Sample ID'],
+                            #d['Sample Comment'],
+                            #d['Sample Type'],
+                            #d['Acquisition Date & Time'],
+                            #d['Rack Number'],
+                            #d['Plate Number'],
+                            #d['Vial Number'],
+                            #d['Dilution Factor'],
+                            #d['Injection Volume'],
+                            #d['Operator Name'],
+                            #d['Acq. Method Name'],
+                            #d['IS'],
+                            #d['Component Name'],
+                            #d['Component Index'],
+                            #d['Component Comment'],
+                            #d['IS Comment'],
+                            #d['Mass Info'],
+                            #d['IS Mass Info'],
+                            #d['IS Name'],
+                            #d['Component Group Name'],
+                            #d['Conc. Units'],
+                            #d['Failed Query'],
+                            #d['IS Failed Query'],
+                            #d['Peak Comment'],
+                            #d['IS Peak Comment'],
+                            #d['Actual Concentration'],
+                            #d['IS Actual Concentration'],
+                            #d['Concentration Ratio'],
+                            #d['Expected RT'],
+                            #d['IS Expected RT'],
+                            #d['Integration Type'],
+                            #d['IS Integration Type'],
+                            #d['Area'],
+                            #d['IS Area'],
+                            #d['Corrected Area'],
+                            #d['IS Corrected Area'],
+                            #d['Area Ratio'],
+                            #d['Height'],
+                            #d['IS Height'],
+                            #d['Corrected Height'],
+                            #d['IS Corrected Height'],
+                            #d['Height Ratio'],
+                            #d['Area / Height'],
+                            #d['IS Area / Height'],
+                            #d['Corrected Area/Height'],
+                            #d['IS Corrected Area/Height'],
+                            #d['Region Height'],
+                            #d['IS Region Height'],
+                            #d['Quality'],
+                            #d['IS Quality'],
+                            #d['Retention Time'],
+                            #d['IS Retention Time'],
+                            #d['Start Time'],
+                            #d['IS Start Time'],
+                            #d['End Time'],
+                            #d['IS End Time'],
+                            #d['Total Width'],
+                            #d['IS Total Width'],
+                            #d['Width at 50%'],
+                            #d['IS Width at 50%'],
+                            #d['Signal / Noise'],
+                            #d['IS Signal / Noise'],
+                            #d['Baseline Delta / Height'],
+                            #d['IS Baseline Delta / Height'],
+                            #d['Modified'],
+                            #d['Relative RT'],
+                            #d['Used'],
+                            #d['Calculated Concentration'],
+                            #d['Accuracy'],
+                            #d['Comment'],
+                            #d['Use_Calculated_Concentration']
+                            );
                     elif 'index_' in d:
-                        data_add = data_stage01_quantification_MQResultsTable(d['index_'],
-                            d['sample_index'],
-                            d['original_filename'],
-                            d['sample_name'],
-                            d['sample_id'],
-                            d['sample_comment'],
-                            d['sample_type'],
-                            d['acquisition_date_and_time'],
-                            d['rack_number'],
-                            d['plate_number'],
-                            d['vial_number'],
-                            d['dilution_factor'],
-                            d['injection_volume'],
-                            d['operator_name'],
-                            d['acq_method_name'],
-                            d['is_'],
-                            d['component_name'],
-                            d['component_index'],
-                            d['component_comment'],
-                            d['is_comment'],
-                            d['mass_info'],
-                            d['is_mass'],
-                            d['is_name'],
-                            d['component_group_name'],
-                            d['conc_units'],
-                            d['failed_query'],
-                            d['is_failed_query'],
-                            d['peak_comment'],
-                            d['is_peak_comment'],
-                            d['actual_concentration'],
-                            d['is_actual_concentration'],
-                            d['concentration_ratio'],
-                            d['expected_rt'],
-                            d['is_expected_rt'],
-                            d['integration_type'],
-                            d['is_integration_type'],
-                            d['area'],
-                            d['is_area'],
-                            d['corrected_area'],
-                            d['is_corrected_area'],
-                            d['area_ratio'],
-                            d['height'],
-                            d['is_height'],
-                            d['corrected_height'],
-                            d['is_corrected_height'],
-                            d['height_ratio'],
-                            d['area_2_height'],
-                            d['is_area_2_height'],
-                            d['corrected_area2height'],
-                            d['is_corrected_area2height'],
-                            d['region_height'],
-                            d['is_region_height'],
-                            d['quality'],
-                            d['is_quality'],
-                            d['retention_time'],
-                            d['is_retention_time'],
-                            d['start_time'],
-                            d['is_start_time'],
-                            d['end_time'],
-                            d['is_end_time'],
-                            d['total_width'],
-                            d['is_total_width'],
-                            d['width_at_50'],
-                            d['is_width_at_50'],
-                            d['signal_2_noise'],
-                            d['is_signal_2_noise'],
-                            d['baseline_delta_2_height'],
-                            d['is_baseline_delta_2_height'],
-                            d['modified_'],
-                            d['relative_rt'],
-                            d['used_'],
-                            d['calculated_concentration'],
-                            d['accuracy_'],
-                            d['comment_'],
-                            d['use_calculated_concentration'],
+                        data_add = data_stage01_quantification_MQResultsTable(d
+                            #d['index_'],
+                            #d['sample_index'],
+                            #d['original_filename'],
+                            #d['sample_name'],
+                            #d['sample_id'],
+                            #d['sample_comment'],
+                            #d['sample_type'],
+                            #d['acquisition_date_and_time'],
+                            #d['rack_number'],
+                            #d['plate_number'],
+                            #d['vial_number'],
+                            #d['dilution_factor'],
+                            #d['injection_volume'],
+                            #d['operator_name'],
+                            #d['acq_method_name'],
+                            #d['is_'],
+                            #d['component_name'],
+                            #d['component_index'],
+                            #d['component_comment'],
+                            #d['is_comment'],
+                            #d['mass_info'],
+                            #d['is_mass'],
+                            #d['is_name'],
+                            #d['component_group_name'],
+                            #d['conc_units'],
+                            #d['failed_query'],
+                            #d['is_failed_query'],
+                            #d['peak_comment'],
+                            #d['is_peak_comment'],
+                            #d['actual_concentration'],
+                            #d['is_actual_concentration'],
+                            #d['concentration_ratio'],
+                            #d['expected_rt'],
+                            #d['is_expected_rt'],
+                            #d['integration_type'],
+                            #d['is_integration_type'],
+                            #d['area'],
+                            #d['is_area'],
+                            #d['corrected_area'],
+                            #d['is_corrected_area'],
+                            #d['area_ratio'],
+                            #d['height'],
+                            #d['is_height'],
+                            #d['corrected_height'],
+                            #d['is_corrected_height'],
+                            #d['height_ratio'],
+                            #d['area_2_height'],
+                            #d['is_area_2_height'],
+                            #d['corrected_area2height'],
+                            #d['is_corrected_area2height'],
+                            #d['region_height'],
+                            #d['is_region_height'],
+                            #d['quality'],
+                            #d['is_quality'],
+                            #d['retention_time'],
+                            #d['is_retention_time'],
+                            #d['start_time'],
+                            #d['is_start_time'],
+                            #d['end_time'],
+                            #d['is_end_time'],
+                            #d['total_width'],
+                            #d['is_total_width'],
+                            #d['width_at_50'],
+                            #d['is_width_at_50'],
+                            #d['signal_2_noise'],
+                            #d['is_signal_2_noise'],
+                            #d['baseline_delta_2_height'],
+                            #d['is_baseline_delta_2_height'],
+                            #d['modified_'],
+                            #d['relative_rt'],
+                            #d['used_'],
+                            #d['calculated_concentration'],
+                            #d['accuracy_'],
+                            #d['comment_'],
+                            #d['use_calculated_concentration'],
                             );
                     self.session.add(data_add);
                     cnt = cnt + 1;
