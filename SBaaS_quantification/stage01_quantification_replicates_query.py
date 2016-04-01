@@ -6,6 +6,12 @@ from .stage01_quantification_replicates_postgresql_models import *
 from SBaaS_base.sbaas_base import sbaas_base
 
 class stage01_quantification_replicates_query(sbaas_base):
+    def initialize_supportedTables(self):
+        '''Set the supported tables dict for 
+        '''
+        tables_supported = {'data_stage01_quantification_replicates':data_stage01_quantification_replicates,
+                        };
+        self.set_supportedTables(tables_supported);
         
     # Query samples from data_stage01_quantification_replicates
     def get_sampleNameAbbreviations_experimentID_dataStage01Replicates(self,experiment_id_I,exp_type_I=4):
@@ -159,9 +165,17 @@ class stage01_quantification_replicates_query(sbaas_base):
             return cgn_O, conc_units_O;
         except SQLAlchemyError as e:
             print(e);
-    def reset_dataStage01_quantification_replicates(self,experiment_id_I,sample_name_short_I=[]):
+    def reset_dataStage01_quantification_replicates(self,experiment_id_I,sample_name_short_I=[],component_names_I=[]):
         try:
             if experiment_id_I and sample_name_short_I:
+                for sample_name_short in sample_name_short_I:
+                    for component_name in component_names_I:
+                        reset = self.session.query(data_stage01_quantification_replicates).filter(
+                                     data_stage01_quantification_replicates.experiment_id.like(experiment_id_I),
+                                     data_stage01_quantification_replicates.sample_name_short.like(sample_name_short),
+                                     data_stage01_quantification_replicates.component_name.like(component_name)).delete(synchronize_session=False);
+                self.session.commit();
+            elif experiment_id_I and sample_name_short_I:
                 for sample_name_short in sample_name_short_I:
                     reset = self.session.query(data_stage01_quantification_replicates).filter(
                                      data_stage01_quantification_replicates.experiment_id.like(experiment_id_I),

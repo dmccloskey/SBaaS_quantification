@@ -101,7 +101,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
                     data_stage01_quantification_normalized.sample_name.like(sample.sample_name),
                     data_stage01_quantification_normalized.experiment_id.like(experiment_id_I),
                     data_stage01_quantification_normalized.used_.is_(True)).all();
-            sample_name_O = sample_name[0];
+            sample_name_O = sample_name[0][0];
             return sample_name_O;
         except SQLAlchemyError as e:
             print(e);
@@ -116,7 +116,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
                     data_stage01_quantification_normalized.sample_name.like(sample.sample_name),
                     sample.sample_id.like(sample_description.sample_id)).group_by(
                     sample_description.sample_name_short).all();
-            sample_name_short_O = sample_name_short[0];
+            sample_name_short_O = sample_name_short[0][0];
             return sample_name_short_O;
         except SQLAlchemyError as e:
             print(e);
@@ -135,7 +135,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
             sample_name_short_O = [];
             if sample_name_short:
                 for sns in sample_name_short:
-                    sample_name_short_O.append(sns[0]);
+                    sample_name_short_O.append(sns.sample_name_short);
             return sample_name_short_O;
         except SQLAlchemyError as e:
             print(e);
@@ -150,7 +150,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
             sample_name_short_O = [];
             if sample_name_short:
                 for sns in sample_name_short:
-                    sample_name_short_O.append(sns[0]);
+                    sample_name_short_O.append(sns.sample_name_short);
             return sample_name_short_O;
         except SQLAlchemyError as e:
             print(e);
@@ -246,7 +246,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
                     data_stage01_quantification_normalized.component_group_name).all();
             if len(component_group_name)>1:
                 print('more than 1 component_group_name retrieved per component_name')
-            component_group_name_O = component_group_name[0];
+            component_group_name_O = component_group_name[0][0];
             return component_group_name_O;
         except SQLAlchemyError as e:
             print(e);

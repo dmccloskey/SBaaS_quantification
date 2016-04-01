@@ -113,14 +113,69 @@ sampleName_componentName_listDict = [
     {'sample_names':['140808_11_OxicEvo04tpiAEvo02EPEcoliGlcM9_Broth-6-10.0x'],
      'component_names':['glu-L.glu-L_1.Light']},
     ]
-for row in sampleName_componentName_listDict:
-    exnorm01.reset_dataStage01_quantification_normalized(
-        experiment_id_I='ALEsKOs01',
-        sample_names_I = row['sample_names'],
-        component_names_I = row['component_names'])
-    exnorm01.execute_normalizeSamples2Biomass(
-        'ALEsKOs01',
-        biological_material_I='MG1655',
-        conversion_name_I='gDW2OD_lab',
-        sample_names_I = row['sample_names'],
-        component_names_I = row['component_names'])
+#for row in sampleName_componentName_listDict:
+#    exnorm01.reset_dataStage01_quantification_normalized(
+#        experiment_id_I='ALEsKOs01',
+#        sample_names_I = row['sample_names'],
+#        component_names_I = row['component_names'])
+#    exnorm01.execute_normalizeSamples2Biomass(
+#        'ALEsKOs01',
+#        biological_material_I='MG1655',
+#        conversion_name_I='gDW2OD_lab',
+#        sample_names_I = row['sample_names'],
+#        component_names_I = row['component_names'])
+
+#make the replicates methods table
+from SBaaS_quantification.stage01_quantification_replicates_execute import stage01_quantification_replicates_execute
+exreps01 = stage01_quantification_replicates_execute(session,engine,pg_settings.datadir_settings);
+exreps01.initialize_supportedTables();
+exreps01.initialize_dataStage01_quantification_replicates();
+
+sampleNameShorts_componentName_listDict = [
+    {'sample_name_shorts':['OxicEvo04pgiEcoliGlc_Broth-6'],
+     'component_names':['glutacon.glutacon_1.Light']},
+    {'sample_name_shorts':['OxicEvo04pgiEvo02J03EcoliGlc_Broth-1',
+                     'OxicEvo04pgiEvo02J03EcoliGlc_Broth-2',
+                     'OxicEvo04pgiEvo02J03EcoliGlc_Broth-3',
+                     'OxicEvo04pgiEvo02J03EcoliGlc_Broth-4',
+                     'OxicEvo04pgiEvo02J03EcoliGlc_Broth-5',
+                     'OxicEvo04pgiEvo02J03EcoliGlc_Broth-6'],
+     'component_names':['orn.orn_1.Light']},
+    {'sample_name_shorts':['OxicEvo04pgiEvo07EPEcoliGlcM9_Broth-5'],
+     'component_names':['dctp.dctp_1.Light']},
+    {'sample_name_shorts':['OxicEvo04tpiAEvo02EPEcoliGlc_Broth-6'],
+     'component_names':['glu-L.glu-L_1.Light']},
+    ]
+sampleNames_sampleNameAbbreviations_componentName_listDict = [
+    {'sample_names':['140716_0_OxicEvo04pgiEcoliGlcM9_Broth-6-10.0x'],
+    'sample_name_abbreviations':['OxicEvo04pgiEcoliGlc'],
+     'component_names':['glutacon.glutacon_1.Light']},
+    {'sample_names':['141022_3_OxicEvo04pgiEvo02J03EcoliGlcM9_Broth-1-10.0x',
+                     '141024_3_OxicEvo04pgiEvo02J03EcoliGlcM9_Broth-2-10.0x',
+                     '141024_3_OxicEvo04pgiEvo02J03EcoliGlcM9_Broth-3-10.0x',
+                     '141022_3_OxicEvo04pgiEvo02J03EcoliGlcM9_Broth-4-10.0x',
+                     '141024_3_OxicEvo04pgiEvo02J03EcoliGlcM9_Broth-5-10.0x',
+                     '141024_3_OxicEvo04pgiEvo02J03EcoliGlcM9_Broth-6-10.0x'],
+    'sample_name_abbreviations':['OxicEvo04pgiEvo02J03EcoliGlc'],
+     'component_names':['orn.orn_1.Light']},
+    {'sample_name_abbreviations':['OxicEvo04pgiEvo07EPEcoliGlc'],
+    'sample_names':['140801_11_OxicEvo04pgiEvo07EPEcoliGlcM9_Broth-5'],
+     'component_names':['dctp.dctp_1.Light']},
+    {'sample_name_abbreviations':['OxicEvo04tpiAEvo02EPEcoliGlc'],
+    'sample_names':['140808_11_OxicEvo04tpiAEvo02EPEcoliGlcM9_Broth-6-10.0x'],
+     'component_names':['glu-L.glu-L_1.Light']},
+    ]
+#for row in sampleNameShorts_componentName_listDict:
+#    #reset previous calculations
+#    exreps01.reset_dataStage01_quantification_replicates('ALEsKOs01',
+#        sample_name_short_I=row['sample_name_shorts'],
+#        component_names_I=row['component_names'],
+#        );
+for row in sampleNames_sampleNameAbbreviations_componentName_listDict:
+    # calculate replicates using the formula broth,i - ave(filtrate) for specific samples
+    exreps01.execute_analyzeReplicates(
+    'ALEsKOs01',
+    sample_name_abbreviations_I=row['sample_name_abbreviations'],
+    component_names_I=row['component_names'],
+    sample_names_I=row['sample_names'],
+    );

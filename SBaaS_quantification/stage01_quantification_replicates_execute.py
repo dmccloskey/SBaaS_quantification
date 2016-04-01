@@ -30,6 +30,7 @@ class stage01_quantification_replicates_execute(stage01_quantification_replicate
 
         '''
         print('execute_analyzeReplicates...')
+        data_O = [];
         # get sample_name_abbreviations
         if sample_name_abbreviations_I:
             sample_name_abbreviations = sample_name_abbreviations_I
