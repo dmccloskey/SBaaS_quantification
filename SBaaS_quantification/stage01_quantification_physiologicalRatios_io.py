@@ -5,6 +5,7 @@ from .stage01_quantification_physiologicalRatios_query import stage01_quantifica
 from io_utilities.base_importData import base_importData
 from io_utilities.base_exportData import base_exportData
 from matplotlib_utilities.matplot import matplot
+from ddt_python.ddt_container import ddt_container
 from SBaaS_base.sbaas_template_io import sbaas_template_io
 
 class stage01_quantification_physiologicalRatios_io(stage01_quantification_physiologicalRatios_query,sbaas_template_io):
@@ -98,7 +99,21 @@ class stage01_quantification_physiologicalRatios_io(stage01_quantification_physi
 
     def export_dataStage01QuantificationPhysiologicalRatios_js(self,experiment_id_I,sample_name_abbreviations_I=[],ratio_ids_I=[],
                                                                data_dir_I = 'tmp'):
-        '''Export the data from data_stage01_phyisiogicalRatios for visualization with DDT'''
+        '''Export the data from data_stage01_phyisiogicalRatios for visualization with DDT
+        NOTES:
+        Broken...
+        Update to use box and whiskers with points for individual replicates
+        Update to use ddt_python interface
+
+        INPUT:
+        experiment_id_I
+        sample_name_abbreviations_I
+        ratio_ids_I
+        data_dir_I
+
+        OUTPUT:
+
+        '''
         print('Generating scatterLinePlot for physiologicalRatios')
         data_replicates = [];
         data_averages = [];
@@ -183,8 +198,6 @@ class stage01_quantification_physiologicalRatios_io(stage01_quantification_physi
                         'ydata':'physiologicalratio_value',
                         #'ydatalb':'physiologicalratio_value_lb',
                         #'ydataub':'physiologicalratio_value_ub',
-                        #'ydatamin':None,
-                        #'ydatamax':None,
                         #'ydataiq1':None,
                         #'ydataiq3':None,
                         #'ydatamedian':None,
@@ -200,7 +213,7 @@ class stage01_quantification_physiologicalRatios_io(stage01_quantification_physi
                     ];
         data2_nestkeys = ['physiologicalratio_id'];
         data2_keymap = {'xdata':'physiologicalratio_id',
-                        'ydata':'physiologicalratio_value_ave',
+                        'ydatamean':'physiologicalratio_value_ave',
                         'ydatalb':'physiologicalratio_value_lb',
                         'ydataub':'physiologicalratio_value_ub',
                         #'ydatamin':None,
@@ -293,27 +306,21 @@ class stage01_quantification_physiologicalRatios_io(stage01_quantification_physi
         tile2datamap_O = {"filtermenu1":[0],"filtermenu2":[1],
                           "tile1":[0],"tile2":[1],"tile3":[2,2],
                           "tile7":[0],"tile8":[1]};
-        filtermenuobject_O = [{"filtermenuid":"filtermenu1","filtermenuhtmlid":"filtermenuform1",
+        filtermenuobject_O = [
+            {"filtermenuid":"filtermenu1","filtermenuhtmlid":"filtermenuform1",
                 "filtermenusubmitbuttonid":"submit1","filtermenuresetbuttonid":"reset1",
-                "filtermenuupdatebuttonid":"update1"},{"filtermenuid":"filtermenu2","filtermenuhtmlid":"filtermenuform2",
+                "filtermenuupdatebuttonid":"update1"},
+                {"filtermenuid":"filtermenu2","filtermenuhtmlid":"filtermenuform2",
                 "filtermenusubmitbuttonid":"submit2","filtermenuresetbuttonid":"reset2",
                 "filtermenuupdatebuttonid":"update2"}
                               ];
         # dump the data to a json file
-        data_str = 'var ' + 'data' + ' = ' + json.dumps(dataobject_O) + ';';
-        parameters_str = 'var ' + 'parameters' + ' = ' + json.dumps(parametersobject_O) + ';';
-        tile2datamap_str = 'var ' + 'tile2datamap' + ' = ' + json.dumps(tile2datamap_O) + ';';
-        filtermenu_str = 'var ' + 'filtermenu' + ' = ' + json.dumps(filtermenuobject_O) + ';';
+        ddtutilities = ddt_container(parameters_I = parametersobject_O,data_I = dataobject_O,tile2datamap_I = tile2datamap_O,filtermenu_I = filtermenuobject_O);
         if data_dir_I=='tmp':
             filename_str = self.settings['visualization_data'] + '/tmp/ddt_data.js'
-        elif data_dir_I=='project':
-            filename_str = self.settings['visualization_data'] + '/project/' + analysis_id_I + '_data_stage01_quantification_physiologicalRatios' + '.js'
         elif data_dir_I=='data_json':
-            data_json_O = data_str + '\n' + parameters_str + '\n' + tile2datamap_str;
+            data_json_O = ddtutilities.get_allObjects_js();
             return data_json_O;
         with open(filename_str,'w') as file:
-            file.write(data_str);
-            file.write(parameters_str);
-            file.write(tile2datamap_str);
-            file.write(filtermenu_str);
+            file.write(ddtutilities.get_allObjects());
    

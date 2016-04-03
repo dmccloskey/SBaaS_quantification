@@ -171,11 +171,23 @@ sampleNames_sampleNameAbbreviations_componentName_listDict = [
 #        sample_name_short_I=row['sample_name_shorts'],
 #        component_names_I=row['component_names'],
 #        );
-for row in sampleNames_sampleNameAbbreviations_componentName_listDict:
-    # calculate replicates using the formula broth,i - ave(filtrate) for specific samples
-    exreps01.execute_analyzeReplicates(
-    'ALEsKOs01',
-    sample_name_abbreviations_I=row['sample_name_abbreviations'],
-    component_names_I=row['component_names'],
-    sample_names_I=row['sample_names'],
-    );
+#for row in sampleNames_sampleNameAbbreviations_componentName_listDict:
+#    # calculate replicates using the formula broth,i - ave(filtrate) for specific samples
+#    exreps01.execute_analyzeReplicates(
+#    'ALEsKOs01',
+#    sample_name_abbreviations_I=row['sample_name_abbreviations'],
+#    component_names_I=row['component_names'],
+#    sample_names_I=row['sample_names'],
+#    );
+
+from SBaaS_quantification.stage01_quantification_physiologicalRatios_execute import stage01_quantification_physiologicalRatios_execute
+exphysratio01 = stage01_quantification_physiologicalRatios_execute(session,engine,pg_settings.datadir_settings);
+exphysratio01.initialize_supportedTables();
+exphysratio01.initialize_dataStage01_quantification_physiologicalRatios();
+
+#calculate the physiological ratios for replicates and averages
+#exphysratio01.execute_physiologicalRatios_replicates('ALEsKOs01');
+exphysratio01.export_dataStage01QuantificationPhysiologicalRatios_js('ALEsKOs01',
+                sample_name_abbreviations_I=['OxicEvo04pgiEvo02J03EcoliGlc'],
+                ratio_ids_I=[],
+                data_dir_I = 'tmp');

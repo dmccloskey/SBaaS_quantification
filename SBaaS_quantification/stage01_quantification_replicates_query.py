@@ -56,6 +56,21 @@ class stage01_quantification_replicates_query(sbaas_base):
             return sample_names_O;
         except SQLAlchemyError as e:
             print(e);
+    def get_SampleNameShort_experimentID_dataStage01Replicates(self,experiment_id_I):
+        '''Querry sample names short that are used from the experiment and sample name abbreviation and time point'''
+        try:
+            sample_names = self.session.query(data_stage01_quantification_replicates.sample_name_short).filter(
+                    experiment.id.like(experiment_id_I),
+                    data_stage01_quantification_replicates.experiment_id.like(experiment_id_I),
+                    data_stage01_quantification_replicates.used_.is_(True),
+                    ).group_by(
+                    data_stage01_quantification_replicates.sample_name_short).order_by(
+                    data_stage01_quantification_replicates.sample_name_short.asc()).all();
+            sample_names_O = [];
+            for sn in sample_names: sample_names_O.append(sn.sample_name_short);
+            return sample_names_O;
+        except SQLAlchemyError as e:
+            print(e);
     # query time points
     def get_timePoint_experimentIDAndSampleNameAbbreviation_dataStage01Replicates(self,experiment_id_I,sample_name_abbreviation_I,exp_type_I=4):
         '''Querry time points that are used from the experiment and sample name abbreviation'''
@@ -71,6 +86,20 @@ class stage01_quantification_replicates_query(sbaas_base):
                     data_stage01_quantification_replicates.sample_name_short.like(sample_description.sample_name_short)).group_by(
                     sample_description.time_point).order_by(
                     sample_description.time_point.asc()).all();
+            time_points_O = [];
+            for tp in time_points: time_points_O.append(tp.time_point);
+            return time_points_O;
+        except SQLAlchemyError as e:
+            print(e);
+    def get_timePoint_experimentIDAndSampleNameShort_dataStage01Replicates(self,experiment_id_I,sample_name_short_I):
+        '''Querry time points that are used from the experiment and sample name abbreviation'''
+        try:
+            time_points = self.session.query(data_stage01_quantification_replicates.time_point).filter(
+                    data_stage01_quantification_replicates.sample_name_short.like(sample_name_short_I),
+                    data_stage01_quantification_replicates.experiment_id.like(experiment_id_I),
+                    data_stage01_quantification_replicates.used_.is_(True),).group_by(
+                    data_stage01_quantification_replicates.time_point).order_by(
+                    data_stage01_quantification_replicates.time_point.asc()).all();
             time_points_O = [];
             for tp in time_points: time_points_O.append(tp.time_point);
             return time_points_O;
@@ -163,6 +192,27 @@ class stage01_quantification_replicates_query(sbaas_base):
                 conc_O = None;
                 conc_units_O = None;
             return cgn_O, conc_units_O;
+        except SQLAlchemyError as e:
+            print(e);
+    def get_concAndConcUnits_experimentIDAndSampleNameShortAndTimePointAndComponentGroupName_dataStage01Replicates(self, experiment_id_I, sample_name_short_I, time_point_I, component_group_name_I):
+        """Query calculated concentrations"""
+        try:
+            data = self.session.query(data_stage01_quantification_replicates.calculated_concentration,
+                    data_stage01_quantification_replicates.calculated_concentration_units).filter(
+                    data_stage01_quantification_replicates.experiment_id.like(experiment_id_I),
+                    data_stage01_quantification_replicates.sample_name_short.like(sample_name_short_I),
+                    data_stage01_quantification_replicates.time_point.like(time_point_I),
+                    data_stage01_quantification_replicates.component_group_name.like(component_group_name_I),
+                    data_stage01_quantification_replicates.used_.is_(True)).all();
+            if len(data)>1:
+                print('more than 1 calculated_concentration retrieved per component_name')
+            if data:
+                conc_O = data[0][0];
+                conc_units_O = data[0][1];
+            else: 
+                conc_O = None;
+                conc_units_O = None;
+            return conc_O, conc_units_O;
         except SQLAlchemyError as e:
             print(e);
     def reset_dataStage01_quantification_replicates(self,experiment_id_I,sample_name_short_I=[],component_names_I=[]):

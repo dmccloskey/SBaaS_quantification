@@ -24,7 +24,7 @@ class stage01_quantification_physiologicalRatios_execute(stage01_quantification_
         # get sample names short
         sample_names_short = [];
         sample_names_short = stage01quantificationreplicatesquery.get_SampleNameShort_experimentID_dataStage01Replicates(experiment_id_I);
-        ratios_calc_O = [];
+        data_O = [];
         for sns in sample_names_short:
             print('calculating physiologicalRatios from replicates for sample_names_short ' + sns);
             # get time points
@@ -87,6 +87,7 @@ class stage01_quantification_physiologicalRatios_execute(stage01_quantification_
         calc = calculate_interface();
         
         print('calculate_physiologicalRatios_averages...')
+        data_O = [];
         # get sample_name_abbreviations
         sample_name_abbreviations = [];
         sample_name_abbreviations = self.get_sampleNameAbbreviations_experimentID_dataStage01PhysiologicalRatiosReplicates(experiment_id_I);
@@ -129,20 +130,22 @@ class stage01_quantification_physiologicalRatios_execute(stage01_quantification_
                         if (ratio_average <= 0): ratio_cv = 0;
                         else: ratio_cv = sqrt(ratio_var)/ratio_average*100; 
                     # add data to the session
-                    row = data_stage01_quantification_physiologicalRatios_averages(experiment_id_I, 
-                                                                               sna,
-                                                                               tp,
-                                                                               k,
-                                                                               v['name'],
-                                                                               ratio_average,
-                                                                               ratio_cv,
-                                                                               ratio_lb,
-                                                                               ratio_ub,
-                                                                               v['description'],
-                                                                               True,
-                                                                               None);   
-                    self.session.add(row);
-        self.session.commit(); 
+                    row = {
+                        "experiment_id":experiment_id_I, 
+                        "sample_name_abbreviation":sna,
+                        "time_point":tp,
+                        "physiologicalratio_id":k,
+                        "physiologicalratio_name":v['name'],
+                        "physiologicalratio_value_ave":ratio_average,
+                        "physiologicalratio_value_cv":ratio_cv,
+                        "physiologicalratio_value_lb":ratio_lb,
+                        "physiologicalratio_value_ub":ratio_ub,
+                        "physiologicalratio_description":v['description'],
+                        "used_":True,
+                        "comment_":None
+                        };   
+                    data_O.append(row);                        
+        self.add_rows_table('data_stage01_quantification_physiologicalRatios_averages',data_O);
     def execute_physiologicalRatios_replicatesMI(self,experiment_id_I):
         '''Calculate physiologicalRatios from replicates MI'''
         calc = calculate_interface();
