@@ -75,7 +75,6 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
                     data_O.append(tmp);
         #TODO:
         # 1. make a calculation method
-        # 2. make a table add method
         # calculate statistics for specific parameters
         data_add = [];
         component_names_unique = list(set(component_names_all));
@@ -184,7 +183,6 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
                                    'acquisition_date_and_time':cpd1['acquisition_date_and_time']});
         #TODO:
         # 1. make a calculation method
-        # 2. make a table add method
         # calculate statistics for specific parameters
         data_add = [];
         calc = calculate_interface();

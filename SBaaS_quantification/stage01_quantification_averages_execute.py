@@ -17,6 +17,7 @@ class stage01_quantification_averages_execute(stage01_quantification_averages_io
         '''Calculate the averages from replicates MI'''
         
         print('execute_calculateAverages_replicates...')
+        data_O = [];
         # get sample_name_abbreviations
         if sample_name_abbreviations_I:
             sample_name_abbreviations = sample_name_abbreviations_I;
@@ -64,16 +65,27 @@ class stage01_quantification_averages_execute(stage01_quantification_averages_io
                         else: conc_cv = sqrt(conc_var)/conc_average*100; 
 
                     # add data to the session
-                    row = data_stage01_quantification_averagesMI(experiment_id_I, sna, tp, component_group_name, cn,
-                                                   n_replicates, conc_average, conc_cv, conc_units, True);   
-                    self.session.add(row);
-            self.session.commit(); 
+                    row = {
+                        "experiment_id":experiment_id_I, 
+                        "sample_name_abbreviation":sna, 
+                        "time_point":tp, 
+                        "component_group_name":component_group_name, 
+                        "component_name":cn,
+                        "n_replicates":n_replicates, 
+                        "calculated_concentration_average":conc_average, 
+                        "calculated_concentration_cv":conc_cv, 
+                        "calculated_concentration_units":conc_units, 
+                        "used_":True
+                        };   
+                    data_O.append(row);
+        self.add_rows_table('data_stage01_quantification_averagesMI',data_O)
     def execute_calculateGeoAverages_replicates(self,experiment_id_I,sample_name_abbreviations_I=[]):
         '''Calculate the averages from replicates MI in ln space'''
 
         calc = calculate_interface();
 
         print(' execute_calculateGeoAverages_replicates...')
+        data_O = [];
         # get sample_name_abbreviations
         if sample_name_abbreviations_I:
             sample_name_abbreviations = sample_name_abbreviations_I;
@@ -137,8 +149,19 @@ class stage01_quantification_averages_execute(stage01_quantification_averages_io
                         conc_average, conc_var, conc_lb, conc_ub = calc.calculate_ave_var_geometric(concs);
 
                     # add data to the session
-                    row = data_stage01_quantification_averagesMIgeo(experiment_id_I, sna, tp, component_group_name, cn,
-                                                   n_replicates, conc_average, conc_var, conc_lb, conc_ub, conc_units, True);   
-                    self.session.add(row);
-            self.session.commit(); 
+                    row = {"experiment_id":experiment_id_I, 
+                        "sample_name_abbreviation":sna, 
+                        "time_point":tp, 
+                        "component_group_name":component_group_name, 
+                        "component_name":cn,
+                        "n_replicates":n_replicates, 
+                        "calculated_concentration_average":conc_average, 
+                        "calculated_concentration_var":conc_var, 
+                        "calculated_concentration_lb":conc_lb, 
+                        "calculated_concentration_ub":conc_ub, 
+                        "calculated_concentration_units":conc_units, 
+                        "used_":True
+                        };   
+                    data_O.append(row);
+        self.add_rows_table('data_stage01_quantification_averagesMIgeo',data_O)
     

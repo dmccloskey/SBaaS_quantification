@@ -8,18 +8,23 @@ class stage01_quantification_QCs_execute(stage01_quantification_QCs_io,
                                                     lims_experiment_query):
     def execute_analyzeQCs(self,experiment_id_I,sample_types_I=['QC']):
         '''calculate the average and coefficient of variation for QCs
+
         NOTE: analytical replicates are those samples with the same 
-        sample_id (but different sample_name)'''
-        # Input:
-        #   experiment_id
-        # Output:
-        #   sample_name
-        #   component_group_name
-        #   component_name
-        #   n_replicates
-        #   conc_average
-        #   conc_CV
-        #   conc_units
+        sample_id (but different sample_name)
+        INPUT:
+
+        experiment_id
+        OUTPUT:
+
+        sample_name
+        component_group_name
+        component_name
+        n_replicates
+        conc_average
+        conc_CV
+        conc_units
+
+        '''
         calc = calculate_interface();
         
         print('execute_analyzeQCs...')
@@ -59,9 +64,6 @@ class stage01_quantification_QCs_execute(stage01_quantification_QCs_io,
                     # calculate average and CV of concentrations
                     if (not(concs) or n_replicates<2): continue
                     conc_average, data_var_O, conc_CV, data_lb_O, data_ub_O = calc.calculate_ave_var_cv(concs);
-                    #conc_average, conc_CV = self.calculate.calculate_ave_CV_R(concs);
-                    #conc_average = numpy.mean(numpy.array(concs));
-                    #conc_CV = numpy.std(numpy.array(concs))/conc_average*100;
                     data_O.append({'experiment_id':experiment_id_I,
                         'sample_name_abbreviation':sna,
                         'sample_dilution':sd,
@@ -71,14 +73,7 @@ class stage01_quantification_QCs_execute(stage01_quantification_QCs_io,
                         'calculated_concentration_average':conc_average,
                         'calculated_concentration_CV':conc_CV,
                         'calculated_concentration_units':conc_units});
-                    # add data to the session
-                    #row = data_stage01_quantification_QCs(experiment_id_I,sna,sd,component_group_name,cn,n_replicates,
-                    #                                            conc_average, conc_CV, conc_units);
-                    #self.session.add(row);
-        # add data to the database
-        #self.session.commit();
         self.add_dataStage01_quantification_QCs(data_O);
-        
     def execute_LLOQAndULOQ(self,experiment_id_I):
         '''check the lloq and uloq from the calibrators
         against the calculated concentration
@@ -90,43 +85,26 @@ class stage01_quantification_QCs_execute(stage01_quantification_QCs_io,
         check = self.get_LLOQAndULOQ(experiment_id_I);
         for c in check:
             c['experiment_id'] = experiment_id_I;
-        ## create and populate the view
-        #for n in range(len(check)):
-        #    if check[n]:
-        #        try:
-        #            row = data_stage01_quantification_LLOQAndULOQ(experiment_id_I,
-        #                                                  check[n]['sample_name'],
-        #                                                  check[n]['component_group_name'],
-        #                                                  check[n]['component_name'],
-        #                                                  check[n]['calculated_concentration'],
-        #                                                  check[n]['conc_units'],
-        #                                                  check[n]['correlation'],
-        #                                                  check[n]['lloq'],
-        #                                                  check[n]['uloq'],
-        #                                                  check[n]['points'],
-        #                                                  check[n]['used']);
-        #            self.session.add(row);
-        #            self.session.commit();
-        #        except IntegrityError as e:
-        #            self.session.rollback();
-        #            print(e);
         # add data to the database
         self.add_dataStage01_quantification_LLOQAndULOQ(check);
     def execute_analyzeDilutions(self,experiment_id_I):
         '''calculate the average and coefficient of variation for analytical
         replicates
         NOTE: analytical replicates are those samples with the same 
-        sample_id (but different sample_name)'''
-        # Input:
-        #   experiment_id
-        # Output:
-        #   sample_name
-        #   component_group_name
-        #   component_name
-        #   n_replicates
-        #   conc_average
-        #   conc_CV
-        #   conc_units
+        sample_id (but different sample_name)
+        INPUT:
+        experiment_id
+
+        OUTPUT:
+        sample_name
+        component_group_name
+        component_name
+        n_replicates
+        conc_average
+        conc_CV
+        conc_units
+
+        '''
         
         print('execute_analyzeDilutions...')
         data_O = [];
@@ -175,17 +153,9 @@ class stage01_quantification_QCs_execute(stage01_quantification_QCs_io,
                     'n_replicates':n_replicates,
                     'calculated_concentration_average':conc_average,
                     'calculated_concentration_cv':conc_CV,
-                    'calculated_concentration_units':conc_units})
-                #row = data_stage01_quantification_dilutions(experiment_id_I, si,component_group_name,cn,n_replicates,
-                #                                            conc_average, conc_CV, conc_units);
-                #self.session.add(row);
-        # add data to the database
-        #self.session.commit();
+                    'calculated_concentration_units':conc_units});
         self.add_dataStage01_quantification_dilutions(data_O);
 
     def execute_analyzeBlanks(self,experiment_id_I):
         '''Compare blanks to unknowns to determine compounds with high background intereference'''
         pass;
-
-
-    

@@ -70,6 +70,7 @@ class stage01_quantification_replicatesMI_execute(stage01_quantification_replica
         calc = calculate_interface();
 
         print('execute_calculateMissingComponents_replicates...')
+        data_O=[];
         # get all sample names short
         if sample_names_short_I:
             sample_names_short = sample_names_short_I;
@@ -159,19 +160,4 @@ class stage01_quantification_replicatesMI_execute(stage01_quantification_replica
                         self.session.add(row);
         #self.update_dataStage01ReplicatesMI(dataListUpdated_I);
         self.session.commit();
-
-    def execute_replaceMissingValues_mean_replicates(self,):
-        '''replace missing values with the mean of the data'''
-        pass;
-
-    def execute_replaceMissingValues_median_replicates(self,):
-        '''replace missing values with the median of the data'''
-        pass;
-
-    def execute_replaceMissingValues_min_replicates(self,):
-        '''replace missing values with 1/2*min value'''
-        pass;
-
-    def execute_replaceMissingValues_value_replicates(self,value_I):
-        '''replace missing values with user specified value value'''
-        pass;
+        #self.add_rows_table('data_stage01_quantification_replicatesMI',data_O)

@@ -97,6 +97,14 @@ exnorm01 = stage01_quantification_normalized_execute(session,engine,pg_settings.
 exnorm01.initialize_supportedTables();
 exnorm01.initialize_dataStage01_quantification_normalized();
 
+# export the data to ddt
+exnorm01.export_dataStage01NormalizedAndAverages_js('ALEsKOs01',
+        sample_name_abbreviations_I=['OxicEvo04pgiEcoliGlc'],
+        sample_names_I=[],
+        component_names_I=[],
+        cv_threshold_I=40,extracellular_threshold_I=80,
+        data_dir_I='tmp');
+
 # normalize samples to the measured biomass of the experiment
 sampleName_componentName_listDict = [
     {'sample_names':['140716_0_OxicEvo04pgiEcoliGlcM9_Broth-6-10.0x'],
@@ -187,7 +195,7 @@ exphysratio01.initialize_dataStage01_quantification_physiologicalRatios();
 
 #calculate the physiological ratios for replicates and averages
 #exphysratio01.execute_physiologicalRatios_replicates('ALEsKOs01');
-exphysratio01.export_dataStage01QuantificationPhysiologicalRatios_js('ALEsKOs01',
-                sample_name_abbreviations_I=['OxicEvo04pgiEvo02J03EcoliGlc'],
-                ratio_ids_I=[],
-                data_dir_I = 'tmp');
+#exphysratio01.export_dataStage01QuantificationPhysiologicalRatios_js('ALEsKOs01',
+#                sample_name_abbreviations_I=['OxicEvo04pgiEvo02J03EcoliGlc'],
+#                ratio_ids_I=[],
+#                data_dir_I = 'tmp');

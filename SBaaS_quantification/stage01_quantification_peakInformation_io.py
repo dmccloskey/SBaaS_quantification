@@ -8,6 +8,7 @@ from io_utilities.base_importData import base_importData
 from io_utilities.base_exportData import base_exportData
 from matplotlib_utilities.matplot import matplot
 from SBaaS_base.sbaas_template_io import sbaas_template_io
+from ddt_python.ddt_container import ddt_container
 
 class stage01_quantification_peakInformation_io(stage01_quantification_peakInformation_query,
                                                 stage01_quantification_MQResultsTable_query,
@@ -448,7 +449,7 @@ class stage01_quantification_peakInformation_io(stage01_quantification_peakInfor
                     ];
         data1_nestkeys = ['component_name'];
         data1_keymap = {'xdata':'component_name',
-                        'ydata':'peakInfo_ave',
+                        'ydatamean':'peakInfo_ave',
                         'ydatalb':'peakInfo_lb',
                         'ydataub':'peakInfo_ub',
                         #'ydatamin':None,
@@ -490,20 +491,14 @@ class stage01_quantification_peakInformation_io(stage01_quantification_peakInfor
         parametersobject_O = [formtileparameters_O,svgtileparameters_O,tabletileparameters_O];
         tile2datamap_O = {"filtermenu1":[0],"tile2":[0],"tile3":[0]};
         # dump the data to a json file
-        data_str = 'var ' + 'data' + ' = ' + json.dumps(dataobject_O) + ';';
-        parameters_str = 'var ' + 'parameters' + ' = ' + json.dumps(parametersobject_O) + ';';
-        tile2datamap_str = 'var ' + 'tile2datamap' + ' = ' + json.dumps(tile2datamap_O) + ';';
+        ddtutilities = ddt_container(parameters_I = parametersobject_O,data_I = dataobject_O,tile2datamap_I = tile2datamap_O,filtermenu_I = None);
         if data_dir_I=='tmp':
             filename_str = self.settings['visualization_data'] + '/tmp/ddt_data.js'
-        elif data_dir_I=='project':
-            filename_str = self.settings['visualization_data'] + '/project/' + analysis_id_I + '_data_stage02_isotopomer_fittedNetFluxes' + '.js'
         elif data_dir_I=='data_json':
-            data_json_O = data_str + '\n' + parameters_str + '\n' + tile2datamap_str;
+            data_json_O = ddtutilities.get_allObjects_js();
             return data_json_O;
         with open(filename_str,'w') as file:
-            file.write(data_str);
-            file.write(parameters_str);
-            file.write(tile2datamap_str);
+            file.write(ddtutilities.get_allObjects());
     def export_boxAndWhiskersPlot_peakResolution_js(self,experiment_id_I,
                             component_name_pairs_I=[],
                             peakInfo_parameter_I = ['rt_dif','resolution'],
@@ -552,7 +547,7 @@ class stage01_quantification_peakInformation_io(stage01_quantification_peakInfor
                     ];
         data1_nestkeys = ['component_name_pair'];
         data1_keymap = {'xdata':'component_name_pair',
-                        'ydata':'peakInfo_ave',
+                        'ydatamean':'peakInfo_ave',
                         'ydatalb':'peakInfo_lb',
                         'ydataub':'peakInfo_ub',
                         #'ydatamin':None,
@@ -589,18 +584,12 @@ class stage01_quantification_peakInformation_io(stage01_quantification_peakInfor
         parametersobject_O = [formtileparameters_O,svgtileparameters_O,tabletileparameters_O];
         tile2datamap_O = {"filtermenu1":[0],"tile2":[0],"tile3":[0]};
         # dump the data to a json file
-        data_str = 'var ' + 'data' + ' = ' + json.dumps(dataobject_O) + ';';
-        parameters_str = 'var ' + 'parameters' + ' = ' + json.dumps(parametersobject_O) + ';';
-        tile2datamap_str = 'var ' + 'tile2datamap' + ' = ' + json.dumps(tile2datamap_O) + ';';
+        ddtutilities = ddt_container(parameters_I = parametersobject_O,data_I = dataobject_O,tile2datamap_I = tile2datamap_O,filtermenu_I = None);
         if data_dir_I=='tmp':
             filename_str = self.settings['visualization_data'] + '/tmp/ddt_data.js'
-        elif data_dir_I=='project':
-            filename_str = self.settings['visualization_data'] + '/project/' + analysis_id_I + '_data_stage02_isotopomer_fittedNetFluxes' + '.js'
         elif data_dir_I=='data_json':
-            data_json_O = data_str + '\n' + parameters_str + '\n' + tile2datamap_str;
+            data_json_O = ddtutilities.get_allObjects_js();
             return data_json_O;
         with open(filename_str,'w') as file:
-            file.write(data_str);
-            file.write(parameters_str);
-            file.write(tile2datamap_str);
+            file.write(ddtutilities.get_allObjects());
    
