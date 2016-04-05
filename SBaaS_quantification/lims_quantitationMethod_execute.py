@@ -2,7 +2,9 @@
 from .lims_quantitationMethod_io import lims_quantitationMethod_io
 from .lims_quantitationMethod_dependencies import lims_quantitationMethod_dependencies
 #resources
-from r_statistics.r_interface import robjects,importr
+#TODO:
+from rpy2.robjects.packages import importr
+import rpy2.robjects as robjects
 
 class lims_quantitationMethod_execute(lims_quantitationMethod_io,
                                       lims_quantitationMethod_dependencies

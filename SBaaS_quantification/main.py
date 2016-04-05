@@ -97,13 +97,13 @@ exnorm01 = stage01_quantification_normalized_execute(session,engine,pg_settings.
 exnorm01.initialize_supportedTables();
 exnorm01.initialize_dataStage01_quantification_normalized();
 
-# export the data to ddt
-exnorm01.export_dataStage01NormalizedAndAverages_js('ALEsKOs01',
-        sample_name_abbreviations_I=['OxicEvo04pgiEcoliGlc'],
-        sample_names_I=[],
-        component_names_I=[],
-        cv_threshold_I=40,extracellular_threshold_I=80,
-        data_dir_I='tmp');
+## export the data to ddt
+#exnorm01.export_dataStage01NormalizedAndAverages_js('ALEsKOs01',
+#        sample_name_abbreviations_I=['OxicEvo04pgiEcoliGlc'],
+#        sample_names_I=[],
+#        component_names_I=[],
+#        cv_threshold_I=40,extracellular_threshold_I=80,
+#        data_dir_I='tmp');
 
 # normalize samples to the measured biomass of the experiment
 sampleName_componentName_listDict = [
@@ -199,3 +199,12 @@ exphysratio01.initialize_dataStage01_quantification_physiologicalRatios();
 #                sample_name_abbreviations_I=['OxicEvo04pgiEvo02J03EcoliGlc'],
 #                ratio_ids_I=[],
 #                data_dir_I = 'tmp');
+
+#make the quantitation methods table (move to SBaaS_quantification)
+from SBaaS_quantification.lims_quantitationMethod_execute import lims_quantitationMethod_execute
+exquant01 = lims_quantitationMethod_execute(session,engine,pg_settings.datadir_settings);
+exquant01.initialize_supportedTables();
+exquant01.initialize_lims_quantitationMethod();
+
+#export the method
+exquant01.export_quantitationMethod_js('141220');

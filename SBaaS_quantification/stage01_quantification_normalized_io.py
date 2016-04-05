@@ -516,7 +516,7 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                         #'ydataiq3':None,
                         #'ydatamedian':None,
                         'serieslabel':'sample_name',
-                        'featureslabel':'component_name'};
+                        'featureslabel':'sample_name'};
         data2_keys = ['experiment_id',
                       'sample_name_abbreviation',
                       'time_point',

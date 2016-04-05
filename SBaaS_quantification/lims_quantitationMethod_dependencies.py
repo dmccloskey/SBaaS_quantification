@@ -1,7 +1,8 @@
 #system
 from math import log
 #resources
-from r_statistics.r_interface import robjects,importr
+from rpy2.robjects.packages import importr
+import rpy2.robjects as robjects
 class lims_quantitationMethod_dependencies():
     def _parse_calibrators(self,actual_concentration_I,ratio_I,dilution_factor_I):
         '''make the calibrator structure

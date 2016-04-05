@@ -1,8 +1,6 @@
 import json
 import re
 
-from .lims_quantitationMethod_postgresql_models import *
-#from .lims_msMethod_query import lims_msMethod_query
 from SBaaS_LIMS.lims_calibratorsAndMixes_query import lims_calibratorsAndMixes_query
 from SBaaS_LIMS.lims_sample_query import lims_sample_query
 from .lims_quantitationMethod_query import lims_quantitationMethod_query
@@ -12,6 +10,7 @@ from .stage01_quantification_MQResultsTable_query import stage01_quantification_
 from io_utilities.base_importData import base_importData
 from io_utilities.base_exportData import base_exportData
 from SBaaS_base.sbaas_template_io import sbaas_template_io
+from ddt_python.ddt_container import ddt_container
 
 class lims_quantitationMethod_io(lims_quantitationMethod_query,
                                  stage01_quantification_MQResultsTable_query,
@@ -64,8 +63,7 @@ class lims_quantitationMethod_io(lims_quantitationMethod_query,
                 if row and not row is None and not row['concentration_ratio'] is None:
                     if use_area: row['ratio'] = row['area_ratio'];
                     else: row['ratio'] = row['height_ratio'];
-                    row['acquisition_date_and_time'] = self.convert_datetime2string(row['acquisition_date_and_time'])
-                    row['component_name'] = re.escape(row['component_name']);
+                    row['acquisition_date_and_time'] = None;
                     data_1.append(row);
                     concentrations.append(row['concentration_ratio']);
                     ratios.append(row['ratio']);
@@ -74,7 +72,6 @@ class lims_quantitationMethod_io(lims_quantitationMethod_query,
             row = {};
             row = self.get_row_QMethodIDAndComponentNamequantitationMethod(QMethod_id_I,cn);
             if row:
-                row['component_name'] = re.escape(row['component_name']);
                 data_2.append(row);
                 # generate the line of best fit
                 min_ratio = min(ratios);
@@ -87,11 +84,11 @@ class lims_quantitationMethod_io(lims_quantitationMethod_query,
                 sample_name_max = sample_names[index_max];
                 data_1a.append({'concentration_ratio':row['lloq'],
                         'ratio':min_ratio,
-                        'component_name':re.escape(cn),
+                        'component_name':cn,
                         'sample_name':sample_name_min});
                 data_1a.append({'concentration_ratio':row['uloq'],
                         'ratio':max_ratio,
-                        'component_name':re.escape(cn),
+                        'component_name':cn,
                         'sample_name':sample_name_max});
                 
         # dump chart parameters to a js files
@@ -106,7 +103,7 @@ class lims_quantitationMethod_io(lims_quantitationMethod_query,
                         'ydata':'ratio',
                         'serieslabel':'component_name',
                         'featureslabel':'sample_name'};
-        data2_keys = ['id'
+        data2_keys = ['id',
                     'q1_mass',
                     'q3_mass',
                     'met_id',
@@ -159,17 +156,11 @@ class lims_quantitationMethod_io(lims_quantitationMethod_query,
         parametersobject_O = [formtileparameters_O,svgtileparameters_O,tabletileparameters_O];
         tile2datamap_O = {"filtermenu1":[0],"tile2":[0,1],"tile3":[2]};
         # dump the data to a json file
-        data_str = 'var ' + 'data' + ' = ' + json.dumps(dataobject_O) + ';';
-        parameters_str = 'var ' + 'parameters' + ' = ' + json.dumps(parametersobject_O) + ';';
-        tile2datamap_str = 'var ' + 'tile2datamap' + ' = ' + json.dumps(tile2datamap_O) + ';';
+        ddtutilities = ddt_container(parameters_I = parametersobject_O,data_I = dataobject_O,tile2datamap_I = tile2datamap_O,filtermenu_I = None);
         if data_dir_I=='tmp':
             filename_str = self.settings['visualization_data'] + '/tmp/ddt_data.js'
-        elif data_dir_I=='project':
-            filename_str = self.settings['visualization_data'] + '/project/' + analysis_id_I + '_data_stage01_resequencing_mutationsAnnotated' + '.js'
         elif data_dir_I=='data_json':
-            data_json_O = data_str + '\n' + parameters_str + '\n' + tile2datamap_str;
+            data_json_O = ddtutilities.get_allObjects_js();
             return data_json_O;
         with open(filename_str,'w') as file:
-            file.write(data_str);
-            file.write(parameters_str);
-            file.write(tile2datamap_str);
+            file.write(ddtutilities.get_allObjects());
