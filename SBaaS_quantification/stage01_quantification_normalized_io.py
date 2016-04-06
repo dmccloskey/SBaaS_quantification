@@ -588,42 +588,10 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                         {"data":data_ave,"datakeys":data3_keys,"datanestkeys":data3_nestkeys},
                         {"data":data_ave,"datakeys":data4_keys,"datanestkeys":data4_nestkeys}];
         # make the tile parameter objects for the normalized and averages
-        #formtileparameters_normalized_O = {'tileheader':'Filter menu normalized','tiletype':'html','tileid':"filtermenu1",'rowid':"row1",'colid':"col1",
-        #    'tileclass':"panel panel-default",'rowclass':"row",'colclass':"col-sm-6"};
-        #formparameters_normalized_O = {'htmlid':'filtermenuform1',"htmltype":'form_01',"formsubmitbuttonidtext":{'id':'submit1','text':'submit'},"formresetbuttonidtext":{'id':'reset1','text':'reset'},"formupdatebuttonidtext":{'id':'update1','text':'update'}};
-        #formtileparameters_normalized_O.update(formparameters_normalized_O);
         formtileparameters_averages_O = {'tileheader':'Filter menu averages','tiletype':'html','tileid':"filtermenu2",'rowid':"row1",'colid':"col1",
             'tileclass':"panel panel-default",'rowclass':"row",'colclass':"col-sm-6"};
         formparameters_averages_O = {'htmlid':'filtermenuform2',"htmltype":'form_01',"formsubmitbuttonidtext":{'id':'submit2','text':'submit'},"formresetbuttonidtext":{'id':'reset2','text':'reset'},"formupdatebuttonidtext":{'id':'update2','text':'update'}};
         formtileparameters_averages_O.update(formparameters_averages_O);
-        ## make the svg objects for the normalized data
-        #svgparameters_broth_O = {"svgtype":'boxandwhiskersplot2d_02',"svgkeymap":[data1_keymap],
-        #                    'svgid':'svg1',
-        #                    "svgmargin":{ 'top': 50, 'right': 150, 'bottom': 50, 'left': 50 },
-        #                    "svgwidth":250,"svgheight":250,
-        #                    "svgx1axislabel":"component_name","svgy1axislabel":"concentration",
-    				#		'svgformtileid':'filtermenu1','svgresetbuttonid':'reset1','svgsubmitbuttonid':'submit1'};
-        #svgtileparameters_broth_O = {'tileheader':'Broth data','tiletype':'svg','tileid':"tile1",'rowid':"row2",'colid':"col1",
-        #    'tileclass':"panel panel-default",'rowclass':"row",'colclass':"col-sm-4"};
-        #svgtileparameters_broth_O.update(svgparameters_broth_O);
-        #svgparameters_filtrate_O = {"svgtype":'boxandwhiskersplot2d_02',"svgkeymap":[data1_keymap],
-        #                    'svgid':'svg2',
-        #                    "svgmargin":{ 'top': 50, 'right': 150, 'bottom': 50, 'left': 50 },
-        #                    "svgwidth":250,"svgheight":250,
-        #                    "svgx1axislabel":"component_name","svgy1axislabel":"concentration",
-    				#		'svgformtileid':'filtermenu1','svgresetbuttonid':'reset1','svgsubmitbuttonid':'submit1'};
-        #svgtileparameters_filtrate_O = {'tileheader':'Filtrate data','tiletype':'svg','tileid':"tile2",'rowid':"row2",'colid':"col2",
-        #    'tileclass':"panel panel-default",'rowclass':"row",'colclass':"col-sm-4"};
-        #svgtileparameters_filtrate_O.update(svgparameters_filtrate_O);
-        #svgparameters_combined_O = {"svgtype":'boxandwhiskersplot2d_02',"svgkeymap":[data1_keymap],
-        #                    'svgid':'svg3',
-        #                    "svgmargin":{ 'top': 50, 'right': 150, 'bottom': 50, 'left': 50 },
-        #                    "svgwidth":250,"svgheight":250,
-        #                    "svgx1axislabel":"component_name","svgy1axislabel":"concentration",
-    				#		'svgformtileid':'filtermenu1','svgresetbuttonid':'reset1','svgsubmitbuttonid':'submit1'};
-        #svgtileparameters_combined_O = {'tileheader':'Broth-Filtrate data','tiletype':'svg','tileid':"tile3",'rowid':"row2",'colid':"col3",
-        #    'tileclass':"panel panel-default",'rowclass':"row",'colclass':"col-sm-4"};
-        #svgtileparameters_combined_O.update(svgparameters_combined_O);
         # make the svg objects for the averages data
         svgparameters_averages_broth_O = {"svgtype":'boxandwhiskersplot2d_02',"svgkeymap":[data2_keymap,data1_keymap],
                             'svgid':'svg4',
@@ -678,29 +646,25 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
             'tileclass':"panel panel-default",'rowclass':"row",'colclass':"col-sm-12"};
         tabletileparameters_averages_O.update(tableparameters_averages_O);
         parametersobject_O = [
-            #formtileparameters_normalized_O,
             formtileparameters_averages_O,
-            #svgtileparameters_broth_O,
-            #svgtileparameters_filtrate_O,
-            #svgtileparameters_combined_O,
             svgtileparameters_averages_broth_O,
             svgtileparameters_averages_filtrate_O,
             svgtileparameters_averages_combined_O,
             tabletileparameters_normalized_O,
             tabletileparameters_averages_O];
         tile2datamap_O = {
-            #"filtermenu1":[2],
             "filtermenu2":[5],
-            #"tile1":[0],"tile2":[1],"tile3":[2],
             "tile4":[3,0],"tile6":[5,2],
             "tile7":[2],"tile8":[5]};
         if data_norm_filtrate: tile2datamap_O.update({"tile5":[4,1]})
         else: tile2datamap_O.update({"tile5":[4]})
-        filtermenuobject_O = [{"filtermenuid":"filtermenu1","filtermenuhtmlid":"filtermenuform1",
-                "filtermenusubmitbuttonid":"submit1","filtermenuresetbuttonid":"reset1",
-                "filtermenuupdatebuttonid":"update1"},{"filtermenuid":"filtermenu2","filtermenuhtmlid":"filtermenuform2",
-                "filtermenusubmitbuttonid":"submit2","filtermenuresetbuttonid":"reset2",
-                "filtermenuupdatebuttonid":"update2"}
+        filtermenuobject_O = [
+            #{"filtermenuid":"filtermenu1","filtermenuhtmlid":"filtermenuform1",
+            #"filtermenusubmitbuttonid":"submit1","filtermenuresetbuttonid":"reset1",
+            #"filtermenuupdatebuttonid":"update1"},
+            {"filtermenuid":"filtermenu2","filtermenuhtmlid":"filtermenuform2",
+            "filtermenusubmitbuttonid":"submit2","filtermenuresetbuttonid":"reset2",
+            "filtermenuupdatebuttonid":"update2"}
                               ];
         # dump the data to a json file
         data_str = 'var ' + 'data' + ' = ' + json.dumps(dataobject_O) + ';';
