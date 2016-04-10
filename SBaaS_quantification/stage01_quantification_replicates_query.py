@@ -105,6 +105,38 @@ class stage01_quantification_replicates_query(sbaas_base):
             return time_points_O;
         except SQLAlchemyError as e:
             print(e);
+    # query concentration units:
+    def get_calculatedConcentrationUnits_experimentID_dataStage01Replicates(self,experiment_id_I):
+        '''Query calculated_concentration_units that are used from the experiment'''
+        try:
+            calculated_concentration_units = self.session.query(data_stage01_quantification_replicates.calculated_concentration_units).filter(
+                    data_stage01_quantification_replicates.experiment_id.like(experiment_id_I),
+                    data_stage01_quantification_replicates.used_.is_(True),).group_by(
+                    data_stage01_quantification_replicates.calculated_concentration_units).order_by(
+                    data_stage01_quantification_replicates.calculated_concentration_units.asc()).all();
+            calculated_concentration_units_O = [];
+            for tp in calculated_concentration_units: calculated_concentration_units_O.append(tp.calculated_concentration_units);
+            return calculated_concentration_units_O;
+        except SQLAlchemyError as e:
+            print(e);
+    # query rows data_stage01_quantification_replicates
+    def get_rows_experimentIDAndSampleNameShortAndTimePointAndCalculatedConcentrationUnits_dataStage01Replicates(self,
+            experiment_id_I, sample_name_short_I, time_point_I,calculated_concentration_units_I):
+        """query rows"""
+        try:
+            data = self.session.query(data_stage01_quantification_replicates).filter(
+                    data_stage01_quantification_replicates.experiment_id.like(experiment_id_I),
+                    data_stage01_quantification_replicates.used_.is_(True),
+                    data_stage01_quantification_replicates.sample_name_short.like(sample_name_short_I),
+                    data_stage01_quantification_replicates.time_point.like(time_point_I),
+                    data_stage01_quantification_replicates.calculated_concentration_units.like(calculated_concentration_units_I),
+                    data_stage01_quantification_replicates.used_.is_(True)).all();
+            data_O = [];
+            for d in data: 
+                data_O.append(d.__repr__dict__());
+            return data_O;
+        except SQLAlchemyError as e:
+            print(e);
     # Query data data_stage01_quantification_replicates:
     def get_data_experimentID_dataStage01Replicates(self, experiment_id_I):
         """write query results to csv"""
