@@ -1,12 +1,11 @@
-﻿from .stage01_quantification_replicates_query import stage01_quantification_replicates_query
+﻿
 from .stage01_quantification_replicatesMI_query import stage01_quantification_replicatesMI_query
 # Resources
 from io_utilities.base_importData import base_importData
 from io_utilities.base_exportData import base_exportData
 from SBaaS_base.sbaas_template_io import sbaas_template_io
 
-class stage01_quantification_replicatesMI_io(stage01_quantification_replicates_query,
-                    stage01_quantification_replicatesMI_query,
+class stage01_quantification_replicatesMI_io(stage01_quantification_replicatesMI_query,
                     sbaas_template_io):
 
     def export_dataStage01ReplicatesMI_csv(self, experiment_id_I, filename):

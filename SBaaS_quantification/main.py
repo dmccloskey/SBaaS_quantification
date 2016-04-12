@@ -206,5 +206,16 @@ exquant01 = lims_quantitationMethod_execute(session,engine,pg_settings.datadir_s
 exquant01.initialize_supportedTables();
 exquant01.initialize_lims_quantitationMethod();
 
-#export the method
-exquant01.export_quantitationMethod_js('141220');
+##export the method
+#exquant01.export_quantitationMethod_js('141220');
+
+#make the missing values table
+from SBaaS_quantification.stage01_quantification_replicatesMI_execute import stage01_quantification_replicatesMI_execute
+exrepsMI01 = stage01_quantification_replicatesMI_execute(session,engine,pg_settings.datadir_settings);
+exrepsMI01.initialize_supportedTables();
+exrepsMI01.initialize_tables();
+
+#import values from dataPreProcessing
+exrepsMI01.import_rows_table_add_csv(
+    table_I="data_stage01_quantification_replicatesmi",
+    filename_I=pg_settings.datadir_settings['workspace_data']+'/_input/160410_Quantification_ALEsKOs01_imputedValues01.csv')

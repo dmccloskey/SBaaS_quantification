@@ -4,6 +4,7 @@ import numpy
 from .stage01_quantification_replicatesMI_io import stage01_quantification_replicatesMI_io
 from .stage01_quantification_normalized_query import stage01_quantification_normalized_query
 from .stage01_quantification_QCs_query import stage01_quantification_QCs_query
+from .stage01_quantification_replicates_query import stage01_quantification_replicates_query
 from SBaaS_LIMS.lims_biologicalMaterial_query import lims_biologicalMaterial_query
 #TODO: remove after making add method
 from .stage01_quantification_replicates_postgresql_models import *
@@ -14,6 +15,7 @@ from python_statistics.calculate_interface import calculate_interface
 class stage01_quantification_replicatesMI_execute(stage01_quantification_replicatesMI_io,
                                                 stage01_quantification_normalized_query,
                                                 stage01_quantification_QCs_query,
+                                                stage01_quantification_replicates_query,
                                                 lims_biologicalMaterial_query):    
     def execute_calculateMissingValues_replicates(self,experiment_id_I,sample_name_abbreviations_I=[],r_calc_I=None):
         '''calculate estimates for missing replicates values using AmeliaII from R

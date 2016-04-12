@@ -3,10 +3,6 @@ from .stage01_quantification_physiologicalRatios_io import stage01_quantificatio
 from .stage01_quantification_replicatesMI_query import stage01_quantification_replicatesMI_query
 from .stage01_quantification_replicates_query import stage01_quantification_replicates_query
 from .stage01_quantification_physiologicalRatios_dependencies import stage01_quantification_physiologicalRatios_dependencies
-#TODO: Remove after making add methods
-from .stage01_quantification_physiologicalRatios_postgresql_models import *
-#TODO: Remove after moving visualization to io
-from matplotlib_utilities.matplot import matplot
 #Resources
 import numpy
 from math import sqrt
@@ -153,6 +149,7 @@ class stage01_quantification_physiologicalRatios_execute(stage01_quantification_
         # get sample names short
         sample_names_short = [];
         sample_names_short = self.get_SampleNameShort_experimentID_dataStage01ReplicatesMI(experiment_id_I);
+        data_O = [];
         ratios_calc_O = [];
         for sns in sample_names_short:
             print('calculating physiologicalRatios from replicates for sample_names_short ' + sns);
@@ -179,36 +176,36 @@ class stage01_quantification_physiologicalRatios_execute(stage01_quantification_
                     if not calcratios: continue
                     ratio_calc,num_calc,den_calc = self.calculate_physiologicalRatios(k,ratios_data);
                     # add data to the session
-                    row = data_stage01_quantification_physiologicalRatios_replicates(experiment_id_I,
-                                                                                    sns,
-                                                                                    tp,
-                                                                                    k,
-                                                                                    v['name'],
-                                                                                    ratio_calc,
-                                                                                    v['description'],
-                                                                                    True,
-                                                                                    None);   
-                    self.session.add(row);
-                    row = data_stage01_quantification_physiologicalRatios_replicates(experiment_id_I,
-                                                                                    sns,
-                                                                                    tp,
-                                                                                    k+'_numerator',
-                                                                                    v['name']+'_numerator',
-                                                                                    num_calc,
-                                                                                    v['description'].split('/')[0],
-                                                                                    True,
-                                                                                    None);   
-                    self.session.add(row);
-                    row = data_stage01_quantification_physiologicalRatios_replicates(experiment_id_I,
-                                                                                    sns,
-                                                                                    tp,
-                                                                                    k+'_denominator',
-                                                                                    v['name']+'_denominator',
-                                                                                    den_calc,
-                                                                                    v['description'].split('/')[1],
-                                                                                    True,
-                                                                                    None);   
-                    self.session.add(row);
-        self.session.commit(); 
-
+                    row = {"experiment_id":experiment_id_I,
+                        "sample_name_short":sns,
+                        "time_point":tp,
+                        "physiologicalratio_id":k,
+                        "physiologicalratio_name":v['name'],
+                        "physiologicalratio_value":ratio_calc,
+                        "physiologicalratio_description":v['description'],
+                        "used_":True,
+                        "comment_":None}   
+                    data_O.append(row);
+                    row = {"experiment_id":experiment_id_I,
+                        "sample_name_short":sns,
+                        "time_point":tp,
+                        "physiologicalratio_id":k+'_numerator',
+                        "physiologicalratio_name":v['name']+'_numerator',
+                        "physiologicalratio_value":num_calc,
+                        "physiologicalratio_description":v['description'].split('/')[0],
+                        "used_":True,
+                        "comment_":None}   
+                    data_O.append(row);
+                    row = {"experiment_id":experiment_id_I,
+                        "sample_name_short":sns,
+                        "time_point":tp,
+                        "physiologicalratio_id":k+'_denominator',
+                        "physiologicalratio_name":v['name']+'_denominator',
+                        "physiologicalratio_value":den_calc,
+                        "physiologicalratio_description":v['description'].split('/')[1],
+                        "used_":True,
+                        "comment_":None}
+                    data_O.append(row);
+                        
+        self.add_rows_table('data_stage01_quantification_physiologicalRatios_replicates',data_O);
     
