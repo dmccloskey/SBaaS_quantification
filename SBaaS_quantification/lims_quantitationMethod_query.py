@@ -94,12 +94,13 @@ class lims_quantitationMethod_query(
         '''Query calibrator samples and components that were used
         for calibration
         NOTE: can be used within a loop if multiple
-        there are multiple quantitation ids'''
-        # input:
-        #       quantitation_method_id
-        # ouput:
-        #       calibrators_samples
-        #       calibrators_components
+        there are multiple quantitation ids
+        input:
+        quantitation_method_id
+        ouput:
+        calibrators_samples
+        calibrators_components
+        '''
         # query experiment and samples that were used to create the given calibration method
         calibrators_samples = self.session.query(data_stage01_quantification_MQResultsTable.sample_name).filter(
                              quantitation_method.id==experiment.quantitation_method_id,
@@ -124,14 +125,15 @@ class lims_quantitationMethod_query(
     def get_quantMethodParameters(self, quant_method_id_I, component_name_I):
         '''Query calibration parameters for a given component
         from a specified quantitation method id
-        NOTE: intended to be used in a loop'''
-        # input:
-        #       component_name
-        #       quantitation_method_id
-        # ouput:
-        #       fit
-        #       weighting
-        #       use_area
+
+         input:
+               component_name
+               quantitation_method_id
+         ouput:
+               fit
+               weighting
+               use_area
+        '''
         calibrators_parameters = self.session.query(quantitation_method.component_name,
                             quantitation_method.fit,quantitation_method.weighting,
                             quantitation_method.use_area).filter(
@@ -157,11 +159,12 @@ class lims_quantitationMethod_query(
     def get_components(self,quant_method_id_I):
         '''Query calibrator components that are in the calibration method
         NOTE: can be used within a loop if multiple
-        there are multiple quantitation ids'''
-        # input:
-        #       quantitation_method_id
-        # ouput:
-        #       calibrators_components
+        there are multiple quantitation ids
+         input:
+               quantitation_method_id
+         ouput:
+               calibrators_components
+        '''
         # query experiment and samples that were used to create the given calibration method
         try:
             calibrators_components = self.session.query(quantitation_method.component_name).filter(
@@ -176,11 +179,12 @@ class lims_quantitationMethod_query(
     def get_allComponents(self):
         '''Query calibrator components that are in all of the calibration methods
         NOTE: can be used within a loop if multiple
-        there are multiple quantitation ids'''
-        # input:
-        #       quantitation_method_id
-        # ouput:
-        #       calibrators_components
+        there are multiple quantitation ids
+         input:
+               quantitation_method_id
+         ouput:
+               calibrators_components
+        '''
         # query experiment and samples that were used to create the given calibration method
         try:
             calibrators_components = self.session.query(quantitation_method.component_name).group_by(
@@ -206,17 +210,19 @@ class lims_quantitationMethod_query(
     def get_quantMethodRegression(self, quant_method_id_I, component_name_I):
         '''Query calibration parameters for a given component
         from a specified quantitation method id
-        NOTE: intended to be used in a loop'''
-        # input:
-        #       component_name
-        #       quantitation_method_id
-        # ouput:
-        #       intercept
-        #       slope
-        #       correlation
-        #       lloq
-        #       uloq
-        #       points
+
+         input:
+               component_name
+               quantitation_method_id
+         ouput:
+               intercept
+               slope
+               correlation
+               lloq
+               uloq
+               points
+        '''
+
         try:
             calibrators_parameters = self.session.query(quantitation_method.intercept,
                                 quantitation_method.slope,
@@ -315,17 +321,18 @@ class lims_quantitationMethod_query(
     def get_row_QMethodIDAndComponentNamequantitationMethod(self, quant_method_id_I, component_name_I):
         '''Query calibration parameters for a given component
         from a specified quantitation method id
-        NOTE: intended to be used in a loop'''
-        # input:
-        #       component_name
-        #       quantitation_method_id
-        # ouput:
-        #       intercept
-        #       slope
-        #       correlation
-        #       lloq
-        #       uloq
-        #       points
+
+         input:
+               component_name
+               quantitation_method_id
+         ouput:
+               intercept
+               slope
+               correlation
+               lloq
+               uloq
+               points
+        '''
         try:
             row = self.session.query(quantitation_method).filter(
                                 quantitation_method.id.like(quant_method_id_I),
