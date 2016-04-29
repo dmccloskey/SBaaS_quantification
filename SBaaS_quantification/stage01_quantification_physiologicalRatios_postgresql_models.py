@@ -3,11 +3,11 @@ from SBaaS_base.postgresql_orm_base import *
 class data_stage01_quantification_physiologicalRatios_replicates(Base):
     __tablename__ = 'data_stage01_quantification_physiologicalRatios_replicates'
     id = Column(Integer, Sequence('data_stage01_quantification_physiologicalRatios_replicates_id_seq'), primary_key=True)
-    experiment_id = Column(String(50), primary_key=True)
-    sample_name_short = Column(String(100), primary_key=True)
+    experiment_id = Column(String(50))
+    sample_name_short = Column(String(100))
     #sample_name_abbreviation = Column(String(100)) #add in at some-point
-    time_point = Column(String(10), primary_key=True)
-    physiologicalratio_id = Column(String(50), primary_key=True)
+    time_point = Column(String(10))
+    physiologicalratio_id = Column(String(50))
     physiologicalratio_name = Column(String(100))
     physiologicalratio_value = Column(Float)
     physiologicalratio_description = Column(String(500))

@@ -86,7 +86,7 @@ class data_stage01_quantification_averages(Base):
     extracellular_percent = Column(Float)
     used_ = Column(Boolean);
 
-    __table_args__ = (UniqueConstraint('experiment_id','sample_name_abbreviation','time_point','component_name'),
+    __table_args__ = (UniqueConstraint('experiment_id','sample_name_abbreviation','time_point','component_name','calculated_concentration_units'),
             )
     def __init__(self,
                 row_dict_I,

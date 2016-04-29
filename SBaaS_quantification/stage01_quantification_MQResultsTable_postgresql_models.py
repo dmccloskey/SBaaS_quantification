@@ -3,14 +3,15 @@ from SBaaS_base.postgresql_orm_base import *
 class data_stage01_quantification_MQResultsTable(Base):
     #__table__ = make_table('data_stage01_quantification_mqresultstable')
     __tablename__ = 'data_stage01_quantification_mqresultstable'
+    id = Column(Integer, Sequence('data_stage01_quantification_mqresultstable_id_seq'), primary_key=True)
     index_=Column(Integer);
     sample_index=Column(Integer);
     original_filename=Column(Text);
-    sample_name=Column(String(100),nullable=False, primary_key=True);
+    sample_name=Column(String(100));
     sample_id=Column(String(500));
     sample_comment=Column(Text);
     sample_type=Column(String(20));
-    acquisition_date_and_time=Column(DateTime,nullable=False, primary_key=True);
+    acquisition_date_and_time=Column(DateTime);
     rack_number=Column(Integer);
     plate_number=Column(Integer);
     vial_number=Column(Integer);
@@ -19,7 +20,7 @@ class data_stage01_quantification_MQResultsTable(Base):
     operator_name=Column(String(100));
     acq_method_name=Column(String(100));
     is_= Column(Boolean);
-    component_name=Column(String(500),nullable=False, primary_key=True);
+    component_name=Column(String(500));
     component_index=Column(Integer);
     component_comment=Column(Text);
     is_comment=Column(Text);
@@ -79,9 +80,9 @@ class data_stage01_quantification_MQResultsTable(Base):
     comment_=Column(Text);
     use_calculated_concentration=Column(Boolean,default=True);
 
-    #__table_args__ = (
-    #        UniqueConstraint('component_name','sample_name','acquisition_date_and_time'),
-    #        )
+    __table_args__ = (
+            UniqueConstraint('component_name','sample_name','acquisition_date_and_time'),
+            )
     def __init__(self,
                 row_dict_I,
                 ):

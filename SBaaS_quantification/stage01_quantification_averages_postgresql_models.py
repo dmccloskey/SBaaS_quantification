@@ -14,7 +14,7 @@ class data_stage01_quantification_averagesMI(Base):
     calculated_concentration_units = Column(String(20))
     used_ = Column(Boolean);
 
-    __table_args__ = (UniqueConstraint('experiment_id','sample_name_abbreviation','time_point','component_name'),
+    __table_args__ = (UniqueConstraint('experiment_id','sample_name_abbreviation','time_point','component_name','calculated_concentration_units'),
             )
     def __init__(self,
                 row_dict_I,
@@ -74,7 +74,7 @@ class data_stage01_quantification_averagesMIgeo(Base):
     calculated_concentration_units = Column(String(20))
     used_ = Column(Boolean);
 
-    __table_args__ = (UniqueConstraint('experiment_id','sample_name_abbreviation','time_point','component_name'),
+    __table_args__ = (UniqueConstraint('experiment_id','sample_name_abbreviation','time_point','component_name','calculated_concentration_units'),
             )
     def __init__(self,
                 row_dict_I,
