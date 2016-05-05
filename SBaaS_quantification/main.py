@@ -215,7 +215,19 @@ exrepsMI01 = stage01_quantification_replicatesMI_execute(session,engine,pg_setti
 exrepsMI01.initialize_supportedTables();
 exrepsMI01.initialize_tables();
 
-#import values from dataPreProcessing
-exrepsMI01.import_rows_table_add_csv(
-    table_I="data_stage01_quantification_replicatesmi",
-    filename_I=pg_settings.datadir_settings['workspace_data']+'/_input/160410_Quantification_ALEsKOs01_imputedValues01.csv')
+##import values from dataPreProcessing
+#exrepsMI01.import_rows_table_add_csv(
+#    table_I="data_stage01_quantification_replicatesmi",
+#    filename_I=pg_settings.datadir_settings['workspace_data']+'/_input/160410_Quantification_ALEsKOs01_imputedValues01.csv')
+
+#make the averages methods table
+from SBaaS_quantification.stage01_quantification_averages_execute import stage01_quantification_averages_execute
+exave01 = stage01_quantification_averages_execute(session,engine,pg_settings.datadir_settings);
+exave01.initialize_supportedTables();
+exave01.initialize_tables();
+
+#calculate the geometric averages
+exave01.execute_calculateGeoAverages_replicates(
+    'ALEsKOs01',
+    #sample_name_abbreviations_I=['OxicEvo04EcoliGlc','OxicEvo04Evo01EPEcoliGlc','OxicEvo04Evo02EPEcoliGlc','OxicEvo04gndEcoliGlc','OxicEvo04gndEvo01EPEcoliGlc','OxicEvo04gndEvo02EPEcoliGlc','OxicEvo04gndEvo03EPEcoliGlc','OxicEvo04pgiEcoliGlc','OxicEvo04pgiEvo01EPEcoliGlc','OxicEvo04pgiEvo01J01EcoliGlc','OxicEvo04pgiEvo01J02EcoliGlc','OxicEvo04pgiEvo02EPEcoliGlc','OxicEvo04pgiEvo02J01EcoliGlc','OxicEvo04pgiEvo02J02EcoliGlc','OxicEvo04pgiEvo02J03EcoliGlc','OxicEvo04pgiEvo03EPEcoliGlc','OxicEvo04pgiEvo03J01EcoliGlc','OxicEvo04pgiEvo03J02EcoliGlc','OxicEvo04pgiEvo03J03EcoliGlc','OxicEvo04pgiEvo04EPEcoliGlc','OxicEvo04pgiEvo04J01EcoliGlc','OxicEvo04pgiEvo04J02EcoliGlc','OxicEvo04pgiEvo04J03EcoliGlc','OxicEvo04pgiEvo05EPEcoliGlc','OxicEvo04pgiEvo05J01EcoliGlc','OxicEvo04pgiEvo05J02EcoliGlc','OxicEvo04pgiEvo05J03EcoliGlc','OxicEvo04pgiEvo06EPEcoliGlc','OxicEvo04pgiEvo06J01EcoliGlc','OxicEvo04pgiEvo06J02EcoliGlc','OxicEvo04pgiEvo06J03EcoliGlc','OxicEvo04pgiEvo07EPEcoliGlc','OxicEvo04pgiEvo07J01EcoliGlc','OxicEvo04pgiEvo07J02EcoliGlc','OxicEvo04pgiEvo07J03EcoliGlc','OxicEvo04pgiEvo08EPEcoliGlc','OxicEvo04pgiEvo08J01EcoliGlc','OxicEvo04pgiEvo08J02EcoliGlc','OxicEvo04pgiEvo08J03EcoliGlc','OxicEvo04ptsHIcrrEcoliGlc','OxicEvo04ptsHIcrrEvo01EPEcoliGlc','OxicEvo04ptsHIcrrEvo01J01EcoliGlc','OxicEvo04ptsHIcrrEvo01J03EcoliGlc','OxicEvo04ptsHIcrrEvo02EPEcoliGlc','OxicEvo04ptsHIcrrEvo02J01EcoliGlc','OxicEvo04ptsHIcrrEvo02J03EcoliGlc','OxicEvo04ptsHIcrrEvo03EPEcoliGlc','OxicEvo04ptsHIcrrEvo03J01EcoliGlc','OxicEvo04ptsHIcrrEvo03J03EcoliGlc','OxicEvo04ptsHIcrrEvo03J04EcoliGlc','OxicEvo04ptsHIcrrEvo04EPEcoliGlc','OxicEvo04ptsHIcrrEvo04J01EcoliGlc','OxicEvo04ptsHIcrrEvo04J03EcoliGlc','OxicEvo04ptsHIcrrEvo04J04EcoliGlc','OxicEvo04sdhCBEcoliGlc','OxicEvo04sdhCBEvo01EPEcoliGlc','OxicEvo04sdhCBEvo02EPEcoliGlc','OxicEvo04sdhCBEvo03EPEcoliGlc','OxicEvo04tpiAEcoliGlc','OxicEvo04tpiAEvo01EPEcoliGlc','OxicEvo04tpiAEvo01J01EcoliGlc','OxicEvo04tpiAEvo01J03EcoliGlc','OxicEvo04tpiAEvo02EPEcoliGlc','OxicEvo04tpiAEvo02J01EcoliGlc','OxicEvo04tpiAEvo02J03EcoliGlc','OxicEvo04tpiAEvo03EPEcoliGlc','OxicEvo04tpiAEvo03J01EcoliGlc','OxicEvo04tpiAEvo03J03EcoliGlc','OxicEvo04tpiAEvo04EPEcoliGlc','OxicEvo04tpiAEvo04J01EcoliGlc','OxicEvo04tpiAEvo04J03EcoliGlc'],
+    calculated_concentration_units_I=['mM']);

@@ -15,7 +15,7 @@ class data_stage01_quantification_LLOQAndULOQ(Base):
     uloq = Column(Float);
     points = Column(Float);
     used_ = Column(Boolean);
-    __table_args__ = (UniqueConstraint('experiment_id','sample_name','component_name'),
+    __table_args__ = (UniqueConstraint('experiment_id','sample_name','component_name','calculated_concentration_units'),
             )
     def __init__(self,
                 row_dict_I,
@@ -76,7 +76,7 @@ class data_stage01_quantification_dilutions(Base):
     calculated_concentration_average = Column(Float)
     calculated_concentration_cv = Column(Float)
     calculated_concentration_units = Column(String(20))
-    __table_args__ = (UniqueConstraint('experiment_id','sample_id','component_name'),
+    __table_args__ = (UniqueConstraint('experiment_id','sample_id','component_name','calculated_concentration_units'),
             )
     
     def __init__(self,
@@ -129,7 +129,7 @@ class data_stage01_quantification_QCs(Base):
     calculated_concentration_CV = Column(Float)
     calculated_concentration_units = Column(String(20))
 
-    __table_args__ = (UniqueConstraint('experiment_id','sample_name_abbreviation','component_name'),
+    __table_args__ = (UniqueConstraint('experiment_id','sample_name_abbreviation','component_name','calculated_concentration_units'),
             )
     
     def __init__(self,
