@@ -113,4 +113,4 @@ class stage01_quantification_replicates_execute(stage01_quantification_replicate
                             'used_':True,
                             'comment_':None,};
                         data_O.append(row);
-            self.add_rows_table('data_stage01_quantification_replicates',data_O);
+        self.add_rows_table('data_stage01_quantification_replicates',data_O);
