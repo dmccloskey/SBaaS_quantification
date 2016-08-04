@@ -10,6 +10,7 @@ from .stage01_quantification_MQResultsTable_query import stage01_quantification_
 from io_utilities.base_importData import base_importData
 from io_utilities.base_exportData import base_exportData
 from python_statistics.calculate_interface import calculate_interface
+from listDict.listDict import listDict
 
 class stage01_quantification_normalized_io(stage01_quantification_normalized_query,sbaas_template_io):
     def import_dataStage01Normalized_update_unique(self,filename):
@@ -428,74 +429,145 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
         data_norm_filtrate = [];
         data_norm_combined = [];
         data_ave = [];
-        # get sample_name_abbreviations
-        if sample_name_abbreviations_I:
-            sample_name_abbreviations = sample_name_abbreviations_I
-        else:
-            sample_name_abbreviations = [];
-            sample_name_abbreviations = self.get_sampleNameAbbreviations_experimentID_dataStage01Normalized(experiment_id_I);
-        # create database table
-        for sna in sample_name_abbreviations:
-            print('exporting sample_name_abbreviation ' + sna);
-            # get component names
-            if component_names_I:
-                component_names = component_names_I
-            else:
-                component_names = [];
-                component_names = self.get_componentsNames_experimentIDAndSampleNameAbbreviation_dataStage01Normalized(experiment_id_I,sna);
-            for cn in component_names:
-                print('exporting component_name ' + cn);
-                component_group_name = self.get_componentGroupName_experimentIDAndComponentName_dataStage01Normalized(experiment_id_I,cn);
-                # get time points
-                time_points = self.get_timePoint_experimentIDAndSampleNameAbbreviation_dataStage01Normalized(experiment_id_I,sna);
-                for tp in time_points:
-                    print('exporting time_point ' + tp);
-                    # get the averages and %CV samples
-                    row = {};
-                    #row = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentName_dataStage01Averages(experiment_id_I,sna,tp,cn);
-                    row = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentNameAndCalculatedConcentrationCVAndExtracellularPercent_dataStage01Averages(experiment_id_I,
-                                                                        sna,tp,cn,
-                                                                        cv_threshold_I=cv_threshold_I,
-                                                                        extracellular_threshold_I=extracellular_threshold_I);
-                    if not row: continue;
-                    stdev = calc.convert_cv2StDev(row['calculated_concentration_filtrate_average'],row['calculated_concentration_filtrate_cv']);
-                    row['calculated_concentration_filtrate_lb'] = row['calculated_concentration_filtrate_average']-stdev;
-                    row['calculated_concentration_filtrate_ub'] = row['calculated_concentration_filtrate_average']+stdev;
-                    stdev = calc.convert_cv2StDev(row['calculated_concentration_broth_average'],row['calculated_concentration_broth_cv']);
-                    row['calculated_concentration_broth_lb'] = row['calculated_concentration_broth_average']-stdev;
-                    row['calculated_concentration_broth_ub'] = row['calculated_concentration_broth_average']+stdev;
-                    stdev = calc.convert_cv2StDev(row['calculated_concentration_average'],row['calculated_concentration_cv']);
-                    row['calculated_concentration_lb'] = row['calculated_concentration_average']-stdev;
-                    row['calculated_concentration_ub'] = row['calculated_concentration_average']+stdev;
-                    data_ave.append(row);
-                    # get filtrate sample names
-                    sample_names = [];
-                    sample_description = 'Filtrate';
-                    sample_names = self.get_sampleNames_experimentIDAndSampleNameAbbreviationAndSampleDescriptionAndComponentNameAndTimePoint_dataStage01Normalized(experiment_id_I,sna,sample_description,cn,tp);
-                    if sample_names_I: # screen out sample names that are not in the input
-                        sample_names = [x for x in sample_names if x in sample_names_I];
-                    for sn in sample_names:
-                        # get the row
-                        row = None;
-                        row = self.get_row_sampleNameAndComponentName_dataStage01Normalized(sn,cn);
-                        if not(row): continue;
-                        row['sample_name_abbreviation'] = sna;
-                        data_norm_filtrate.append(row);
-                        data_norm_combined.append(row);
-                    # get filtrate sample names
-                    sample_names = [];
-                    sample_description = 'Broth';
-                    sample_names = self.get_sampleNames_experimentIDAndSampleNameAbbreviationAndSampleDescriptionAndComponentNameAndTimePoint_dataStage01Normalized(experiment_id_I,sna,sample_description,cn,tp);
-                    if sample_names_I: # screen out sample names that are not in the input
-                        sample_names = [x for x in sample_names if x in sample_names_I];
-                    for sn in sample_names:
-                        # get the row
-                        row = None;
-                        row = self.get_row_sampleNameAndComponentName_dataStage01Normalized(sn,cn);
-                        if not(row): continue;
-                        row['sample_name_abbreviation'] = sna;
-                        data_norm_broth.append(row);
-                        data_norm_combined.append(row);
+
+        #SPLIT 1:
+        #1 query unique calculated_concentration_units/sample_name_abbreviations/component_names/component_group_names/time_points/sample_names/sample_ids/sample_description
+        uniqueRows = self.get_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(
+                experiment_id_I,
+                calculated_concentration_units_I=[],
+                component_names_I=component_names_I,
+                component_group_names_I=[],
+                sample_names_I=sample_names_I,
+                sample_name_abbreviations_I=sample_name_abbreviations_I,
+                time_points_I=[],
+            );
+        if type(uniqueRows)==type(listDict()):
+            uniqueRows.convert_dataFrame2ListDict()
+            uniqueRows = uniqueRows.get_listDict();
+        sn_cn_all = [];
+        threshold_match = True;
+        for uniqueRow_cnt,uniqueRow in enumerate(uniqueRows):
+            #get data from averages once per sample_name_abbreviation/component_name
+            if not (uniqueRow['sample_name_abbreviation'],uniqueRow['component_name'],uniqueRow['time_point']) in sn_cn_all:
+                print('exporting sample_name_abbreviation ' + uniqueRow['sample_name_abbreviation'] + " and component_name " + uniqueRow['component_name']);
+                # get the averages and %CV samples
+                row_ave = {};
+                #row_ave = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentName_dataStage01Averages(experiment_id_I,sna,tp,cn);
+                row_ave = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentNameAndCalculatedConcentrationCVAndExtracellularPercent_dataStage01Averages(experiment_id_I,
+                        uniqueRow['sample_name_abbreviation'],
+                        uniqueRow['time_point'],
+                        uniqueRow['component_name'],
+                        cv_threshold_I=cv_threshold_I,
+                        extracellular_threshold_I=extracellular_threshold_I);
+                if row_ave:
+                    stdev = calc.convert_cv2StDev(row_ave['calculated_concentration_filtrate_average'],row_ave['calculated_concentration_filtrate_cv']);
+                    row_ave['calculated_concentration_filtrate_lb'] = row_ave['calculated_concentration_filtrate_average']-stdev;
+                    row_ave['calculated_concentration_filtrate_ub'] = row_ave['calculated_concentration_filtrate_average']+stdev;
+                    stdev = calc.convert_cv2StDev(row_ave['calculated_concentration_broth_average'],row_ave['calculated_concentration_broth_cv']);
+                    row_ave['calculated_concentration_broth_lb'] = row_ave['calculated_concentration_broth_average']-stdev;
+                    row_ave['calculated_concentration_broth_ub'] = row_ave['calculated_concentration_broth_average']+stdev;
+                    stdev = calc.convert_cv2StDev(row_ave['calculated_concentration_average'],row_ave['calculated_concentration_cv']);
+                    row_ave['calculated_concentration_lb'] = row_ave['calculated_concentration_average']-stdev;
+                    row_ave['calculated_concentration_ub'] = row_ave['calculated_concentration_average']+stdev;
+                    data_ave.append(row_ave);
+                    threshold_match = True;
+                else: threshold_match = False;
+
+            sn_cn_all.append((uniqueRow['sample_name_abbreviation'],uniqueRow['component_name'],uniqueRow['time_point']))
+            # record the replicate data only if the sample_name_abbreviation/component_name was queried
+
+            if threshold_match:
+                # get data from normalized
+                row = {};
+                row = self.get_row_sampleNameAndComponentName_dataStage01Normalized(
+                    uniqueRow['sample_name'],
+                    uniqueRow['component_name']);
+                if not(row):
+                    continue;
+                row['sample_name_abbreviation'] = uniqueRow['sample_name_abbreviation']
+                row['extracellular_percent'] = row_ave['extracellular_percent']
+                row['calculated_concentration_cv'] = row_ave['calculated_concentration_cv']
+                #row.update(row_ave);
+                if uniqueRow['sample_desc'] == 'Filtrate':data_norm_filtrate.append(row);
+                if uniqueRow['sample_desc'] == 'Broth':data_norm_broth.append(row);
+
+                #add data to aggregate and sample_name_abbreviations_all
+                data_norm_combined.append(row);
+            
+        ##SPLIT 2:
+        ## get sample_name_abbreviations
+        #if sample_name_abbreviations_I:
+        #    sample_name_abbreviations = sample_name_abbreviations_I
+        #else:
+        #    sample_name_abbreviations = [];
+        #    #TODO: slow join...
+        #    sample_name_abbreviations = self.get_sampleNameAbbreviations_experimentID_dataStage01Normalized(experiment_id_I);
+        #for sna in sample_name_abbreviations:
+        #    print('exporting sample_name_abbreviation ' + sna);
+        #    # get component names
+        #    if component_names_I:
+        #        component_names = component_names_I
+        #    else:
+        #        component_names = [];
+        #        #TODO: slow join...
+        #        component_names = self.get_componentsNames_experimentIDAndSampleNameAbbreviation_dataStage01Normalized(experiment_id_I,sna);
+        #    for cn in component_names:
+        #        print('exporting component_name ' + cn);
+        #        component_group_name = self.get_componentGroupName_experimentIDAndComponentName_dataStage01Normalized(experiment_id_I,cn);
+        #        # get time points
+        #        #TODO: slow join...
+        #        time_points = self.get_timePoint_experimentIDAndSampleNameAbbreviation_dataStage01Normalized(experiment_id_I,sna);
+        #        for tp in time_points:
+        #            print('exporting time_point ' + tp);
+        #            # get the averages and %CV samples
+        #            row = {};
+        #            #row = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentName_dataStage01Averages(experiment_id_I,sna,tp,cn);
+        #            row = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentNameAndCalculatedConcentrationCVAndExtracellularPercent_dataStage01Averages(experiment_id_I,
+        #                                                                sna,tp,cn,
+        #                                                                cv_threshold_I=cv_threshold_I,
+        #                                                                extracellular_threshold_I=extracellular_threshold_I);
+        #            if not row: continue;
+        #            stdev = calc.convert_cv2StDev(row['calculated_concentration_filtrate_average'],row['calculated_concentration_filtrate_cv']);
+        #            row['calculated_concentration_filtrate_lb'] = row['calculated_concentration_filtrate_average']-stdev;
+        #            row['calculated_concentration_filtrate_ub'] = row['calculated_concentration_filtrate_average']+stdev;
+        #            stdev = calc.convert_cv2StDev(row['calculated_concentration_broth_average'],row['calculated_concentration_broth_cv']);
+        #            row['calculated_concentration_broth_lb'] = row['calculated_concentration_broth_average']-stdev;
+        #            row['calculated_concentration_broth_ub'] = row['calculated_concentration_broth_average']+stdev;
+        #            stdev = calc.convert_cv2StDev(row['calculated_concentration_average'],row['calculated_concentration_cv']);
+        #            row['calculated_concentration_lb'] = row['calculated_concentration_average']-stdev;
+        #            row['calculated_concentration_ub'] = row['calculated_concentration_average']+stdev;
+        #            data_ave.append(row);
+        #            # get filtrate sample names
+        #            sample_names = [];
+        #            sample_description = 'Filtrate';
+        #            #TODO: slow join...
+        #            sample_names = self.get_sampleNames_experimentIDAndSampleNameAbbreviationAndSampleDescriptionAndComponentNameAndTimePoint_dataStage01Normalized(experiment_id_I,sna,sample_description,cn,tp);
+        #            if sample_names_I: # screen out sample names that are not in the input
+        #                sample_names = [x for x in sample_names if x in sample_names_I];
+        #            for sn in sample_names:
+        #                # get the row
+        #                row = None;
+        #                row = self.get_row_sampleNameAndComponentName_dataStage01Normalized(sn,cn);
+        #                if not(row): continue;
+        #                row['sample_name_abbreviation'] = sna;
+        #                data_norm_filtrate.append(row);
+        #                data_norm_combined.append(row);
+        #            # get filtrate sample names
+        #            sample_names = [];
+        #            sample_description = 'Broth';
+        #            #TODO: slow join...
+        #            sample_names = self.get_sampleNames_experimentIDAndSampleNameAbbreviationAndSampleDescriptionAndComponentNameAndTimePoint_dataStage01Normalized(experiment_id_I,sna,sample_description,cn,tp);
+        #            if sample_names_I: # screen out sample names that are not in the input
+        #                sample_names = [x for x in sample_names if x in sample_names_I];
+        #            for sn in sample_names:
+        #                # get the row
+        #                row = None;
+        #                row = self.get_row_sampleNameAndComponentName_dataStage01Normalized(sn,cn);
+        #                if not(row): continue;
+        #                row['sample_name_abbreviation'] = sna;
+        #                data_norm_broth.append(row);
+        #                data_norm_combined.append(row);
+
         # dump chart parameters to a js files
         data1_keys = ['experiment_id',
                       'sample_name',
@@ -503,7 +575,9 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                       'sample_name_abbreviation',
                       'component_group_name',
                       'component_name',
-                      'calculated_concentration_units'
+                      'calculated_concentration_units',
+                      'extracellular_percent',
+                      'calculated_concentration_cv'
                     ];
         data1_nestkeys = ['component_name'];
         data1_keymap = {'xdata':'component_name',
@@ -515,7 +589,7 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                         #'ydataiq1':None,
                         #'ydataiq3':None,
                         #'ydatamedian':None,
-                        'serieslabel':'sample_name',
+                        'serieslabel':'sample_name_abbreviation',
                         'featureslabel':'sample_name'};
         data2_keys = ['experiment_id',
                       'sample_name_abbreviation',
@@ -545,7 +619,7 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                       'component_name',
                       'calculated_concentration_units',
                       'extracellular_percent',
-                      'calculated_concentration_filtrate_cv'
+                      'calculated_concentration_filtrate_cv',
                     ];
         data3_nestkeys = ['component_name'];
         data3_keymap = {'xdata':'component_name',
@@ -598,7 +672,7 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                             "svgmargin":{ 'top': 50, 'right': 150, 'bottom': 50, 'left': 50 },
                             "svgwidth":250,"svgheight":250,
                             "svgx1axislabel":"component_name","svgy1axislabel":"concentration",
-    						'svgformtileid':'filtermenu2','svgresetbuttonid':'reset2','svgsubmitbuttonid':'submit2'};
+        		'svgformtileid':'filtermenu2','svgresetbuttonid':'reset2','svgsubmitbuttonid':'submit2'};
         svgtileparameters_averages_broth_O = {'tileheader':'Broth data','tiletype':'svg','tileid':"tile4",'rowid':"row2",'colid':"col1",
             'tileclass':"panel panel-default",'rowclass':"row",'colclass':"col-sm-4"};
         svgtileparameters_averages_broth_O.update(svgparameters_averages_broth_O);
@@ -608,17 +682,20 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                             "svgmargin":{ 'top': 50, 'right': 150, 'bottom': 50, 'left': 50 },
                             "svgwidth":250,"svgheight":250,
                             "svgx1axislabel":"component_name","svgy1axislabel":"concentration",
-    						'svgformtileid':'filtermenu2','svgresetbuttonid':'reset2','svgsubmitbuttonid':'submit2'};
+        		'svgformtileid':'filtermenu2','svgresetbuttonid':'reset2','svgsubmitbuttonid':'submit2'};
+            svgtileparameters_averages_filtrate_O = {'tileheader':'Filtrate data','tiletype':'svg','tileid':"tile5",'rowid':"row2",'colid':"col2",
+                'tileclass':"panel panel-default",'rowclass':"row",'colclass':"col-sm-4"};
+            svgtileparameters_averages_filtrate_O.update(svgparameters_averages_filtrate_O);
         else:
             svgparameters_averages_filtrate_O = {"svgtype":'boxandwhiskersplot2d_01',"svgkeymap":[data3_keymap],
                             'svgid':'svg5',
                             "svgmargin":{ 'top': 50, 'right': 150, 'bottom': 50, 'left': 50 },
                             "svgwidth":250,"svgheight":250,
                             "svgx1axislabel":"component_name","svgy1axislabel":"concentration",
-    						'svgformtileid':'filtermenu2','svgresetbuttonid':'reset2','svgsubmitbuttonid':'submit2'};
-        svgtileparameters_averages_filtrate_O = {'tileheader':'Filtrate data','tiletype':'svg','tileid':"tile5",'rowid':"row2",'colid':"col2",
-            'tileclass':"panel panel-default",'rowclass':"row",'colclass':"col-sm-4"};
-        svgtileparameters_averages_filtrate_O.update(svgparameters_averages_filtrate_O);
+        		'svgformtileid':'filtermenu2','svgresetbuttonid':'reset2','svgsubmitbuttonid':'submit2'};
+            svgtileparameters_averages_filtrate_O = {'tileheader':'Filtrate data','tiletype':'svg','tileid':"tile5",'rowid':"row2",'colid':"col2",
+                'tileclass':"panel panel-default",'rowclass':"row",'colclass':"col-sm-4"};
+            svgtileparameters_averages_filtrate_O.update(svgparameters_averages_filtrate_O);
         svgparameters_averages_combined_O = {"svgtype":'boxandwhiskersplot2d_02',"svgkeymap":[data4_keymap,data1_keymap],
                             'svgid':'svg6',
                             "svgmargin":{ 'top': 50, 'right': 150, 'bottom': 50, 'left': 50 },
@@ -654,8 +731,11 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
             tabletileparameters_averages_O];
         tile2datamap_O = {
             "filtermenu2":[5],
-            "tile4":[3,0],"tile6":[5,2],
-            "tile7":[2],"tile8":[5]};
+            "tile4":[3,0],
+            "tile6":[5,2],
+            "tile7":[2],
+            "tile8":[5]
+            };
         if data_norm_filtrate: tile2datamap_O.update({"tile5":[4,1]})
         else: tile2datamap_O.update({"tile5":[4]})
         filtermenuobject_O = [

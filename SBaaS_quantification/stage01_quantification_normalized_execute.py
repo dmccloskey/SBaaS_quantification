@@ -7,6 +7,7 @@ from SBaaS_LIMS.lims_biologicalMaterial_query import lims_biologicalMaterial_que
 from SBaaS_LIMS.lims_msMethod_query import lims_msMethod_query
 #Resources
 from python_statistics.calculate_interface import calculate_interface
+from listDict.listDict import listDict
 #TODO: remove after implementing calc in averages
 from math import sqrt
 import numpy
@@ -39,111 +40,200 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
         calc = calculate_interface();
         
         print('execute_normalizeSamples2Biomass...')
-        # get sample names
-        sample_names = [];
-        sample_ids = [];
-        for st in sample_types_I:
-            sample_names_tmp = [];
-            sample_ids_tmp = [];
-            #sample_names_tmp = self.get_sampleNames_experimentIDAndSampleType(experiment_id_I,st);
-            sample_names_tmp,sample_ids_tmp = self.get_sampleNamesAndSampleIDs_experimentIDAndSampleType(experiment_id_I,st);
-            sample_names.extend(sample_names_tmp);
-            sample_ids.extend(sample_ids_tmp); 
-        if sample_names_I:
-            sample_names_ind = [i for i,x in enumerate(sample_names) if x in sample_names_I];
-            sample_names_cpy = copy.copy(sample_names);
-            sample_ids = copy.copy(sample_ids);
-            sample_names = [x for i,x in enumerate(sample_names) if i in sample_names_ind]
-            sample_ids = [x for i,x in enumerate(sample_ids) if i in sample_names_ind]
-        # create database table
-        for sn_cnt,sn in enumerate(sample_names):
-            print('normalizing samples2Biomass for sample_name ' + sn);
-            # get component names
-            component_names = [];
-            component_group_names = [];
-            #component_names = self.get_componentsNames_experimentIDAndSampleName(experiment_id_I,sn);
-            component_names,component_group_names = self.get_componentsNamesAndComponentGroupNames_experimentIDAndSampleName(experiment_id_I,sn);
-            if component_names_I:                
-                component_names_ind = [i for i,x in enumerate(component_names) if x in component_names_I];
-                component_names_cpy = copy.copy(component_names);
-                component_group_names = copy.copy(component_group_names);
-                component_names = [x for i,x in enumerate(component_names) if i in component_names_ind]
-                component_group_names = [x for i,x in enumerate(component_group_names) if i in component_names_ind]
-            ## get sample id
-            #sample_id = self.get_sampleID_experimentIDAndSampleName(experiment_id_I,sn);
-            if (biological_material_I and conversion_name_I):
+
+        ##SPLIT 1:
+        # get the unique sample_names/sample_ids/sample_types/component_names/component_group_names/calculated_concentration_units
+        groupJoin = self.getGroupJoin_experimentAndQuantitationMethodAndMQResultsTable_experimentID_dataStage01QuantificationMQResultsTable(
+            experiment_id_I,
+            sample_types_I=sample_types_I,
+            sample_names_I=sample_names_I,
+            component_names_I=component_names_I,
+            sample_ids_I=[],
+            );
+        if type(groupJoin)==type(listDict()):
+            groupJoin.convert_dataFrame2ListDict()
+            groupJoin = groupJoin.get_listDict();
+        if (biological_material_I and conversion_name_I):
+            # get the conversion units once
+            conversion = None;
+            conversion_units = None;
+            conversion, conversion_units = self.get_conversionAndConversionUnits_biologicalMaterialAndConversionName(biological_material_I,conversion_name_I);
+            if not(cvs and cvs_units and od600 and dil and dil_units):
+                print('cvs, cvs_units, or od600 are missing from physiological parameters');
+                print('or dil and dil_units are missing from sample descripton');
+                exit(-1);
+            elif not(conversion and conversion_units):
+                print('biological_material or conversion name is incorrect');
+                exit(-1);  
+            else:
+                #calculate the cell volume or biomass depending on the conversion units
+                #cell_volume, cell_volume_units = calc.calculate_cellVolume_CVSAndCVSUnitsAndODAndConversionAndConversionUnits(cvs,cvs_units,od600,conversion,conversion_units);
+                cell_volume, cell_volume_units = calc.calculate_biomass_CVSAndCVSUnitsAndODAndConversionAndConversionUnits(cvs,cvs_units,od600,conversion,conversion_units);
+            for row_cnt,row in enumerate(groupJoin):
+                print('normalizing samples2Biomass for component_name ' + row['component_name']);
                 # get physiological parameters
                 cvs = None;
                 cvs_units = None;
                 od600 = None;
                 dil = None;
                 dil_units = None;
-                conversion = None;
-                conversion_units = None;
-                cvs, cvs_units, od600, dil,dil_units = self.get_CVSAndCVSUnitsAndODAndDilAndDilUnits_sampleName(sn);
-                conversion, conversion_units = self.get_conversionAndConversionUnits_biologicalMaterialAndConversionName(biological_material_I,conversion_name_I);
-                if not(cvs and cvs_units and od600 and dil and dil_units):
-                    print('cvs, cvs_units, or od600 are missing from physiological parameters');
-                    print('or dil and dil_units are missing from sample descripton');
-                    exit(-1);
-                elif not(conversion and conversion_units):
-                    print('biological_material or conversion name is incorrect');
-                    exit(-1);  
+                cvs, cvs_units, od600, dil,dil_units = self.get_CVSAndCVSUnitsAndODAndDilAndDilUnits_sampleName(row['sample_name']);
+                # get the calculated concentration
+                calc_conc = None;
+                calc_conc_units = None;
+                if use_height_I: 
+                    calc_conc, calc_conc_units = self.get_peakHeight_sampleNameAndComponentName(sn,cn);
                 else:
-                    #calculate the cell volume or biomass depending on the conversion units
-                    #cell_volume, cell_volume_units = calc.calculate_cellVolume_CVSAndCVSUnitsAndODAndConversionAndConversionUnits(cvs,cvs_units,od600,conversion,conversion_units);
-                    cell_volume, cell_volume_units = calc.calculate_biomass_CVSAndCVSUnitsAndODAndConversionAndConversionUnits(cvs,cvs_units,od600,conversion,conversion_units);
-                for cn_cnt,cn in enumerate(component_names):
-                    print('normalizing samples2Biomass for component_name ' + cn);
-                    # get component group name
-                    #component_group_name = self.get_componentGroupName_experimentIDAndComponentName(experiment_id_I,cn);
-                    #component_group_name = self.get_msGroup_componentName_MSComponents(cn);
-                    # get the calculated concentration
-                    calc_conc = None;
-                    calc_conc_units = None;
-                    if use_height_I: 
-                        calc_conc, calc_conc_units = self.get_peakHeight_sampleNameAndComponentName(sn,cn);
-                    else:
-                        calc_conc, calc_conc_units = self.get_concAndConcUnits_sampleNameAndComponentName(sn,cn);
-                    # calculate the normalized concentration
-                    norm_conc = None;
-                    norm_conc_units = None;
-                    if calc_conc: 
-                        norm_conc, norm_conc_units = calc.calculate_conc_concAndConcUnitsAndDilAndDilUnitsAndConversionAndConversionUnits(calc_conc,calc_conc_units,dil,dil_units,cell_volume, cell_volume_units);
-                    # update data_stage01_quantification_normalized
-                    if norm_conc:
-                        row = {'experiment_id':experiment_id_I,
-                                'sample_name':sn,
-                                'sample_id':sample_ids[sn_cnt],
-                                'component_group_name':component_group_names[cn_cnt],
-                                'component_name':cn,
-                                'calculated_concentration':norm_conc,
-                                'calculated_concentration_units':norm_conc_units,
-                                'used_':True,};
-                        data_O.append(row);
-            else:
-                for cn_cnt,cn in enumerate(component_names):
-                    print('normalizing samples2Biomass for component_name ' + cn);
-                    # get component group name
-                    #component_group_name = self.get_componentGroupName_experimentIDAndComponentName(experiment_id_I,cn);
-                    #component_group_name = self.get_msGroup_componentName_MSComponents(cn);
-                    # get the calculated concentration
-                    calc_conc = None;
-                    calc_conc_units = None;
-                    if use_height_I: 
-                        calc_conc, calc_conc_units = self.get_peakHeight_sampleNameAndComponentName(sn,cn);
-                    else:
-                        calc_conc, calc_conc_units = self.get_concAndConcUnits_sampleNameAndComponentName(sn,cn);
-                    # add data to the DB
+                    calc_conc, calc_conc_units = self.get_concAndConcUnits_sampleNameAndComponentName(sn,cn);
+                # calculate the normalized concentration
+                norm_conc = None;
+                norm_conc_units = None;
+                if calc_conc: 
+                    norm_conc, norm_conc_units = calc.calculate_conc_concAndConcUnitsAndDilAndDilUnitsAndConversionAndConversionUnits(calc_conc,calc_conc_units,dil,dil_units,cell_volume, cell_volume_units);
+                # update data_stage01_quantification_normalized
+                if norm_conc:
                     row = {'experiment_id':experiment_id_I,
                             'sample_name':sn,
                             'sample_id':sample_ids[sn_cnt],
                             'component_group_name':component_group_names[cn_cnt],
                             'component_name':cn,
-                            'calculated_concentration':calc_conc,
-                            'calculated_concentration_units':calc_conc_units,
+                            'calculated_concentration':norm_conc,
+                            'calculated_concentration_units':norm_conc_units,
                             'used_':True,};
                     data_O.append(row);
+        else:
+            for row_cnt,row in enumerate(groupJoin):
+                print('normalizing samples2Biomass for component_name ' + row['component_name']);
+                # get the calculated concentration
+                calc_conc = None;
+                calc_conc_units = None;
+                if use_height_I: 
+                    calc_conc, calc_conc_units = self.get_peakHeight_sampleNameAndComponentName(sn,cn);
+                elif row['use_calculated_concentration']:
+                    pass;
+                    #calc_conc, calc_conc_units = self.get_concAndConcUnits_sampleNameAndComponentName(sn,cn);
+                elif not row['use_calculated_concentration'] and row['use_area']:
+                    pass;
+                elif not row['use_calculated_concentration'] and not row['use_area']:
+                    pass;
+                # add data to the DB
+                row = {'experiment_id':experiment_id_I,
+                        'sample_name':sn,
+                        'sample_id':sample_ids[sn_cnt],
+                        'component_group_name':component_group_names[cn_cnt],
+                        'component_name':cn,
+                        'calculated_concentration':calc_conc,
+                        'calculated_concentration_units':calc_conc_units,
+                        'used_':True,};
+                data_O.append(row);
+
+        ##SPLIT 2:
+        ## get sample names
+        #sample_names = [];
+        #sample_ids = [];
+        #for st in sample_types_I:
+        #    sample_names_tmp = [];
+        #    sample_ids_tmp = [];
+        #    #sample_names_tmp = self.get_sampleNames_experimentIDAndSampleType(experiment_id_I,st);
+        #    sample_names_tmp,sample_ids_tmp = self.get_sampleNamesAndSampleIDs_experimentIDAndSampleType(experiment_id_I,st);
+        #    sample_names.extend(sample_names_tmp);
+        #    sample_ids.extend(sample_ids_tmp); 
+        #if sample_names_I:
+        #    sample_names_ind = [i for i,x in enumerate(sample_names) if x in sample_names_I];
+        #    sample_names_cpy = copy.copy(sample_names);
+        #    sample_ids = copy.copy(sample_ids);
+        #    sample_names = [x for i,x in enumerate(sample_names) if i in sample_names_ind]
+        #    sample_ids = [x for i,x in enumerate(sample_ids) if i in sample_names_ind]
+        ## create database table
+        #for sn_cnt,sn in enumerate(sample_names):
+        #    print('normalizing samples2Biomass for sample_name ' + sn);
+        #    # get component names
+        #    component_names = [];
+        #    component_group_names = [];
+        #    #component_names = self.get_componentsNames_experimentIDAndSampleName(experiment_id_I,sn);
+        #    component_names,component_group_names = self.get_componentsNamesAndComponentGroupNames_experimentIDAndSampleName(experiment_id_I,sn);
+        #    if component_names_I:                
+        #        component_names_ind = [i for i,x in enumerate(component_names) if x in component_names_I];
+        #        component_names_cpy = copy.copy(component_names);
+        #        component_group_names = copy.copy(component_group_names);
+        #        component_names = [x for i,x in enumerate(component_names) if i in component_names_ind]
+        #        component_group_names = [x for i,x in enumerate(component_group_names) if i in component_names_ind]
+        #    ## get sample id
+        #    #sample_id = self.get_sampleID_experimentIDAndSampleName(experiment_id_I,sn);
+        #    if (biological_material_I and conversion_name_I):
+        #        # get physiological parameters
+        #        cvs = None;
+        #        cvs_units = None;
+        #        od600 = None;
+        #        dil = None;
+        #        dil_units = None;
+        #        conversion = None;
+        #        conversion_units = None;
+        #        cvs, cvs_units, od600, dil,dil_units = self.get_CVSAndCVSUnitsAndODAndDilAndDilUnits_sampleName(sn);
+        #        conversion, conversion_units = self.get_conversionAndConversionUnits_biologicalMaterialAndConversionName(biological_material_I,conversion_name_I);
+        #        if not(cvs and cvs_units and od600 and dil and dil_units):
+        #            print('cvs, cvs_units, or od600 are missing from physiological parameters');
+        #            print('or dil and dil_units are missing from sample descripton');
+        #            exit(-1);
+        #        elif not(conversion and conversion_units):
+        #            print('biological_material or conversion name is incorrect');
+        #            exit(-1);  
+        #        else:
+        #            #calculate the cell volume or biomass depending on the conversion units
+        #            #cell_volume, cell_volume_units = calc.calculate_cellVolume_CVSAndCVSUnitsAndODAndConversionAndConversionUnits(cvs,cvs_units,od600,conversion,conversion_units);
+        #            cell_volume, cell_volume_units = calc.calculate_biomass_CVSAndCVSUnitsAndODAndConversionAndConversionUnits(cvs,cvs_units,od600,conversion,conversion_units);
+        #        for cn_cnt,cn in enumerate(component_names):
+        #            print('normalizing samples2Biomass for component_name ' + cn);
+        #            # get component group name
+        #            #component_group_name = self.get_componentGroupName_experimentIDAndComponentName(experiment_id_I,cn);
+        #            #component_group_name = self.get_msGroup_componentName_MSComponents(cn);
+        #            # get the calculated concentration
+        #            calc_conc = None;
+        #            calc_conc_units = None;
+        #            if use_height_I: 
+        #                calc_conc, calc_conc_units = self.get_peakHeight_sampleNameAndComponentName(sn,cn);
+        #            else:
+        #                calc_conc, calc_conc_units = self.get_concAndConcUnits_sampleNameAndComponentName(sn,cn);
+        #            # calculate the normalized concentration
+        #            norm_conc = None;
+        #            norm_conc_units = None;
+        #            if calc_conc: 
+        #                norm_conc, norm_conc_units = calc.calculate_conc_concAndConcUnitsAndDilAndDilUnitsAndConversionAndConversionUnits(calc_conc,calc_conc_units,dil,dil_units,cell_volume, cell_volume_units);
+        #            # update data_stage01_quantification_normalized
+        #            if norm_conc:
+        #                row = {'experiment_id':experiment_id_I,
+        #                        'sample_name':sn,
+        #                        'sample_id':sample_ids[sn_cnt],
+        #                        'component_group_name':component_group_names[cn_cnt],
+        #                        'component_name':cn,
+        #                        'calculated_concentration':norm_conc,
+        #                        'calculated_concentration_units':norm_conc_units,
+        #                        'used_':True,};
+        #                data_O.append(row);
+        #    else:
+        #        for cn_cnt,cn in enumerate(component_names):
+        #            print('normalizing samples2Biomass for component_name ' + cn);
+        #            # get component group name
+        #            #component_group_name = self.get_componentGroupName_experimentIDAndComponentName(experiment_id_I,cn);
+        #            #component_group_name = self.get_msGroup_componentName_MSComponents(cn);
+        #            # get the calculated concentration
+        #            calc_conc = None;
+        #            calc_conc_units = None;
+        #            if use_height_I: 
+        #                calc_conc, calc_conc_units = self.get_peakHeight_sampleNameAndComponentName(sn,cn);
+        #            else:
+        #                calc_conc, calc_conc_units = self.get_concAndConcUnits_sampleNameAndComponentName(sn,cn);
+        #            # add data to the DB
+        #            row = {'experiment_id':experiment_id_I,
+        #                    'sample_name':sn,
+        #                    'sample_id':sample_ids[sn_cnt],
+        #                    'component_group_name':component_group_names[cn_cnt],
+        #                    'component_name':cn,
+        #                    'calculated_concentration':calc_conc,
+        #                    'calculated_concentration_units':calc_conc_units,
+        #                    'used_':True,};
+        #            data_O.append(row);
+
         self.add_rows_table('data_stage01_quantification_normalized',data_O);
     def execute_removeDuplicateDilutions(self,experiment_id_I,component_names_dil_I = []):
         '''remove duplicate dilutions from data_stage01_quantification_normalized
@@ -366,122 +456,246 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
         data_O=[];
         calc = calculate_interface();
         
-        print('execute_analyzeAverages...')
-        # get sample_name_abbreviations
-        if sample_name_abbreviations_I:
-            sample_name_abbreviations = sample_name_abbreviations_I
-        else:
-            sample_name_abbreviations = [];
-            sample_name_abbreviations = self.get_sampleNameAbbreviations_experimentID_dataStage01Normalized(experiment_id_I);
-        for sna in sample_name_abbreviations:
-            print('analyzing averages for sample_name_abbreviation ' + sna);
-            # get component names
-            if component_names_I:
-                component_names = component_names_I
+        print('execute_analyzeAverages...')        
+        #SPLIT 1:
+        #1 query unique calculated_concentration_units/sample_name_abbreviations/component_names/component_group_names/time_points/sample_names/sample_ids/sample_description
+        uniqueRows = self.get_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(
+                experiment_id_I,
+                calculated_concentration_units_I=[],
+                component_names_I=component_names_I,
+                component_group_names_I=[],
+                sample_names_I=sample_names_I,
+                sample_name_abbreviations_I=sample_name_abbreviations_I,
+                time_points_I=[],
+            );
+        if type(uniqueRows)==type(listDict()):
+            uniqueRows.convert_dataFrame2ListDict()
+            uniqueRows = uniqueRows.get_listDict();
+        #reorganize the data into a dictionary for quick traversal of the replicates
+        data_tmp = {};
+        for uniqueRow_cnt,uniqueRow in enumerate(uniqueRows):
+            unique = (uniqueRow['sample_name_abbreviation'],
+                      uniqueRow['experiment_id'],
+                      uniqueRow['time_point'],
+                      uniqueRow['component_name'],
+                      uniqueRow['calculated_concentration_units'])
+            if not unique in data_tmp.keys():
+                data_tmp[unique] = [];
+            data_tmp[unique].append(uniqueRow);
+        for unique,replicates in data_tmp.items():
+            print('analyzing averages for sample_name_abbreviation ' + replicates[0]['sample_name_abbreviation'] + ' and component_name ' + replicates[0]['component_name']);
+            # get blank concentrations
+            if blank_sample_names_I:
+                sample_names = blank_sample_names_I;
             else:
-                component_names = [];
-                component_names = self.get_componentsNames_experimentIDAndSampleNameAbbreviation_dataStage01Normalized(experiment_id_I,sna);
-            for cn in component_names:
-                print('analyzing averages for component_name ' + cn);
-                component_group_name = self.get_componentGroupName_experimentIDAndComponentName_dataStage01Normalized(experiment_id_I,cn);
-                # get time points
-                time_points = self.get_timePoint_experimentIDAndSampleNameAbbreviation_dataStage01Normalized(experiment_id_I,sna);
-                if not time_points: continue;
-                for tp in time_points:
-                    print('analyzing averages for time_point ' + tp);
-                    # get blank concentrations
-                    if blank_sample_names_I:
-                        sample_names = blank_sample_names_I;
-                    else:
-                        sample_names = [];
-                    concs = [];
-                    conc_units = None;
-                    for sn in sample_names:
-                        # concentrations and units
-                        conc = None;
-                        conc_unit = None;
-                        conc, conc_unit = self.get_concAndConcUnits_sampleNameAndComponentName_dataStage01Normalized(sn,cn);
-                        if (not(conc) or conc==0): continue
-                        if (conc_unit): conc_units = conc_unit;
-                        concs.append(conc);
-                    n_replicates_filtrate = len(concs);
-                    conc_average_filtrate = 0.0;
-                    conc_var_filtrate = 0.0;
-                    conc_cv_filtrate = 0.0;
-                    # calculate average and CV of concentrations
-                    if (not(concs)): 
-                        conc_average_filtrate = 0;
-                        conc_var_filtrate = 0;
-                    elif n_replicates_filtrate<2: 
-                        conc_average_filtrate = concs[0];
-                        conc_var_filtrate = 0;
-                    else: 
-                        #conc_average_filtrate, conc_var_filtrate = calc.calculate_ave_var_R(concs);
-                        conc_average_filtrate = numpy.mean(numpy.array(concs));
-                        conc_var_filtrate = numpy.var(numpy.array(concs));
-                        if (conc_average_filtrate <= 0): conc_cv_filtrate = 0;
-                        else: conc_cv_filtrate = sqrt(conc_var_filtrate)/conc_average_filtrate*100; 
-                    # get broth sample names
-                    sample_names = [];
-                    sample_description = 'Broth';
-                    sample_names = self.get_sampleNames_experimentIDAndSampleNameAbbreviationAndSampleDescriptionAndComponentNameAndTimePoint_dataStage01Normalized(experiment_id_I,sna,sample_description,cn,tp);
-                    if sample_names_I: # screen out sample names that are not in the input
-                        sample_names = [x for x in sample_names if x in sample_names_I];
-                    concs = [];
-                    conc_units = None;
-                    for sn in sample_names:
-                        print('analyzing averages for sample_name ' + sn);
-                        # query concentrations and units
-                        conc = None;
-                        conc_unit = None;
-                        conc, conc_unit = self.get_concAndConcUnits_sampleNameAndComponentName_dataStage01Normalized(sn,cn);
-                        if (not(conc) or conc==0): continue
-                        if (conc_unit): conc_units = conc_unit;
-                        concs.append(conc);
-                    n_replicates = len(concs);
-                    conc_average_broth = 0.0;
-                    conc_var_broth = 0.0;
-                    conc_cv_broth = 0.0;
-                    # calculate average and CV of concentrations
-                    if (not(concs)): 
-                        continue
-                    elif n_replicates<2: 
-                        continue
-                    else: 
-                        #conc_average_broth, conc_var_broth = calc.calculate_ave_var_R(concs);
-                        conc_average_broth = numpy.mean(numpy.array(concs));
-                        conc_var_broth = numpy.var(numpy.array(concs));
-                        if (conc_average_broth <= 0): conc_cv_broth = 0;
-                        else: conc_cv_broth = sqrt(conc_var_broth)/conc_average_broth*100; 
-                    # calculate average and CV
-                    conc_average = 0.0;
-                    conc_var = 0.0;
-                    conc_cv = 0.0;
-                    conc_average = conc_average_broth-conc_average_filtrate;
-                    if (conc_average < 0): conc_average = 0;
-                    conc_var = conc_var_broth + conc_var_filtrate;
-                    if (conc_average <= 0): conc_cv = 0;
-                    else: conc_cv = sqrt(conc_var)/conc_average*100;
-                    # calculate the % extracellular
-                    extracellular_percent = conc_average_filtrate/conc_average_broth*100;
-                    # add data to the session
-                    row = {};
-                    row = {'experiment_id':experiment_id_I,
-                            'sample_name_abbreviation':sna,
-                            'time_point':tp,
-                            'component_group_name':component_group_name,
-                            'component_name':cn,
-                            'n_replicates_broth':n_replicates,
-                            'calculated_concentration_broth_average':conc_average_broth,
-                            'calculated_concentration_broth_cv':conc_cv_broth,
-                            'n_replicates_filtrate':n_replicates_filtrate,
-                            'calculated_concentration_filtrate_average':conc_average_filtrate,
-                            'calculated_concentration_filtrate_cv':conc_cv_filtrate,
-                            'n_replicates':n_replicates,
-                            'calculated_concentration_average':conc_average,
-                            'calculated_concentration_cv':conc_cv,
-                            'calculated_concentration_units':conc_units,
-                            'extracellular_percent':extracellular_percent,
-                            'used_':True,};
-                    data_O.append(row);
+                sample_names = [];
+            concs = [];
+            conc_units = None;
+            for sn in sample_names:
+                # concentrations and units
+                conc = None;
+                conc_unit = None;
+                conc, conc_unit = self.get_concAndConcUnits_sampleNameAndComponentName_dataStage01Normalized(
+                    sn,
+                    replicates[0]['component_name']);
+                if (not(conc) or conc==0): continue
+                if (conc_unit): conc_units = conc_unit;
+                concs.append(conc);
+            n_replicates_filtrate = len(concs);
+            conc_average_filtrate = 0.0;
+            conc_var_filtrate = 0.0;
+            conc_cv_filtrate = 0.0;
+            # calculate average and CV of concentrations
+            if (not(concs)): 
+                conc_average_filtrate = 0;
+                conc_var_filtrate = 0;
+            elif n_replicates_filtrate<2: 
+                conc_average_filtrate = concs[0];
+                conc_var_filtrate = 0;
+            else: 
+                #conc_average_filtrate, conc_var_filtrate = calc.calculate_ave_var_R(concs);
+                conc_average_filtrate = numpy.mean(numpy.array(concs));
+                conc_var_filtrate = numpy.var(numpy.array(concs));
+                if (conc_average_filtrate <= 0): conc_cv_filtrate = 0;
+                else: conc_cv_filtrate = sqrt(conc_var_filtrate)/conc_average_filtrate*100; 
+            # get broth sample names
+            sample_names = [d['sample_name'] for d in replicates if d['sample_desc']=='Broth'];
+            concs = [];
+            conc_units = None;
+            for sn in sample_names:
+                # query concentrations and units
+                conc = None;
+                conc_unit = None;
+                conc, conc_unit = self.get_concAndConcUnits_sampleNameAndComponentName_dataStage01Normalized(
+                    sn,
+                    replicates[0]['component_name']);
+                if (not(conc) or conc==0): continue
+                if (conc_unit): conc_units = conc_unit;
+                concs.append(conc);
+            n_replicates = len(concs);
+            conc_average_broth = 0.0;
+            conc_var_broth = 0.0;
+            conc_cv_broth = 0.0;
+            # calculate average and CV of concentrations
+            if (not(concs)): 
+                continue
+            elif n_replicates<2: 
+                continue
+            else: 
+                #conc_average_broth, conc_var_broth = calc.calculate_ave_var_R(concs);
+                conc_average_broth = numpy.mean(numpy.array(concs));
+                conc_var_broth = numpy.var(numpy.array(concs));
+                if (conc_average_broth <= 0): conc_cv_broth = 0;
+                else: conc_cv_broth = sqrt(conc_var_broth)/conc_average_broth*100; 
+            # calculate average and CV
+            conc_average = 0.0;
+            conc_var = 0.0;
+            conc_cv = 0.0;
+            conc_average = conc_average_broth-conc_average_filtrate;
+            if (conc_average < 0): conc_average = 0;
+            conc_var = conc_var_broth + conc_var_filtrate;
+            if (conc_average <= 0): conc_cv = 0;
+            else: conc_cv = sqrt(conc_var)/conc_average*100;
+            # calculate the % extracellular
+            extracellular_percent = conc_average_filtrate/conc_average_broth*100;
+            # add data to the session
+            row = {};
+            row = {'experiment_id':experiment_id_I,
+                    'sample_name_abbreviation':replicates[0]['sample_name_abbreviation'],
+                    'time_point':replicates[0]['time_point'],
+                    'component_group_name':replicates[0]['component_group_name'],
+                    'component_name':replicates[0]['component_name'],
+                    'n_replicates_broth':n_replicates,
+                    'calculated_concentration_broth_average':conc_average_broth,
+                    'calculated_concentration_broth_cv':conc_cv_broth,
+                    'n_replicates_filtrate':n_replicates_filtrate,
+                    'calculated_concentration_filtrate_average':conc_average_filtrate,
+                    'calculated_concentration_filtrate_cv':conc_cv_filtrate,
+                    'n_replicates':n_replicates,
+                    'calculated_concentration_average':conc_average,
+                    'calculated_concentration_cv':conc_cv,
+                    'calculated_concentration_units':conc_units,
+                    'extracellular_percent':extracellular_percent,
+                    'used_':True,};
+            data_O.append(row);
+
+        ##SPLIT2
+        ## get sample_name_abbreviations
+        #if sample_name_abbreviations_I:
+        #    sample_name_abbreviations = sample_name_abbreviations_I
+        #else:
+        #    sample_name_abbreviations = [];
+        #    sample_name_abbreviations = self.get_sampleNameAbbreviations_experimentID_dataStage01Normalized(experiment_id_I);
+        #for sna in sample_name_abbreviations:
+        #    print('analyzing averages for sample_name_abbreviation ' + sna);
+        #    # get component names
+        #    if component_names_I:
+        #        component_names = component_names_I
+        #    else:
+        #        component_names = [];
+        #        component_names = self.get_componentsNames_experimentIDAndSampleNameAbbreviation_dataStage01Normalized(experiment_id_I,sna);
+        #    for cn in component_names:
+        #        print('analyzing averages for component_name ' + cn);
+        #        component_group_name = self.get_componentGroupName_experimentIDAndComponentName_dataStage01Normalized(experiment_id_I,cn);
+        #        # get time points
+        #        time_points = self.get_timePoint_experimentIDAndSampleNameAbbreviation_dataStage01Normalized(experiment_id_I,sna);
+        #        if not time_points: continue;
+        #        for tp in time_points:
+        #            print('analyzing averages for time_point ' + tp);
+        #            # get blank concentrations
+        #            if blank_sample_names_I:
+        #                sample_names = blank_sample_names_I;
+        #            else:
+        #                sample_names = [];
+        #            concs = [];
+        #            conc_units = None;
+        #            for sn in sample_names:
+        #                # concentrations and units
+        #                conc = None;
+        #                conc_unit = None;
+        #                conc, conc_unit = self.get_concAndConcUnits_sampleNameAndComponentName_dataStage01Normalized(sn,cn);
+        #                if (not(conc) or conc==0): continue
+        #                if (conc_unit): conc_units = conc_unit;
+        #                concs.append(conc);
+        #            n_replicates_filtrate = len(concs);
+        #            conc_average_filtrate = 0.0;
+        #            conc_var_filtrate = 0.0;
+        #            conc_cv_filtrate = 0.0;
+        #            # calculate average and CV of concentrations
+        #            if (not(concs)): 
+        #                conc_average_filtrate = 0;
+        #                conc_var_filtrate = 0;
+        #            elif n_replicates_filtrate<2: 
+        #                conc_average_filtrate = concs[0];
+        #                conc_var_filtrate = 0;
+        #            else: 
+        #                #conc_average_filtrate, conc_var_filtrate = calc.calculate_ave_var_R(concs);
+        #                conc_average_filtrate = numpy.mean(numpy.array(concs));
+        #                conc_var_filtrate = numpy.var(numpy.array(concs));
+        #                if (conc_average_filtrate <= 0): conc_cv_filtrate = 0;
+        #                else: conc_cv_filtrate = sqrt(conc_var_filtrate)/conc_average_filtrate*100; 
+        #            # get broth sample names
+        #            sample_names = [];
+        #            sample_description = 'Broth';
+        #            sample_names = self.get_sampleNames_experimentIDAndSampleNameAbbreviationAndSampleDescriptionAndComponentNameAndTimePoint_dataStage01Normalized(experiment_id_I,sna,sample_description,cn,tp);
+        #            if sample_names_I: # screen out sample names that are not in the input
+        #                sample_names = [x for x in sample_names if x in sample_names_I];
+        #            concs = [];
+        #            conc_units = None;
+        #            for sn in sample_names:
+        #                print('analyzing averages for sample_name ' + sn);
+        #                # query concentrations and units
+        #                conc = None;
+        #                conc_unit = None;
+        #                conc, conc_unit = self.get_concAndConcUnits_sampleNameAndComponentName_dataStage01Normalized(sn,cn);
+        #                if (not(conc) or conc==0): continue
+        #                if (conc_unit): conc_units = conc_unit;
+        #                concs.append(conc);
+        #            n_replicates = len(concs);
+        #            conc_average_broth = 0.0;
+        #            conc_var_broth = 0.0;
+        #            conc_cv_broth = 0.0;
+        #            # calculate average and CV of concentrations
+        #            if (not(concs)): 
+        #                continue
+        #            elif n_replicates<2: 
+        #                continue
+        #            else: 
+        #                #conc_average_broth, conc_var_broth = calc.calculate_ave_var_R(concs);
+        #                conc_average_broth = numpy.mean(numpy.array(concs));
+        #                conc_var_broth = numpy.var(numpy.array(concs));
+        #                if (conc_average_broth <= 0): conc_cv_broth = 0;
+        #                else: conc_cv_broth = sqrt(conc_var_broth)/conc_average_broth*100; 
+        #            # calculate average and CV
+        #            conc_average = 0.0;
+        #            conc_var = 0.0;
+        #            conc_cv = 0.0;
+        #            conc_average = conc_average_broth-conc_average_filtrate;
+        #            if (conc_average < 0): conc_average = 0;
+        #            conc_var = conc_var_broth + conc_var_filtrate;
+        #            if (conc_average <= 0): conc_cv = 0;
+        #            else: conc_cv = sqrt(conc_var)/conc_average*100;
+        #            # calculate the % extracellular
+        #            extracellular_percent = conc_average_filtrate/conc_average_broth*100;
+        #            # add data to the session
+        #            row = {};
+        #            row = {'experiment_id':experiment_id_I,
+        #                    'sample_name_abbreviation':sna,
+        #                    'time_point':tp,
+        #                    'component_group_name':component_group_name,
+        #                    'component_name':cn,
+        #                    'n_replicates_broth':n_replicates,
+        #                    'calculated_concentration_broth_average':conc_average_broth,
+        #                    'calculated_concentration_broth_cv':conc_cv_broth,
+        #                    'n_replicates_filtrate':n_replicates_filtrate,
+        #                    'calculated_concentration_filtrate_average':conc_average_filtrate,
+        #                    'calculated_concentration_filtrate_cv':conc_cv_filtrate,
+        #                    'n_replicates':n_replicates,
+        #                    'calculated_concentration_average':conc_average,
+        #                    'calculated_concentration_cv':conc_cv,
+        #                    'calculated_concentration_units':conc_units,
+        #                    'extracellular_percent':extracellular_percent,
+        #                    'used_':True,};
+        #            data_O.append(row);
+
         self.add_rows_table('data_stage01_quantification_averages',data_O);

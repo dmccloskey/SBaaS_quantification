@@ -11,6 +11,9 @@ from SBaaS_base.sbaas_base_query_delete import sbaas_base_query_delete
 
 from SBaaS_base.sbaas_template_query import sbaas_template_query
 
+#resources
+from listDict.listDict import listDict
+
 class stage01_quantification_normalized_query(sbaas_template_query):
     def initialize_supportedTables(self):
         '''Set the supported tables dict for 
@@ -21,7 +24,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         self.set_supportedTables(tables_supported);
         # query samples from data_stage01_quantification_normalized
     def get_sampleIDs_experimentID_dataStage01Normalized(self,experiment_id_I):
-        '''Querry sample ids that are used from
+        '''Query sample ids that are used from
         the experiment'''
         try:
             sample_ids = self.session.query(data_stage01_quantification_normalized.sample_id).filter(
@@ -35,7 +38,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleNames_experimentID_dataStage01Normalized(self,experiment_id_I):
-        '''Querry sample names (i.e. unknowns) that are used from
+        '''Query sample names (i.e. unknowns) that are used from
         the experiment'''
         try:
             sample_names = self.session.query(data_stage01_quantification_normalized.sample_name).filter(
@@ -49,7 +52,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleNames_experimentIDAndSampleNameAbbreviationAndSampleDescriptionAndComponentName_dataStage01Normalized(self,experiment_id_I,sample_name_abbreviation_I,sample_decription_I,component_name_I,exp_type_I=4):
-        '''Querry sample names that are used from the experiment by sample name abbreviation and sample description'''
+        '''Query sample names that are used from the experiment by sample name abbreviation and sample description'''
         try:
             sample_names = self.session.query(data_stage01_quantification_normalized.sample_name).filter(
                     sample_description.sample_name_abbreviation.like(sample_name_abbreviation_I),
@@ -70,7 +73,11 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleNames_experimentIDAndSampleNameAbbreviationAndSampleDescriptionAndComponentNameAndTimePoint_dataStage01Normalized(self,experiment_id_I,sample_name_abbreviation_I,sample_decription_I,component_name_I,time_point_I,exp_type_I=4):
-        '''Querry sample names that are used from the experiment by sample name abbreviation and sample description'''
+        '''Query sample names that are used from the experiment by sample name abbreviation and sample description
+        TODO: slow query
+        OPTION 1: optimize query
+        OPTION 2: create an index
+        OPTION 3: change normalized table to have sample_name_abbreviation'''
         try:
             sample_names = self.session.query(data_stage01_quantification_normalized.sample_name).filter(
                     sample_description.sample_name_abbreviation.like(sample_name_abbreviation_I),
@@ -92,7 +99,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleName_experimentIDAndSampleIDAndSampleDilution_dataStage01Normalized(self,experiment_id_I,sample_id_I, sample_dilution_I):
-        '''Querry sample names (i.e. unknowns) that are used from
+        '''Query sample names (i.e. unknowns) that are used from
         the experiment'''
         try:
             sample_name = self.session.query(data_stage01_quantification_normalized.sample_name).filter(
@@ -106,7 +113,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleNameShort_experimentIDAndSampleName_dataStage01Normalized(self,experiment_id_I,sample_name_I):
-        '''Querry sample name short that are used from
+        '''Query sample name short that are used from
         the experiment'''
         try:
             sample_name_short = self.session.query(sample_description.sample_name_short).filter(
@@ -121,7 +128,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleNameShort_experimentIDAndSampleDescription_dataStage01Normalized(self,experiment_id_I,sample_description_I,exp_type_I=4):
-        '''Querry sample name short that are in the experiment'''
+        '''Query sample name short that are in the experiment'''
         try:
             sample_name_short = self.session.query(sample_description.sample_name_short).filter(
                     data_stage01_quantification_normalized.experiment_id.like(experiment_id_I),
@@ -140,7 +147,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleNameShort_experimentID_dataStage01Normalized(self,experiment_id_I):
-        '''Querry sample name short that are in the experiment'''
+        '''Query sample name short that are in the experiment'''
         try:
             sample_name_short = self.session.query(sample_description.sample_name_short).filter(
                     data_stage01_quantification_normalized.experiment_id.like(experiment_id_I),
@@ -155,8 +162,10 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleNameAbbreviations_experimentID_dataStage01Normalized(self,experiment_id_I):
-        '''Querry sample names (i.e. unknowns) that are used from
-        the experiment'''
+        '''Query sample names (i.e. unknowns) that are used from
+        the experiment
+        TODO: slow join...
+        '''
         try:
             sample_names = self.session.query(sample_description.sample_name_abbreviation).filter(
                     data_stage01_quantification_normalized.experiment_id.like(experiment_id_I),
@@ -172,7 +181,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
             print(e);
     # query components from data_stage01_quantification_normalized
     def get_componentsNames_experimentID_dataStage01Normalized(self,experiment_id_I):
-        '''Querry component names that are used and not internal standards from
+        '''Query component names that are used and not internal standards from
         the experiment id'''
         try:
             component_names = self.session.query(data_stage01_quantification_normalized.component_name).filter(
@@ -186,7 +195,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_componentsNames_experimentIDAndSampleID_dataStage01Normalized(self,experiment_id_I,sample_id_I):
-        '''Querry component names that are used and not internal standards from
+        '''Query component names that are used and not internal standards from
         the experiment and sample_id'''
         try:
             component_names = self.session.query(data_stage01_quantification_normalized.component_name).filter(
@@ -201,7 +210,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_componentsNames_experimentIDAndSampleName_dataStage01Normalized(self,experiment_id_I,sample_name_I):
-        '''Querry component names that are used and not internal standards from
+        '''Query component names that are used and not internal standards from
         the experiment and sample_name'''
         try:
             component_names = self.session.query(data_stage01_quantification_normalized.component_name).filter(
@@ -216,8 +225,10 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_componentsNames_experimentIDAndSampleNameAbbreviation_dataStage01Normalized(self,experiment_id_I,sample_name_abbreviation_I,exp_type_I=4):
-        '''Querry component names that are used and not internal standards from
-        the experiment and sample abbreviation'''
+        '''Query component names that are used and not internal standards from
+        the experiment and sample abbreviation
+        TODO: slow join...
+        '''
         try:
             component_names = self.session.query(data_stage01_quantification_normalized.component_name).filter(
                     data_stage01_quantification_normalized.experiment_id.like(experiment_id_I),
@@ -236,7 +247,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_componentGroupName_experimentIDAndComponentName_dataStage01Normalized(self,experiment_id_I,component_name_I):
-        '''Querry component group names that are used from the component name
+        '''Query component group names that are used from the component name
         NOTE: intended to be used within a for loop'''
         try:
             component_group_name = self.session.query(data_stage01_quantification_normalized.component_group_name).filter(
@@ -252,7 +263,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
             print(e);
     # query dilutions from data_stage01_quantification_normalized
     def get_sampleDilutions_experimentIDAndSampleIDAndComponentName_dataStage01Normalized(self,experiment_id_I,sample_id_I,component_name_I):
-        '''Querry dilutions that are used from the experiment'''
+        '''Query dilutions that are used from the experiment'''
         try:
             sample_dilutions = self.session.query(sample.sample_dilution).filter(
                     sample.sample_id.like(sample_id_I),
@@ -269,7 +280,9 @@ class stage01_quantification_normalized_query(sbaas_template_query):
             print(e);
     # query time points
     def get_timePoint_experimentIDAndSampleNameAbbreviation_dataStage01Normalized(self,experiment_id_I,sample_name_abbreviation_I,exp_type_I=4):
-        '''Querry time points that are used from the experiment and sample name abbreviation'''
+        '''Query time points that are used from the experiment and sample name abbreviation
+        TODO: slow query
+        '''
         try:
             time_points = self.session.query(sample_description.time_point).filter(
                     sample_description.sample_name_abbreviation.like(sample_name_abbreviation_I),
@@ -290,7 +303,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
             print(e);
     # query data from data_stage01_quantification_normalized    
     def get_concAndConcUnits_sampleNameAndComponentName_dataStage01Normalized(self,sample_name_I,component_name_I):
-        '''Querry data (i.e. concentration) from sample name and component name
+        '''Query data (i.e. concentration) from sample name and component name
         NOTE: intended to be used within a for loop'''
         try:
             data = self.session.query(data_stage01_quantification_normalized.calculated_concentration,
@@ -555,7 +568,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
     
     # Query sample names from data_stage01_quantification_averages:
     def get_sampleNameAbbreviations_experimentIDAndTimePointAndComponentName_dataStage01Averages(self,experiment_id_I,time_point_I,component_name_I):
-        '''Querry sample names (i.e. unknowns) that are used from
+        '''Query sample names (i.e. unknowns) that are used from
         the experiment'''
         try:
             sample_names = self.session.query(data_stage01_quantification_averages.sample_name_abbreviation).filter(
@@ -606,7 +619,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
             print(e);
     # Query time points from data_stage01_quantification_averages
     def get_timePoint_experimentID_dataStage01Averages(self,experiment_id_I):
-        '''Querry time points that are used from the experiment'''
+        '''Query time points that are used from the experiment'''
         try:
             time_points = self.session.query(data_stage01_quantification_averages.time_point).filter(
                     data_stage01_quantification_averages.experiment_id.like(experiment_id_I),
@@ -619,7 +632,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_timePoint_experimentIDAndComponentName_dataStage01Averages(self,experiment_id_I,component_name_I):
-        '''Querry time points that are used from the experiment'''
+        '''Query time points that are used from the experiment'''
         try:
             time_points = self.session.query(data_stage01_quantification_averages.time_point).filter(
                     data_stage01_quantification_averages.experiment_id.like(experiment_id_I),
@@ -634,7 +647,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
             print(e);
     # Query component names from data_stage01_quantification_averages:
     def get_componentNames_experimentIDAndTimePoint_dataStage01Averages(self,experiment_id_I,time_point_I):
-        '''Querry component Names that are used from the experiment'''
+        '''Query component Names that are used from the experiment'''
         try:
             component_names = self.session.query(data_stage01_quantification_averages.component_name).filter(
                     data_stage01_quantification_averages.experiment_id.like(experiment_id_I),
@@ -648,7 +661,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_componentNames_experimentID_dataStage01Averages(self,experiment_id_I):
-        '''Querry component Names that are used from the experiment'''
+        '''Query component Names that are used from the experiment'''
         try:
             component_names = self.session.query(data_stage01_quantification_averages.component_name).filter(
                     data_stage01_quantification_averages.experiment_id.like(experiment_id_I),
@@ -658,5 +671,66 @@ class stage01_quantification_normalized_query(sbaas_template_query):
             component_names_O = [];
             for cn in component_names: component_names_O.append(cn.component_name);
             return component_names_O;
+        except SQLAlchemyError as e:
+            print(e);
+
+    #Query Joins across normalized/averages/sample/sample_description
+    def get_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(self,
+                experiment_id_I,
+                calculated_concentration_units_I=[],
+                component_names_I=[],
+                component_group_names_I=[],
+                sample_names_I=[],
+                sample_name_abbreviations_I=[],
+                time_points_I=[],
+            ):
+        """query unique calculated_concentration_units,sample_name_abbreviations,component_names,
+        component_group_names,time_points,sample_names,sample_ids,sample_description
+        BY experiment_id_I
+        """
+        try:
+            data = self.session.query(
+                    data_stage01_quantification_normalized.sample_name,
+                    data_stage01_quantification_normalized.component_name,
+                    data_stage01_quantification_normalized.component_group_name,
+                    data_stage01_quantification_normalized.sample_name,
+                    data_stage01_quantification_normalized.sample_id,
+                    data_stage01_quantification_normalized.experiment_id,
+                    data_stage01_quantification_normalized.calculated_concentration_units,
+                    sample_description.time_point,
+                    sample_description.sample_desc,
+                    sample_description.sample_name_abbreviation).filter(
+                    data_stage01_quantification_normalized.experiment_id.like(experiment_id_I),
+                    data_stage01_quantification_normalized.sample_name.like(sample.sample_name),
+                    sample.sample_id.like(sample_description.sample_id),
+                    data_stage01_quantification_normalized.used_.is_(True)).group_by(
+                    data_stage01_quantification_normalized.sample_name,
+                    data_stage01_quantification_normalized.component_name,
+                    data_stage01_quantification_normalized.component_group_name,
+                    data_stage01_quantification_normalized.sample_name,
+                    data_stage01_quantification_normalized.sample_id,
+                    data_stage01_quantification_normalized.experiment_id,
+                    data_stage01_quantification_normalized.calculated_concentration_units,
+                    sample_description.time_point,
+                    sample_description.sample_desc,
+                    sample_description.sample_name_abbreviation).order_by(
+                    data_stage01_quantification_normalized.calculated_concentration_units.asc(),
+                    sample_description.sample_name_abbreviation.asc(),
+                    sample_description.time_point.asc(),
+                    data_stage01_quantification_normalized.component_name.asc(),
+                    sample_description.sample_desc.asc(),).all();
+            data_O=[];
+            if data:
+                data_O = listDict(record_I=data);
+                data_O.convert_record2DataFrame();
+                data_O.filterIn_byDictList({
+                                            'sample_name_abbreviation':sample_name_abbreviations_I,
+                                            'sample_name':sample_names_I,
+                                           'component_name':component_names_I,
+                                           'component_group_name':component_group_names_I,
+                                           'calculated_concentration_units':calculated_concentration_units_I,
+                                           'time_point':time_points_I,
+                                           });
+            return data_O;
         except SQLAlchemyError as e:
             print(e);

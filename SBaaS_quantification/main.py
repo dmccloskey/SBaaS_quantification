@@ -97,14 +97,6 @@ exnorm01 = stage01_quantification_normalized_execute(session,engine,pg_settings.
 exnorm01.initialize_supportedTables();
 exnorm01.initialize_dataStage01_quantification_normalized();
 
-## export the data to ddt
-#exnorm01.export_dataStage01NormalizedAndAverages_js('ALEsKOs01',
-#        sample_name_abbreviations_I=['OxicEvo04pgiEcoliGlc'],
-#        sample_names_I=[],
-#        component_names_I=[],
-#        cv_threshold_I=40,extracellular_threshold_I=80,
-#        data_dir_I='tmp');
-
 # normalize samples to the measured biomass of the experiment
 sampleName_componentName_listDict = [
     {'sample_names':['140716_0_OxicEvo04pgiEcoliGlcM9_Broth-6-10.0x'],
@@ -132,6 +124,56 @@ sampleName_componentName_listDict = [
 #        conversion_name_I='gDW2OD_lab',
 #        sample_names_I = row['sample_names'],
 #        component_names_I = row['component_names'])
+
+# normalize samples to biomass
+from SBaaS_quantification.stage01_quantification_normalized_execute import stage01_quantification_normalized_execute
+exnorm01 = stage01_quantification_normalized_execute(session,engine,pg_settings.datadir_settings);
+exnorm01.initialize_supportedTables();
+exnorm01.initialize_tables();
+
+# reset previous normalizations
+sampleName_componentName_listDict = [
+    {'sample_names':['150601_0_BloodProject01_PLT_30_Broth-1','150601_0_BloodProject01_PLT_30_Broth-1-10.0x','150601_0_BloodProject01_PLT_30_Broth-2','150601_0_BloodProject01_PLT_30_Broth-2-10.0x','150601_0_BloodProject01_PLT_30_Broth-3','150601_0_BloodProject01_PLT_30_Broth-3-10.0x','150601_0_BloodProject01_PLT_30_Broth-4','150601_0_BloodProject01_PLT_30_Broth-4-10.0x','150601_0_BloodProject01_PLT_30_Broth-5','150601_0_BloodProject01_PLT_30_Broth-5-10.0x','150601_0_BloodProject01_PLT_30_Broth-6','150601_0_BloodProject01_PLT_30_Broth-6-10.0x','150601_0_BloodProject01_PLT_31_Broth-1','150601_0_BloodProject01_PLT_31_Broth-1-10.0x','150601_0_BloodProject01_PLT_31_Broth-2','150601_0_BloodProject01_PLT_31_Broth-2-10.0x','150601_0_BloodProject01_PLT_31_Broth-3','150601_0_BloodProject01_PLT_31_Broth-3-10.0x','150601_0_BloodProject01_PLT_31_Broth-4','150601_0_BloodProject01_PLT_31_Broth-4-10.0x','150601_0_BloodProject01_PLT_31_Broth-5','150601_0_BloodProject01_PLT_31_Broth-5-10.0x','150601_0_BloodProject01_PLT_31_Broth-6','150601_0_BloodProject01_PLT_31_Broth-6-10.0x','150601_0_BloodProject01_PLT_32_Broth-1','150601_0_BloodProject01_PLT_32_Broth-1-10.0x','150601_0_BloodProject01_PLT_32_Broth-2','150601_0_BloodProject01_PLT_32_Broth-2-10.0x','150601_0_BloodProject01_PLT_32_Broth-3','150601_0_BloodProject01_PLT_32_Broth-3-10.0x','150601_0_BloodProject01_PLT_32_Broth-4','150601_0_BloodProject01_PLT_32_Broth-4-10.0x','150601_0_BloodProject01_PLT_32_Broth-5','150601_0_BloodProject01_PLT_32_Broth-5-10.0x','150601_0_BloodProject01_PLT_32_Broth-6','150601_0_BloodProject01_PLT_32_Broth-6-10.0x','150601_0_BloodProject01_PLT_33_Broth-1','150601_0_BloodProject01_PLT_33_Broth-1-10.0x','150601_0_BloodProject01_PLT_33_Broth-2','150601_0_BloodProject01_PLT_33_Broth-2-10.0x','150601_0_BloodProject01_PLT_33_Broth-3','150601_0_BloodProject01_PLT_33_Broth-3-10.0x','150601_0_BloodProject01_PLT_33_Broth-4','150601_0_BloodProject01_PLT_33_Broth-4-10.0x','150601_0_BloodProject01_PLT_33_Broth-5','150601_0_BloodProject01_PLT_33_Broth-5-10.0x','150601_0_BloodProject01_PLT_33_Broth-6','150601_0_BloodProject01_PLT_33_Broth-6-10.0x','150601_0_BloodProject01_PLT_34_Broth-1','150601_0_BloodProject01_PLT_34_Broth-1-10.0x','150601_0_BloodProject01_PLT_34_Broth-2','150601_0_BloodProject01_PLT_34_Broth-2-10.0x','150601_0_BloodProject01_PLT_34_Broth-3','150601_0_BloodProject01_PLT_34_Broth-3-10.0x','150601_0_BloodProject01_PLT_34_Broth-4','150601_0_BloodProject01_PLT_34_Broth-4-10.0x','150601_0_BloodProject01_PLT_34_Broth-5','150601_0_BloodProject01_PLT_34_Broth-5-10.0x','150601_0_BloodProject01_PLT_34_Broth-6','150601_0_BloodProject01_PLT_34_Broth-6-10.0x','150601_0_BloodProject01_PLT_35_Broth-1','150601_0_BloodProject01_PLT_35_Broth-1-10.0x','150601_0_BloodProject01_PLT_35_Broth-2','150601_0_BloodProject01_PLT_35_Broth-2-10.0x','150601_0_BloodProject01_PLT_35_Broth-3','150601_0_BloodProject01_PLT_35_Broth-3-10.0x','150601_0_BloodProject01_PLT_35_Broth-4','150601_0_BloodProject01_PLT_35_Broth-4-10.0x','150601_0_BloodProject01_PLT_35_Broth-5','150601_0_BloodProject01_PLT_35_Broth-5-10.0x','150601_0_BloodProject01_PLT_35_Broth-6','150601_0_BloodProject01_PLT_35_Broth-6-10.0x','150601_0_BloodProject01_PLT_36_Broth-1','150601_0_BloodProject01_PLT_36_Broth-1-10.0x','150601_0_BloodProject01_PLT_36_Broth-2','150601_0_BloodProject01_PLT_36_Broth-2-10.0x','150601_0_BloodProject01_PLT_36_Broth-3','150601_0_BloodProject01_PLT_36_Broth-3-10.0x','150601_0_BloodProject01_PLT_36_Broth-4','150601_0_BloodProject01_PLT_36_Broth-4-10.0x','150601_0_BloodProject01_PLT_36_Broth-5','150601_0_BloodProject01_PLT_36_Broth-5-10.0x','150601_0_BloodProject01_PLT_36_Broth-6','150601_0_BloodProject01_PLT_36_Broth-6-10.0x','150601_0_BloodProject01_PLT_37_Broth-1','150601_0_BloodProject01_PLT_37_Broth-1-10.0x','150601_0_BloodProject01_PLT_37_Broth-2','150601_0_BloodProject01_PLT_37_Broth-2-10.0x','150601_0_BloodProject01_PLT_37_Broth-3','150601_0_BloodProject01_PLT_37_Broth-3-10.0x','150601_0_BloodProject01_PLT_37_Broth-4','150601_0_BloodProject01_PLT_37_Broth-4-10.0x','150601_0_BloodProject01_PLT_37_Broth-5','150601_0_BloodProject01_PLT_37_Broth-5-10.0x','150601_0_BloodProject01_PLT_37_Broth-6','150601_0_BloodProject01_PLT_37_Broth-6-10.0x','150601_0_BloodProject01_PLT_38_Broth-1','150601_0_BloodProject01_PLT_38_Broth-1-10.0x','150601_0_BloodProject01_PLT_38_Broth-2','150601_0_BloodProject01_PLT_38_Broth-2-10.0x','150601_0_BloodProject01_PLT_38_Broth-3','150601_0_BloodProject01_PLT_38_Broth-3-10.0x','150601_0_BloodProject01_PLT_38_Broth-4','150601_0_BloodProject01_PLT_38_Broth-4-10.0x','150601_0_BloodProject01_PLT_38_Broth-5','150601_0_BloodProject01_PLT_38_Broth-5-10.0x','150601_0_BloodProject01_PLT_38_Broth-6','150601_0_BloodProject01_PLT_38_Broth-6-10.0x','150601_0_BloodProject01_PLT_39_Broth-1','150601_0_BloodProject01_PLT_39_Broth-1-10.0x','150601_0_BloodProject01_PLT_39_Broth-2','150601_0_BloodProject01_PLT_39_Broth-2-10.0x','150601_0_BloodProject01_PLT_39_Broth-3','150601_0_BloodProject01_PLT_39_Broth-3-10.0x','150601_0_BloodProject01_PLT_39_Broth-4','150601_0_BloodProject01_PLT_39_Broth-4-10.0x','150601_0_BloodProject01_PLT_39_Broth-5','150601_0_BloodProject01_PLT_39_Broth-5-10.0x','150601_0_BloodProject01_PLT_39_Broth-6','150601_0_BloodProject01_PLT_39_Broth-6-10.0x','150601_0_BloodProject01_PLT_40_Broth-1','150601_0_BloodProject01_PLT_40_Broth-1-10.0x','150601_0_BloodProject01_PLT_40_Broth-2','150601_0_BloodProject01_PLT_40_Broth-2-10.0x','150601_0_BloodProject01_PLT_40_Broth-3','150601_0_BloodProject01_PLT_40_Broth-3-10.0x','150601_0_BloodProject01_PLT_40_Broth-4','150601_0_BloodProject01_PLT_40_Broth-4-10.0x','150601_0_BloodProject01_PLT_40_Broth-5','150601_0_BloodProject01_PLT_40_Broth-5-10.0x','150601_0_BloodProject01_PLT_40_Broth-6','150601_0_BloodProject01_PLT_40_Broth-6-10.0x','150601_0_BloodProject01_PLT_42_Broth-1','150601_0_BloodProject01_PLT_42_Broth-1-10.0x','150601_0_BloodProject01_PLT_42_Broth-2','150601_0_BloodProject01_PLT_42_Broth-2-10.0x','150601_0_BloodProject01_PLT_42_Broth-3','150601_0_BloodProject01_PLT_42_Broth-3-10.0x','150601_0_BloodProject01_PLT_42_Broth-4','150601_0_BloodProject01_PLT_42_Broth-4-10.0x','150601_0_BloodProject01_PLT_42_Broth-5','150601_0_BloodProject01_PLT_42_Broth-5-10.0x','150601_0_BloodProject01_PLT_42_Broth-6','150601_0_BloodProject01_PLT_42_Broth-6-10.0x'],
+     'component_names':[]},
+    ]
+# reset previous normalizations
+for row in sampleName_componentName_listDict:
+    exnorm01.reset_dataStage01_quantification_normalized(
+        experiment_id_I='BloodProject01',
+        sample_names_I = row['sample_names'],
+        component_names_I = row['component_names'])
+    exnorm01.execute_normalizeSamples2Biomass(
+        'BloodProject01',
+        biological_material_I=None,
+        conversion_name_I=None,
+        sample_names_I = row['sample_names'],
+        component_names_I = row['component_names'])
+
+blank_sample_names = [];
+
+sample_name_abbreviations_str = 'PLT_30,PLT_31,PLT_32,PLT_33,PLT_34,PLT_35\
+PLT_36,PLT_37,PLT_38,PLT_39,PLT_40,PLT_42'
+sample_name_abbreviations = sample_name_abbreviations_str.split(',');
+
+##reset previous average calculations
+#exnorm01.reset_dataStage01_quantification_averages(
+#     'BloodProject01',
+#     sample_name_abbreviations_I=sample_name_abbreviations);
+## calculate replicates using the formula ave(broth),i - ave(blanks,broth) for specific samples
+#exnorm01.execute_analyzeAverages_blanks(
+#    'BloodProject01',
+#    blank_sample_names_I=blank_sample_names,
+#    sample_name_abbreviations_I=sample_name_abbreviations);
+## export the data to ddt
+#exnorm01.export_dataStage01NormalizedAndAverages_js(
+#        'BloodProject01',
+#        sample_name_abbreviations_I=sample_name_abbreviations,
+#        sample_names_I=[],
+#        component_names_I=[],
+#        cv_threshold_I=40,
+#        extracellular_threshold_I=80,
+#        data_dir_I='tmp'
+#    );
 
 #make the replicates methods table
 from SBaaS_quantification.stage01_quantification_replicates_execute import stage01_quantification_replicates_execute
@@ -187,9 +229,9 @@ sampleNames_sampleNameAbbreviations_componentName_listDict = [
 #    component_names_I=row['component_names'],
 #    sample_names_I=row['sample_names'],
 #    );
-exreps01.execute_analyzeReplicates(
-    'IndustrialStrains01',
-    sample_name_abbreviations_I=[]);
+#exreps01.execute_analyzeReplicates(
+#    'IndustrialStrains01',
+#    sample_name_abbreviations_I=[]);
 
 from SBaaS_quantification.stage01_quantification_physiologicalRatios_execute import stage01_quantification_physiologicalRatios_execute
 exphysratio01 = stage01_quantification_physiologicalRatios_execute(session,engine,pg_settings.datadir_settings);

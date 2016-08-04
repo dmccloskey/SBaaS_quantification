@@ -13,6 +13,8 @@ from SBaaS_base.sbaas_base_query_select import sbaas_base_query_select
 from SBaaS_base.sbaas_base_query_delete import sbaas_base_query_delete
 
 from SBaaS_base.sbaas_template_query import sbaas_template_query
+#resources
+from listDict.listDict import listDict
 
 class stage01_quantification_MQResultsTable_query(sbaas_template_query):
     def initialize_supportedTables(self):
@@ -420,7 +422,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
     # query data from data_stage01_quantification_mqresultstable
     # no other table dependencies
     def get_peakHeight_sampleNameAndComponentName(self,sample_name_I,component_name_I):
-        '''Querry peak height from sample name and component name
+        '''Query peak height from sample name and component name
         NOTE: intended to be used within a for loop'''
 
         try:
@@ -438,7 +440,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_used_sampleNameAndComponentName(self,sample_name_I,component_name_I):
-        '''Querry used from sample name and component name
+        '''Query used from sample name and component name
         NOTE: intended to be used within a for loop'''
         try:
             data = self.session.query(data_stage01_quantification_MQResultsTable.used_).filter(
@@ -596,7 +598,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
     # query data from data_stage01_quantification_mqresultstable
     # requires quantitation_method
     def get_concAndConcUnits_sampleNameAndComponentName(self,sample_name_I,component_name_I):
-        '''Querry data (i.e. concentration, area/peak height ratio) from sample name and component name
+        '''Query data (i.e. concentration, area/peak height ratio) from sample name and component name
         NOTE: intended to be used within a for loop'''
         # check for absolute or relative quantitation (i.e. area/peak height ratio)
         try:
@@ -675,7 +677,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
 
     # query component group names from data_stage01_quantification_mqresultstable
     def get_componentGroupNames_sampleName(self,sample_name_I):
-        '''Querry component group names that are used from the sample name
+        '''Query component group names that are used from the sample name
         NOTE: intended to be used within a for loop'''
         try:
             component_group_names = self.session.query(data_stage01_quantification_MQResultsTable.component_group_name).filter(
@@ -689,7 +691,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_componentGroupName_experimentIDAndComponentName(self,experiment_id_I,component_name_I,exp_type_I=4):
-        '''Querry component group names that are used from the component name
+        '''Query component group names that are used from the component name
         NOTE: intended to be used within a for loop'''
         try:
             component_group_name = self.session.query(data_stage01_quantification_MQResultsTable.component_group_name).filter(
@@ -707,7 +709,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             print(e);
     # query sample names from data_stage01_quantification_mqresultstable
     def get_sampleNames_experimentIDAndSampleType(self,experiment_id_I,sample_type_I,exp_type_I=4):
-        '''Querry sample names (i.e. unknowns) that are used from
+        '''Query sample names (i.e. unknowns) that are used from
         the experiment'''
         try:
             sample_names = self.session.query(data_stage01_quantification_MQResultsTable.sample_name).filter(
@@ -725,7 +727,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             print(e);
     # query sample names from data_stage01_quantification_mqresultstable
     def get_sampleNamesAndSampleIDs_experimentIDAndSampleType(self,experiment_id_I,sample_type_I,exp_type_I=4):
-        '''Querry sample names and sample ids (i.e. unknowns) that are used from
+        '''Query sample names and sample ids (i.e. unknowns) that are used from
         the experiment'''
         try:
             sample_names = self.session.query(data_stage01_quantification_MQResultsTable.sample_name,
@@ -749,7 +751,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleNames_experimentIDAndSampleID(self,experiment_id_I,sample_id_I,exp_type_I=4):
-        '''Querry sample names (i.e. unknowns) that are used from
+        '''Query sample names (i.e. unknowns) that are used from
         the experiment'''
         try:
             sample_names = self.session.query(sample.sample_name).filter(
@@ -767,7 +769,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleNames_experimentIDAndSampleIDAndSampleDilution(self,experiment_id_I,sample_id_I,sample_dilution_I,exp_type_I=4):
-        '''Querry sample names (i.e. unknowns) that are used from
+        '''Query sample names (i.e. unknowns) that are used from
         the experiment'''
         try:
             sample_names = self.session.query(sample.sample_name).filter(
@@ -786,7 +788,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleNames_experimentIDAndSampleNameShortAndSampleDescription(self,experiment_id_I,sample_name_short_I,sample_decription_I,exp_type_I=4):
-        '''Querry sample names that are used from
+        '''Query sample names that are used from
         the experiment'''
         try:
             sample_names = self.session.query(sample.sample_name).filter(
@@ -806,7 +808,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleNames_experimentIDAndSampleNameAbbreviationAndSampleDescription(self,experiment_id_I,sample_name_abbreviation_I,sample_decription_I,exp_type_I=4):
-        '''Querry sample names that are used from
+        '''Query sample names that are used from
         the experiment'''
         try:
             sample_names = self.session.query(sample.sample_name).filter(
@@ -826,7 +828,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleNames_experimentIDAndSampleNameAbbreviationAndSampleDilution(self,experiment_id_I,sample_name_abbreviation_I,sample_dilution_I,exp_type_I=4):
-        '''Querry sample names that are used from
+        '''Query sample names that are used from
         the experiment'''
         try:
             sample_names = self.session.query(sample.sample_name).filter(
@@ -847,7 +849,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             print(e);
     # query sample ids from data_stage01_quantification_mqresultstable
     def get_sampleIDs_experimentIDAndSampleType(self,experiment_id_I,sample_type_I,exp_type_I=4):
-        '''Querry sample names (i.e. unknowns) that are used from
+        '''Query sample names (i.e. unknowns) that are used from
         the experiment'''
         try:
             sample_ids = self.session.query(sample.sample_id).filter(
@@ -865,7 +867,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleIDs_experimentID(self,experiment_id_I,exp_type_I=4):
-        '''Querry sample names that are used from the experiment'''
+        '''Query sample names that are used from the experiment'''
         try:
             sample_ids = self.session.query(sample.sample_id).filter(
                     experiment.id.like(experiment_id_I),
@@ -881,7 +883,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleID_experimentIDAndSampleName(self,experiment_id_I,sample_name_I,exp_type_I=4):
-        '''Querry sample names (i.e. unknowns) that are used from
+        '''Query sample names (i.e. unknowns) that are used from
         the experiment'''
         try:
             sample_id = self.session.query(sample.sample_id).filter(
@@ -898,7 +900,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             print(e);
     # query sample name short from data_stage01_quantification_mqresultstable
     def get_sampleNameShort_experimentIDAndSampleType(self,experiment_id_I,sample_type_I,exp_type_I=4):
-        '''Querry sample name short that are used from
+        '''Query sample name short that are used from
         the experiment'''
         try:
             sample_name_short = self.session.query(sample_description.sample_name_short).filter(
@@ -917,7 +919,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleNameShort_experimentIDAndSampleName(self,experiment_id_I,sample_name_I,exp_type_I=4):
-        '''Querry sample name short that are used from
+        '''Query sample name short that are used from
         the experiment'''
         try:
             sample_name_short = self.session.query(sample_description.sample_name_short).filter(
@@ -935,7 +937,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             print(e);
     # query sample name abbreviations from data_stage01_quantification_mqresultstable
     def get_sampleNameAbbreviations_experimentIDAndSampleType(self,experiment_id_I,sample_type_I,exp_type_I=4):
-        '''Querry sample name abbreviations that are used from
+        '''Query sample name abbreviations that are used from
         the experiment'''
         try:
             sample_name_abbreviations = self.session.query(sample_description.sample_name_abbreviation).filter(
@@ -955,7 +957,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             print(e);
     # query dilutions from data_stage01_quantification_mqresultstable
     def get_sampleDilution_experimentIDAndSampleID(self,experiment_id_I,sample_id_I,exp_type_I=4):
-        '''Querry dilutions that are used from the experiment'''
+        '''Query dilutions that are used from the experiment'''
         try:
             sample_dilutions = self.session.query(sample.sample_dilution).filter(
                     sample.sample_id.like(sample_id_I),
@@ -972,7 +974,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_sampleDilution_experimentIDAndSampleNameAbbreviation(self,experiment_id_I,sample_name_abbreviation_I,exp_type_I=4):
-        '''Querry dilutions that are used from the experiment'''
+        '''Query dilutions that are used from the experiment'''
         try:
             sample_dilutions = self.session.query(sample.sample_dilution).filter(
                     experiment.id.like(experiment_id_I),
@@ -991,7 +993,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             print(e);
     # query time points from data_stage01_quantification_mqresultstable
     def get_timePoint_experimentIDAndSampleNameAbbreviation(self,experiment_id_I,sample_name_abbreviation_I,exp_type_I=4):
-        '''Querry time points that are used from the experiment and sample name abbreviation'''
+        '''Query time points that are used from the experiment and sample name abbreviation'''
         try:
             time_points = self.session.query(sample_description.time_point).filter(
                     sample_description.sample_name_abbreviation.like(sample_name_abbreviation_I),
@@ -1010,7 +1012,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             print(e);
     # query component names from data_stage01_quantification_mqresultstable
     def get_componentsNames_experimentIDAndSampleID(self,experiment_id_I,sample_id_I,exp_type_I=4):
-        '''Querry component names that are used and are not IS from
+        '''Query component names that are used and are not IS from
         the experiment and sample_id'''
         try:
             component_names = self.session.query(data_stage01_quantification_MQResultsTable.component_name).filter(
@@ -1029,7 +1031,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_componentsNames_experimentIDAndSampleNameAbbreviation(self,experiment_id_I,sample_name_abbreviation_I,exp_type_I=4):
-        '''Querry component names that are used from
+        '''Query component names that are used from
         the experiment and sample_name_abbreviation'''
         try:
             component_names = self.session.query(data_stage01_quantification_MQResultsTable.component_name).filter(
@@ -1049,7 +1051,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_componentsNames_experimentIDAndSampleName(self,experiment_id_I,sample_name_I,exp_type_I=4):
-        '''Querry component names that are used and not internal standards from
+        '''Query component names that are used and not internal standards from
         the experiment and sample_name'''
         try:
             component_names = self.session.query(data_stage01_quantification_MQResultsTable.component_name).filter(
@@ -1067,7 +1069,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_componentsNamesAndComponentGroupNames_experimentIDAndSampleName(self,experiment_id_I,sample_name_I,exp_type_I=4):
-        '''Querry component names that are used and not internal standards from
+        '''Query component names that are used and not internal standards from
         the experiment and sample_name'''
         try:
             component_names = self.session.query(data_stage01_quantification_MQResultsTable.component_name,
@@ -1091,7 +1093,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
     def get_componentsNames_experimentIDAndSampleType(self,experiment_id_I,sample_type_I):
-        '''Querry component names that are used and not internal standards from
+        '''Query component names that are used and not internal standards from
         the experiment and sample_name'''
         try:
             component_names = self.session.query(data_stage01_quantification_MQResultsTable.component_name).filter(
@@ -1122,6 +1124,58 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             sample_names_O = [];
             for sn in sample_names: sample_names_O.append(sn.sample_name);
             return sample_names_O;
+        except SQLAlchemyError as e:
+            print(e);
+
+    
+    # query sample names from data_stage01_quantification_mqresultstable
+    def getGroupJoin_experimentAndQuantitationMethodAndMQResultsTable_experimentID_dataStage01QuantificationMQResultsTable(self,
+        experiment_id_I,
+        sample_types_I=[],
+        sample_names_I=[],
+        sample_ids_I=[],
+        component_names_I=[],
+        ):
+        '''Query sample names and sample ids (i.e. unknowns) that are used from
+        the experiment'''
+        try:
+            data = self.session.query(data_stage01_quantification_MQResultsTable.sample_name,
+					data_stage01_quantification_MQResultsTable.sample_id,
+                    data_stage01_quantification_MQResultsTable.sample_type,
+                    data_stage01_quantification_MQResultsTable.use_calculated_concentration,
+                    sample.sample_id,
+                    data_stage01_quantification_MQResultsTable.component_name,
+                    data_stage01_quantification_MQResultsTable.component_group_name,
+                    quantitation_method.use_area).filter(
+                    experiment.id.like(experiment_id_I),
+                    data_stage01_quantification_MQResultsTable.used_.is_(True),
+                    experiment.sample_name.like(data_stage01_quantification_MQResultsTable.sample_name),
+                    experiment.sample_name.like(sample.sample_name),
+                    data_stage01_quantification_MQResultsTable.component_name.like(quantitation_method.component_name),
+                    experiment.quantitation_method_id.like(quantitation_method.id)).group_by(
+                    data_stage01_quantification_MQResultsTable.sample_name,
+					data_stage01_quantification_MQResultsTable.sample_id,
+                    data_stage01_quantification_MQResultsTable.sample_type,
+                    data_stage01_quantification_MQResultsTable.use_calculated_concentration,
+                    sample.sample_id,
+                    data_stage01_quantification_MQResultsTable.component_name,
+                    data_stage01_quantification_MQResultsTable.component_group_name,
+                        quantitation_method.use_area).order_by(
+                    data_stage01_quantification_MQResultsTable.sample_name.asc(),
+                    sample.sample_id.asc(),
+                    data_stage01_quantification_MQResultsTable.component_name.asc(),
+                    data_stage01_quantification_MQResultsTable.component_group_name.asc()).all();
+            data_O = [];
+            if data:
+                data_O = listDict(record_I=data);
+                data_O.convert_record2DataFrame();
+                data_O.filterIn_byDictList({
+                                            'sample_id':sample_ids_I,
+                                            'sample_name':sample_names_I,
+                                            'sample_type':sample_types_I,
+                                            'component_name':component_names_I,
+                                           });
+            return data_O;
         except SQLAlchemyError as e:
             print(e);
 
