@@ -432,8 +432,12 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
 
         #SPLIT 1:
         #1 query unique calculated_concentration_units/sample_name_abbreviations/component_names/component_group_names/time_points/sample_names/sample_ids/sample_description
-        uniqueRows = self.get_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(
-                experiment_id_I,
+        uniqueRows_all = self.getQueryResult_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(
+                experiment_id_I
+            );
+        #2 filter in broth samples
+        uniqueRows = self.filter_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(
+                uniqueRows_all,
                 calculated_concentration_units_I=[],
                 component_names_I=component_names_I,
                 component_group_names_I=[],
@@ -444,57 +448,70 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
         if type(uniqueRows)==type(listDict()):
             uniqueRows.convert_dataFrame2ListDict()
             uniqueRows = uniqueRows.get_listDict();
+        data_tmp = {};#reorganize the data into a dictionary for quick traversal of the replicates
+        for uniqueRow_cnt,uniqueRow in enumerate(uniqueRows):
+            unique = (uniqueRow['sample_name_abbreviation'],
+                      uniqueRow['experiment_id'],
+                      uniqueRow['time_point'],
+                      uniqueRow['component_name'],
+                      uniqueRow['calculated_concentration_units'])
+            if not unique in data_tmp.keys():
+                data_tmp[unique] = [];
+            data_tmp[unique].append(uniqueRow);
         sn_cn_all = [];
         threshold_match = True;
-        for uniqueRow_cnt,uniqueRow in enumerate(uniqueRows):
+        #for uniqueRow_cnt,uniqueRow in enumerate(uniqueRows):
+        for unique,replicates in data_tmp.items():
             #get data from averages once per sample_name_abbreviation/component_name
-            if not (uniqueRow['sample_name_abbreviation'],uniqueRow['component_name'],uniqueRow['time_point']) in sn_cn_all:
-                print('exporting sample_name_abbreviation ' + uniqueRow['sample_name_abbreviation'] + " and component_name " + uniqueRow['component_name']);
-                # get the averages and %CV samples
-                row_ave = {};
-                #row_ave = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentName_dataStage01Averages(experiment_id_I,sna,tp,cn);
-                row_ave = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentNameAndCalculatedConcentrationCVAndExtracellularPercent_dataStage01Averages(experiment_id_I,
-                        uniqueRow['sample_name_abbreviation'],
-                        uniqueRow['time_point'],
-                        uniqueRow['component_name'],
-                        cv_threshold_I=cv_threshold_I,
-                        extracellular_threshold_I=extracellular_threshold_I);
-                if row_ave:
-                    stdev = calc.convert_cv2StDev(row_ave['calculated_concentration_filtrate_average'],row_ave['calculated_concentration_filtrate_cv']);
-                    row_ave['calculated_concentration_filtrate_lb'] = row_ave['calculated_concentration_filtrate_average']-stdev;
-                    row_ave['calculated_concentration_filtrate_ub'] = row_ave['calculated_concentration_filtrate_average']+stdev;
-                    stdev = calc.convert_cv2StDev(row_ave['calculated_concentration_broth_average'],row_ave['calculated_concentration_broth_cv']);
-                    row_ave['calculated_concentration_broth_lb'] = row_ave['calculated_concentration_broth_average']-stdev;
-                    row_ave['calculated_concentration_broth_ub'] = row_ave['calculated_concentration_broth_average']+stdev;
-                    stdev = calc.convert_cv2StDev(row_ave['calculated_concentration_average'],row_ave['calculated_concentration_cv']);
-                    row_ave['calculated_concentration_lb'] = row_ave['calculated_concentration_average']-stdev;
-                    row_ave['calculated_concentration_ub'] = row_ave['calculated_concentration_average']+stdev;
-                    data_ave.append(row_ave);
-                    threshold_match = True;
-                else: threshold_match = False;
+            print('exporting sample_name_abbreviation ' + replicates[0]['sample_name_abbreviation'] + " and component_name " + replicates[0]['component_name']);
+            # get the averages and %CV samples
+            row_ave = {};
+            #row_ave = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentName_dataStage01Averages(experiment_id_I,sna,tp,cn);
+            row_ave = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentNameAndCalculatedConcentrationCVAndExtracellularPercent_dataStage01Averages(experiment_id_I,
+                    replicates[0]['sample_name_abbreviation'],
+                    replicates[0]['time_point'],
+                    replicates[0]['component_name'],
+                    cv_threshold_I=cv_threshold_I,
+                    extracellular_threshold_I=extracellular_threshold_I);
+            if row_ave:
+                stdev = calc.convert_cv2StDev(row_ave['calculated_concentration_filtrate_average'],row_ave['calculated_concentration_filtrate_cv']);
+                row_ave['calculated_concentration_filtrate_lb'] = row_ave['calculated_concentration_filtrate_average']-stdev;
+                row_ave['calculated_concentration_filtrate_ub'] = row_ave['calculated_concentration_filtrate_average']+stdev;
+                stdev = calc.convert_cv2StDev(row_ave['calculated_concentration_broth_average'],row_ave['calculated_concentration_broth_cv']);
+                row_ave['calculated_concentration_broth_lb'] = row_ave['calculated_concentration_broth_average']-stdev;
+                row_ave['calculated_concentration_broth_ub'] = row_ave['calculated_concentration_broth_average']+stdev;
+                stdev = calc.convert_cv2StDev(row_ave['calculated_concentration_average'],row_ave['calculated_concentration_cv']);
+                row_ave['calculated_concentration_lb'] = row_ave['calculated_concentration_average']-stdev;
+                row_ave['calculated_concentration_ub'] = row_ave['calculated_concentration_average']+stdev;
 
-            sn_cn_all.append((uniqueRow['sample_name_abbreviation'],uniqueRow['component_name'],uniqueRow['time_point']))
-            # record the replicate data only if the sample_name_abbreviation/component_name was queried
-
-            if threshold_match:
                 # get data from normalized
-                row = {};
-                row = self.get_row_sampleNameAndComponentName_dataStage01Normalized(
-                    uniqueRow['sample_name'],
-                    uniqueRow['component_name']);
-                if not(row):
-                    continue;
-                row['sample_name_abbreviation'] = uniqueRow['sample_name_abbreviation']
-                row['extracellular_percent'] = row_ave['extracellular_percent']
-                row['calculated_concentration_cv'] = row_ave['calculated_concentration_cv']
-                #row.update(row_ave);
-                if uniqueRow['sample_desc'] == 'Filtrate':data_norm_filtrate.append(row);
-                if uniqueRow['sample_desc'] == 'Broth':data_norm_broth.append(row);
+                filtrate_conc = [];
+                broth_conc = [];
+                for rep in replicates:
+                    row = {};
+                    row['extracellular_percent'] = row_ave['extracellular_percent']
+                    row['calculated_concentration_cv'] = row_ave['calculated_concentration_cv']
+                    row.update(rep)
+                    if uniqueRow['sample_desc'] == 'Filtrate':
+                        data_norm_filtrate.append(row);
+                        filtrate_conc.append(rep['calculated_concentration'])
+                    if uniqueRow['sample_desc'] == 'Broth':
+                        data_norm_broth.append(row);
+                        broth_conc.append(rep['calculated_concentration'])
+                    data_norm_combined.append(row);
 
                 #add data to aggregate and sample_name_abbreviations_all
-                data_norm_combined.append(row);
+                if not broth_conc: broth_conc = [0];
+                if not filtrate_conc: filtrate_conc = [0];
+                row_ave['calculated_concentration_min']=min(broth_conc)
+                row_ave['calculated_concentration_max']=max(broth_conc)
+                row_ave['calculated_concentration_broth_min']=min(broth_conc)
+                row_ave['calculated_concentration_broth_max']=max(broth_conc)
+                row_ave['calculated_concentration_filtrate_min']=min(filtrate_conc)
+                row_ave['calculated_concentration_filtrate_max']=max(filtrate_conc)
+                data_ave.append(row_ave);
             
-        ##SPLIT 2:
+        ##SPLIT 3:
         ## get sample_name_abbreviations
         #if sample_name_abbreviations_I:
         #    sample_name_abbreviations = sample_name_abbreviations_I
@@ -605,8 +622,8 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                         'ydatamean':'calculated_concentration_broth_average',
                         'ydatalb':'calculated_concentration_broth_lb',
                         'ydataub':'calculated_concentration_broth_ub',
-                        #'ydatamin':None,
-                        #'ydatamax':None,
+                        'ydatamin':'calculated_concentration_broth_min',
+                        'ydatamax':'calculated_concentration_broth_max',
                         #'ydataiq1':None,
                         #'ydataiq3':None,
                         #'ydatamedian':None,
@@ -626,8 +643,8 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                         'ydatamean':'calculated_concentration_filtrate_average',
                         'ydatalb':'calculated_concentration_filtrate_lb',
                         'ydataub':'calculated_concentration_filtrate_ub',
-                        #'ydatamin':None,
-                        #'ydatamax':None,
+                        'ydatamin':'calculated_concentration_filtrate_min',
+                        'ydatamax':'calculated_concentration_filtrate_max',
                         #'ydataiq1':None,
                         #'ydataiq3':None,
                         #'ydatamedian':None,
@@ -647,8 +664,8 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                         'ydatamean':'calculated_concentration_average',
                         'ydatalb':'calculated_concentration_lb',
                         'ydataub':'calculated_concentration_ub',
-                        #'ydatamin':None,
-                        #'ydatamax':None,
+                        'ydatamin':'calculated_concentration_min',
+                        'ydatamax':'calculated_concentration_max',
                         #'ydataiq1':None,
                         #'ydataiq3':None,
                         #'ydatamedian':None,

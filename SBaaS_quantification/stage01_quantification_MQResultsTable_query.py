@@ -463,81 +463,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             data_O = {};
             if data:
                 for d in data:
-                    used_O={'index_':d.index_,
-            'sample_index':d.sample_index,
-            'original_filename':d.original_filename,
-            'sample_name':d.sample_name,
-            'sample_id':d.sample_id,
-            'sample_comment':d.sample_comment,
-            'sample_type':d.sample_type,
-            'acquisition_date_and_time':d.acquisition_date_and_time,
-            'rack_number':d.rack_number,
-            'plate_number':d.plate_number,
-            'vial_number':d.vial_number,
-            'dilution_factor':d.dilution_factor,
-            'injection_volume':d.injection_volume,
-            'operator_name':d.operator_name,
-            'acq_method_name':d.acq_method_name,
-            'is_':d.is_,
-            'component_name':d.component_name,
-            'component_index':d.component_index,
-            'component_comment':d.component_comment,
-            'is_comment':d.is_comment,
-            'mass_info':d.mass_info,
-            'is_mass':d.is_mass,
-            'is_name':d.is_name,
-            'component_group_name':d.component_group_name,
-            'conc_units':d.conc_units,
-            'failed_query':d.failed_query,
-            'is_failed_query':d.is_failed_query,
-            'peak_comment':d.peak_comment,
-            'is_peak_comment':d.is_peak_comment,
-            'actual_concentration':d.actual_concentration,
-            'is_actual_concentration':d.is_actual_concentration,
-            'concentration_ratio':d.concentration_ratio,
-            'expected_rt':d.expected_rt,
-            'is_expected_rt':d.is_expected_rt,
-            'integration_type':d.integration_type,
-            'is_integration_type':d.is_integration_type,
-            'area':d.area,
-            'is_area':d.is_area,
-            'corrected_area':d.corrected_area,
-            'is_corrected_area':d.is_corrected_area,
-            'area_ratio':d.area_ratio,
-            'height':d.height,
-            'is_height':d.is_height,
-            'corrected_height':d.corrected_height,
-            'is_corrected_height':d.is_corrected_height,
-            'height_ratio':d.height_ratio,
-            'area_2_height':d.area_2_height,
-            'is_area_2_height':d.is_area_2_height,
-            'corrected_area2height':d.corrected_area2height,
-            'is_corrected_area2height':d.is_corrected_area2height,
-            'region_height':d.region_height,
-            'is_region_height':d.is_region_height,
-            'quality':d.quality,
-            'is_quality':d.is_quality,
-            'retention_time':d.retention_time,
-            'is_retention_time':d.is_retention_time,
-            'start_time':d.start_time,
-            'is_start_time':d.is_start_time,
-            'end_time':d.end_time,
-            'is_end_time':d.is_end_time,
-            'total_width':d.total_width,
-            'is_total_width':d.is_total_width,
-            'width_at_50':d.width_at_50,
-            'is_width_at_50':d.is_width_at_50,
-            'signal_2_noise':d.signal_2_noise,
-            'is_signal_2_noise':d.is_signal_2_noise,
-            'baseline_delta_2_height':d.baseline_delta_2_height,
-            'is_baseline_delta_2_height':d.is_baseline_delta_2_height,
-            'modified_':d.modified_,
-            'relative_rt':d.relative_rt,
-            'used_':d.used_,
-            'calculated_concentration':d.calculated_concentration,
-            'accuracy_':d.accuracy_,
-            'comment_':d.comment_,
-            'use_calculated_concentration':d.use_calculated_concentration};
+                    used_O=d.__repr__dict__();
             else: used_O = None;
             return used_O;
         except SQLAlchemyError as e:
@@ -1139,32 +1065,68 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         '''Query sample names and sample ids (i.e. unknowns) that are used from
         the experiment'''
         try:
-            data = self.session.query(data_stage01_quantification_MQResultsTable.sample_name,
-					data_stage01_quantification_MQResultsTable.sample_id,
-                    data_stage01_quantification_MQResultsTable.sample_type,
-                    data_stage01_quantification_MQResultsTable.use_calculated_concentration,
-                    sample.sample_id,
-                    data_stage01_quantification_MQResultsTable.component_name,
-                    data_stage01_quantification_MQResultsTable.component_group_name,
-                    quantitation_method.use_area).filter(
-                    experiment.id.like(experiment_id_I),
-                    data_stage01_quantification_MQResultsTable.used_.is_(True),
-                    experiment.sample_name.like(data_stage01_quantification_MQResultsTable.sample_name),
-                    experiment.sample_name.like(sample.sample_name),
-                    data_stage01_quantification_MQResultsTable.component_name.like(quantitation_method.component_name),
-                    experiment.quantitation_method_id.like(quantitation_method.id)).group_by(
-                    data_stage01_quantification_MQResultsTable.sample_name,
-					data_stage01_quantification_MQResultsTable.sample_id,
-                    data_stage01_quantification_MQResultsTable.sample_type,
-                    data_stage01_quantification_MQResultsTable.use_calculated_concentration,
-                    sample.sample_id,
-                    data_stage01_quantification_MQResultsTable.component_name,
-                    data_stage01_quantification_MQResultsTable.component_group_name,
-                        quantitation_method.use_area).order_by(
-                    data_stage01_quantification_MQResultsTable.sample_name.asc(),
-                    sample.sample_id.asc(),
-                    data_stage01_quantification_MQResultsTable.component_name.asc(),
-                    data_stage01_quantification_MQResultsTable.component_group_name.asc()).all();
+            cmd = '''SELECT quantitation_method.use_area, subquery1.sample_name, subquery1.sample_type, 
+                subquery1.use_calculated_concentration, subquery1.sample_id, subquery1.component_name, 
+                subquery1.component_group_name, subquery1.quantitation_method_id, subquery1.acquisition_date_and_time,
+                subquery1.calculated_concentration, subquery1.height, subquery1.height_ratio, subquery1.area_ratio, subquery1.conc_units  
+            FROM quantitation_method, (
+                SELECT data_stage01_quantification_mqresultstable.sample_name, data_stage01_quantification_mqresultstable.sample_type,
+                    data_stage01_quantification_mqresultstable.use_calculated_concentration, sample.sample_id,
+                    data_stage01_quantification_mqresultstable.component_name, data_stage01_quantification_mqresultstable.component_group_name, 
+                    experiment.quantitation_method_id, data_stage01_quantification_mqresultstable.acquisition_date_and_time, 
+                    data_stage01_quantification_mqresultstable.calculated_concentration, data_stage01_quantification_mqresultstable.height,
+                    data_stage01_quantification_mqresultstable.height_ratio, data_stage01_quantification_mqresultstable.area_ratio,
+                    data_stage01_quantification_mqresultstable.conc_units
+                FROM data_stage01_quantification_mqresultstable, sample, experiment 
+                WHERE experiment.id LIKE '%s' AND data_stage01_quantification_mqresultstable.used_ IS true AND data_stage01_quantification_mqresultstable.is_ IS false AND experiment.sample_name LIKE data_stage01_quantification_mqresultstable.sample_name AND experiment.sample_name LIKE sample.sample_name 
+                GROUP BY data_stage01_quantification_mqresultstable.sample_name, data_stage01_quantification_mqresultstable.sample_type, 
+                    data_stage01_quantification_mqresultstable.use_calculated_concentration, sample.sample_id, 
+                    data_stage01_quantification_mqresultstable.component_name, data_stage01_quantification_mqresultstable.component_group_name, 
+                    experiment.quantitation_method_id, data_stage01_quantification_mqresultstable.acquisition_date_and_time, 
+                    data_stage01_quantification_mqresultstable.calculated_concentration, data_stage01_quantification_mqresultstable.height,
+                    data_stage01_quantification_mqresultstable.height_ratio, data_stage01_quantification_mqresultstable.area_ratio,
+                    data_stage01_quantification_mqresultstable.conc_units 
+                ORDER BY data_stage01_quantification_mqresultstable.sample_name ASC, sample.sample_id ASC, data_stage01_quantification_mqresultstable.component_name ASC, data_stage01_quantification_mqresultstable.component_group_name ASC
+                ) subquery1
+            WHERE quantitation_method.component_name LIKE subquery1.component_name AND quantitation_method.id LIKE subquery1.quantitation_method_id 
+            GROUP BY subquery1.sample_name, subquery1.sample_type, subquery1.use_calculated_concentration, 
+                subquery1.sample_id, subquery1.component_name, subquery1.component_group_name, quantitation_method.use_area, subquery1.quantitation_method_id, subquery1.acquisition_date_and_time,
+                subquery1.calculated_concentration, subquery1.height, subquery1.height_ratio, subquery1.area_ratio, subquery1.conc_units 
+            ORDER BY subquery1.sample_name ASC, subquery1.sample_id ASC, subquery1.component_name ASC, subquery1.component_group_name ASC, subquery1.acquisition_date_and_time ASC 
+            ''' % (experiment_id_I);
+            result = self.session.execute(cmd);
+            data = result.fetchall();
+            #data = self.session.query(data_stage01_quantification_MQResultsTable.sample_name,
+            #        data_stage01_quantification_MQResultsTable.sample_type,
+            #        data_stage01_quantification_MQResultsTable.use_calculated_concentration,
+            #        sample.sample_id,
+            #        data_stage01_quantification_MQResultsTable.component_name,
+            #        data_stage01_quantification_MQResultsTable.component_group_name,
+            #        #quantitation_method.use_area,
+            #        experiment.quantitation_method_id
+            #        ).filter(
+            #        experiment.id.like(experiment_id_I),
+            #        data_stage01_quantification_MQResultsTable.used_.is_(True),
+            #        data_stage01_quantification_MQResultsTable.is_.is_(False),
+            #        experiment.sample_name.like(data_stage01_quantification_MQResultsTable.sample_name),
+            #        experiment.sample_name.like(sample.sample_name),
+            #        #data_stage01_quantification_MQResultsTable.component_name.like(quantitation_method.component_name),
+            #        #experiment.quantitation_method_id.like(quantitation_method.id)
+            #        ).group_by(
+            #        data_stage01_quantification_MQResultsTable.sample_name,
+            #        data_stage01_quantification_MQResultsTable.sample_type,
+            #        data_stage01_quantification_MQResultsTable.use_calculated_concentration,
+            #        sample.sample_id,
+            #        data_stage01_quantification_MQResultsTable.component_name,
+            #        data_stage01_quantification_MQResultsTable.component_group_name,
+            #        #quantitation_method.use_area,
+            #        experiment.quantitation_method_id
+            #        ).order_by(
+            #        data_stage01_quantification_MQResultsTable.sample_name.asc(),
+            #        sample.sample_id.asc(),
+            #        data_stage01_quantification_MQResultsTable.component_name.asc(),
+            #        data_stage01_quantification_MQResultsTable.component_group_name.asc()
+            #        ).all();
             data_O = [];
             if data:
                 data_O = listDict(record_I=data);

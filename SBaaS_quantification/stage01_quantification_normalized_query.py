@@ -675,7 +675,7 @@ class stage01_quantification_normalized_query(sbaas_template_query):
             print(e);
 
     #Query Joins across normalized/averages/sample/sample_description
-    def get_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(self,
+    def getFiltered_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(self,
                 experiment_id_I,
                 calculated_concentration_units_I=[],
                 component_names_I=[],
@@ -693,13 +693,13 @@ class stage01_quantification_normalized_query(sbaas_template_query):
                     data_stage01_quantification_normalized.sample_name,
                     data_stage01_quantification_normalized.component_name,
                     data_stage01_quantification_normalized.component_group_name,
-                    data_stage01_quantification_normalized.sample_name,
                     data_stage01_quantification_normalized.sample_id,
                     data_stage01_quantification_normalized.experiment_id,
                     data_stage01_quantification_normalized.calculated_concentration_units,
                     sample_description.time_point,
                     sample_description.sample_desc,
-                    sample_description.sample_name_abbreviation).filter(
+                    sample_description.sample_name_abbreviation,
+                    data_stage01_quantification_normalized.calculated_concentration).filter(
                     data_stage01_quantification_normalized.experiment_id.like(experiment_id_I),
                     data_stage01_quantification_normalized.sample_name.like(sample.sample_name),
                     sample.sample_id.like(sample_description.sample_id),
@@ -707,13 +707,13 @@ class stage01_quantification_normalized_query(sbaas_template_query):
                     data_stage01_quantification_normalized.sample_name,
                     data_stage01_quantification_normalized.component_name,
                     data_stage01_quantification_normalized.component_group_name,
-                    data_stage01_quantification_normalized.sample_name,
                     data_stage01_quantification_normalized.sample_id,
                     data_stage01_quantification_normalized.experiment_id,
                     data_stage01_quantification_normalized.calculated_concentration_units,
                     sample_description.time_point,
                     sample_description.sample_desc,
-                    sample_description.sample_name_abbreviation).order_by(
+                    sample_description.sample_name_abbreviation,
+                    data_stage01_quantification_normalized.calculated_concentration).order_by(
                     data_stage01_quantification_normalized.calculated_concentration_units.asc(),
                     sample_description.sample_name_abbreviation.asc(),
                     sample_description.time_point.asc(),
@@ -722,6 +722,77 @@ class stage01_quantification_normalized_query(sbaas_template_query):
             data_O=[];
             if data:
                 data_O = listDict(record_I=data);
+                data_O.convert_record2DataFrame();
+                data_O.filterIn_byDictList({
+                                            'sample_name_abbreviation':sample_name_abbreviations_I,
+                                            'sample_name':sample_names_I,
+                                           'component_name':component_names_I,
+                                           'component_group_name':component_group_names_I,
+                                           'calculated_concentration_units':calculated_concentration_units_I,
+                                           'time_point':time_points_I,
+                                           });
+            return data_O;
+        except SQLAlchemyError as e:
+            print(e);
+    def getQueryResult_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(self,
+                experiment_id_I
+            ):
+        """query unique calculated_concentration_units,sample_name_abbreviations,component_names,
+        component_group_names,time_points,sample_names,sample_ids,sample_description
+        BY experiment_id_I
+        """
+        try:
+            data = self.session.query(
+                    data_stage01_quantification_normalized.sample_name,
+                    data_stage01_quantification_normalized.component_name,
+                    data_stage01_quantification_normalized.component_group_name,
+                    data_stage01_quantification_normalized.sample_id,
+                    data_stage01_quantification_normalized.experiment_id,
+                    data_stage01_quantification_normalized.calculated_concentration_units,
+                    sample_description.time_point,
+                    sample_description.sample_desc,
+                    sample_description.sample_name_short,
+                    sample_description.sample_name_abbreviation,
+                    data_stage01_quantification_normalized.calculated_concentration).filter(
+                    data_stage01_quantification_normalized.experiment_id.like(experiment_id_I),
+                    data_stage01_quantification_normalized.sample_name.like(sample.sample_name),
+                    sample.sample_id.like(sample_description.sample_id),
+                    data_stage01_quantification_normalized.used_.is_(True)).group_by(
+                    data_stage01_quantification_normalized.sample_name,
+                    data_stage01_quantification_normalized.component_name,
+                    data_stage01_quantification_normalized.component_group_name,
+                    data_stage01_quantification_normalized.sample_id,
+                    sample_description.sample_name_short,
+                    data_stage01_quantification_normalized.experiment_id,
+                    data_stage01_quantification_normalized.calculated_concentration_units,
+                    sample_description.time_point,
+                    sample_description.sample_desc,
+                    sample_description.sample_name_abbreviation,
+                    data_stage01_quantification_normalized.calculated_concentration).order_by(
+                    data_stage01_quantification_normalized.calculated_concentration_units.asc(),
+                    sample_description.sample_name_abbreviation.asc(),
+                    sample_description.time_point.asc(),
+                    data_stage01_quantification_normalized.component_name.asc(),
+                    sample_description.sample_desc.asc(),).all();
+            return data;
+        except SQLAlchemyError as e:
+            print(e);
+    def filter_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(self,
+                data_I,
+                calculated_concentration_units_I=[],
+                component_names_I=[],
+                component_group_names_I=[],
+                sample_names_I=[],
+                sample_name_abbreviations_I=[],
+                time_points_I=[],
+            ):
+        """filter in columns from 
+        getQueryResult_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID
+        """
+        try:
+            data_O=[];
+            if data_I:
+                data_O = listDict(record_I=data_I);
                 data_O.convert_record2DataFrame();
                 data_O.filterIn_byDictList({
                                             'sample_name_abbreviation':sample_name_abbreviations_I,

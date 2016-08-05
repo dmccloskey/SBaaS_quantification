@@ -81,10 +81,21 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
                 # get the calculated concentration
                 calc_conc = None;
                 calc_conc_units = None;
+                #data_row = self.get_row_sampleNameAndComponentName(
+                #    row['sample_name'],
+                #    row['component_name']);
                 if use_height_I: 
-                    calc_conc, calc_conc_units = self.get_peakHeight_sampleNameAndComponentName(sn,cn);
-                else:
-                    calc_conc, calc_conc_units = self.get_concAndConcUnits_sampleNameAndComponentName(sn,cn);
+                    #calc_conc, calc_conc_units = data_row['height'],'height';
+                    calc_conc, calc_conc_units = row['height'],'height';
+                elif row['use_calculated_concentration']:
+                    #calc_conc, calc_conc_units = data_row['calculated_concentration'],data_row['conc_units'];
+                    calc_conc, calc_conc_units = row['calculated_concentration'],row['conc_units'];
+                elif not row['use_calculated_concentration'] and row['use_area']:
+                    #calc_conc, calc_conc_units = data_row['area_ratio'],'area_ratio';
+                    calc_conc, calc_conc_units = row['area_ratio'],'area_ratio';
+                elif not row['use_calculated_concentration'] and not row['use_area']:
+                    #calc_conc, calc_conc_units = data_row['height_ratio'],'height_ratio';
+                    calc_conc, calc_conc_units = row['height_ratio'],'height_ratio';
                 # calculate the normalized concentration
                 norm_conc = None;
                 norm_conc_units = None;
@@ -103,29 +114,36 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
                     data_O.append(row);
         else:
             for row_cnt,row in enumerate(groupJoin):
-                print('normalizing samples2Biomass for component_name ' + row['component_name']);
+                print('normalizing samples2Biomass for sample_name ' + row['sample_name'] + ' and component_name ' + row['component_name']);
                 # get the calculated concentration
                 calc_conc = None;
                 calc_conc_units = None;
+                #data_row = self.get_row_sampleNameAndComponentName(
+                #    row['sample_name'],
+                #    row['component_name']);
                 if use_height_I: 
-                    calc_conc, calc_conc_units = self.get_peakHeight_sampleNameAndComponentName(sn,cn);
+                    #calc_conc, calc_conc_units = data_row['height'],'height';
+                    calc_conc, calc_conc_units = row['height'],'height';
                 elif row['use_calculated_concentration']:
-                    pass;
-                    #calc_conc, calc_conc_units = self.get_concAndConcUnits_sampleNameAndComponentName(sn,cn);
+                    #calc_conc, calc_conc_units = data_row['calculated_concentration'],data_row['conc_units'];
+                    calc_conc, calc_conc_units = row['calculated_concentration'],row['conc_units'];
                 elif not row['use_calculated_concentration'] and row['use_area']:
-                    pass;
+                    #calc_conc, calc_conc_units = data_row['area_ratio'],'area_ratio';
+                    calc_conc, calc_conc_units = row['area_ratio'],'area_ratio';
                 elif not row['use_calculated_concentration'] and not row['use_area']:
-                    pass;
+                    #calc_conc, calc_conc_units = data_row['height_ratio'],'height_ratio';
+                    calc_conc, calc_conc_units = row['height_ratio'],'height_ratio';
                 # add data to the DB
-                row = {'experiment_id':experiment_id_I,
-                        'sample_name':sn,
-                        'sample_id':sample_ids[sn_cnt],
-                        'component_group_name':component_group_names[cn_cnt],
-                        'component_name':cn,
-                        'calculated_concentration':calc_conc,
-                        'calculated_concentration_units':calc_conc_units,
-                        'used_':True,};
-                data_O.append(row);
+                if calc_conc: 
+                    row = {'experiment_id':experiment_id_I,
+                            'sample_name':row['sample_name'],
+                            'sample_id':row['sample_id'],
+                            'component_group_name':row['component_group_name'],
+                            'component_name':row['component_name'],
+                            'calculated_concentration':calc_conc,
+                            'calculated_concentration_units':calc_conc_units,
+                            'used_':True,};
+                    data_O.append(row);
 
         ##SPLIT 2:
         ## get sample names
@@ -288,6 +306,25 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
                         except SQLAlchemyError as e:
                             print(e);
         self.session.commit();
+    def execute_findDuplicateDilutions(self,experiment_id_I):
+        '''find duplicate dilutions from data_stage01_quantification_normalized
+         Input:
+           experiment_id_I = experiment
+        '''
+        print('execute_findDuplicateDilutions...')
+        # get sample names
+        sample_ids = [];
+        sample_ids = self.get_sampleIDs_experimentID_dataStage01Normalized(experiment_id_I);
+        for si in sample_ids:
+            # get component names
+            component_names = [];
+            component_names = self.get_componentsNames_experimentIDAndSampleID_dataStage01Normalized(experiment_id_I,si);
+            for cn in component_names:
+                # get dilutions
+                sample_dilutions = [];
+                sample_dilutions = self.get_sampleDilutions_experimentIDAndSampleIDAndComponentName_dataStage01Normalized(experiment_id_I,si,cn);
+                if len(sample_dilutions)<2: continue;
+                else: print('sample_id '+ si + ' and component_name ' + cn + ' have multiple dilutions');
     def execute_removeDuplicateComponents(self,experiment_id_I):
         '''remove duplicate components from data_stage01_quantification_normalized
         NOTE: rows are not removed, but the used value is changed to false
@@ -434,7 +471,10 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
                         'used_':True,};
                     data_O.append(row)
         self.add_rows_table('data_stage01_quantification_averages',data_O);
-    def execute_analyzeAverages_blanks(self,experiment_id_I,sample_name_abbreviations_I=[],sample_names_I=[],component_names_I=[],blank_sample_names_I=[]):
+    def execute_analyzeAverages_blanks(self,experiment_id_I,
+            sample_name_abbreviations_I=[],sample_names_I=[],
+            component_names_I=[],
+            blank_sample_names_I=[]):
         '''calculate the averages using the ave(broth),i - ave(blank,broth)
         NOTE: data_stage01_quantification_normalized must be populated
         Input:
@@ -459,8 +499,12 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
         print('execute_analyzeAverages...')        
         #SPLIT 1:
         #1 query unique calculated_concentration_units/sample_name_abbreviations/component_names/component_group_names/time_points/sample_names/sample_ids/sample_description
-        uniqueRows = self.get_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(
-                experiment_id_I,
+        uniqueRows_all = self.getQueryResult_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(
+                experiment_id_I
+            );
+        #2 filter in broth samples
+        uniqueRows = self.filter_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(
+                uniqueRows_all,
                 calculated_concentration_units_I=[],
                 component_names_I=component_names_I,
                 component_group_names_I=[],
@@ -471,8 +515,7 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
         if type(uniqueRows)==type(listDict()):
             uniqueRows.convert_dataFrame2ListDict()
             uniqueRows = uniqueRows.get_listDict();
-        #reorganize the data into a dictionary for quick traversal of the replicates
-        data_tmp = {};
+        data_tmp = {};#reorganize the data into a dictionary for quick traversal of the replicates
         for uniqueRow_cnt,uniqueRow in enumerate(uniqueRows):
             unique = (uniqueRow['sample_name_abbreviation'],
                       uniqueRow['experiment_id'],
@@ -482,25 +525,61 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
             if not unique in data_tmp.keys():
                 data_tmp[unique] = [];
             data_tmp[unique].append(uniqueRow);
+            
+        #3 filter in blank samples
+        uniqueBlanks=[];
+        if blank_sample_names_I:
+            uniqueBlanks = self.filter_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(
+                uniqueRows_all,
+                calculated_concentration_units_I=[],
+                component_names_I=component_names_I,
+                component_group_names_I=[],
+                sample_names_I=blank_sample_names_I,
+                sample_name_abbreviations_I=[],
+                time_points_I=[],
+                );
+        if type(uniqueBlanks)==type(listDict()):
+            uniqueBlanks.convert_dataFrame2ListDict()
+            uniqueBlanks = uniqueBlanks.get_listDict();
+        data_blanks_tmp = {}; #reorganize the data for a quick traversal of the components
+        for uniqueBlanks_cnt,uniqueBlank in enumerate(uniqueBlanks):
+            unique = uniqueBlank['component_name']
+            if not unique in data_tmp.keys():
+                data_blanks_tmp[unique] = [];
+            data_blanks_tmp[unique].append(uniqueBlank);
+
+        #4 iterate through each unique unique calculated_concentration_units/sample_name_abbreviations/component_names/component_group_names/time_points
+        # and determine the ave, cv, etc., after subtracting out the blanks
         for unique,replicates in data_tmp.items():
             print('analyzing averages for sample_name_abbreviation ' + replicates[0]['sample_name_abbreviation'] + ' and component_name ' + replicates[0]['component_name']);
             # get blank concentrations
             if blank_sample_names_I:
-                sample_names = blank_sample_names_I;
+                concs = [d['calculated_concentration'] for d in data_blanks_tmp[replicates[0]['component_name']]
+                         if not d['calculated_concentration'] is None and d['calculated_concentration']!=0];
+                conc_units = [d['calculated_concentration_units'] for d in data_blanks_tmp[replicates[0]['component_name']]
+                         if not d['calculated_concentration'] is None and d['calculated_concentration']!=0];
+                if conc_units: conc_units = conc_units[0];
+                else: conc_units = None;
             else:
-                sample_names = [];
-            concs = [];
-            conc_units = None;
-            for sn in sample_names:
-                # concentrations and units
-                conc = None;
-                conc_unit = None;
-                conc, conc_unit = self.get_concAndConcUnits_sampleNameAndComponentName_dataStage01Normalized(
-                    sn,
-                    replicates[0]['component_name']);
-                if (not(conc) or conc==0): continue
-                if (conc_unit): conc_units = conc_unit;
-                concs.append(conc);
+                concs = [];
+                conc_units = None;
+
+            #if blank_sample_names_I:
+            #    sample_names = blank_sample_names_I;
+            #else:
+            #    sample_names = [];
+            #concs = [];
+            #conc_units = None;
+            #for sn in sample_names:
+            #    # concentrations and units
+            #    conc = None;
+            #    conc_unit = None;
+            #    conc, conc_unit = self.get_concAndConcUnits_sampleNameAndComponentName_dataStage01Normalized(
+            #        sn,
+            #        replicates[0]['component_name']);
+            #    if (not(conc) or conc==0): continue
+            #    if (conc_unit): conc_units = conc_unit;
+            #    concs.append(conc);
             n_replicates_filtrate = len(concs);
             conc_average_filtrate = 0.0;
             conc_var_filtrate = 0.0;
@@ -519,19 +598,25 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
                 if (conc_average_filtrate <= 0): conc_cv_filtrate = 0;
                 else: conc_cv_filtrate = sqrt(conc_var_filtrate)/conc_average_filtrate*100; 
             # get broth sample names
-            sample_names = [d['sample_name'] for d in replicates if d['sample_desc']=='Broth'];
-            concs = [];
-            conc_units = None;
-            for sn in sample_names:
-                # query concentrations and units
-                conc = None;
-                conc_unit = None;
-                conc, conc_unit = self.get_concAndConcUnits_sampleNameAndComponentName_dataStage01Normalized(
-                    sn,
-                    replicates[0]['component_name']);
-                if (not(conc) or conc==0): continue
-                if (conc_unit): conc_units = conc_unit;
-                concs.append(conc);
+            concs = [d['calculated_concentration'] for d in replicates if d['sample_desc']=='Broth'
+                     and not d['calculated_concentration'] is None and d['calculated_concentration']!=0];
+            conc_units = [d['calculated_concentration_units'] for d in replicates if d['sample_desc']=='Broth'
+                     and not d['calculated_concentration'] is None and d['calculated_concentration']!=0];
+            if conc_units: conc_units = conc_units[0];
+            else: conc_units = None;
+            #concs = [];
+            #conc_units = None;
+            #sample_names = [d['sample_name'] for d in replicates if d['sample_desc']=='Broth'];
+            #for sn in sample_names:
+            #    # query concentrations and units
+            #    conc = None;
+            #    conc_unit = None;
+            #    conc, conc_unit = self.get_concAndConcUnits_sampleNameAndComponentName_dataStage01Normalized(
+            #        sn,
+            #        replicates[0]['component_name']);
+            #    if (not(conc) or conc==0): continue
+            #    if (conc_unit): conc_units = conc_unit;
+            #    concs.append(conc);
             n_replicates = len(concs);
             conc_average_broth = 0.0;
             conc_var_broth = 0.0;
