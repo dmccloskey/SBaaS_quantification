@@ -149,36 +149,40 @@ exnorm01.initialize_tables();
 #        sample_names_I = row['sample_names'],
 #        component_names_I = row['component_names'])
 
-blank_sample_names = [];
+blank_sample_names_str = 'RBC_Blank'
+blank_sample_names = blank_sample_names_str.split(',');
 
-sample_name_abbreviations_str = 'PLT_30,PLT_31,PLT_32,PLT_33,PLT_34,PLT_35\
-PLT_36,PLT_37,PLT_38,PLT_39,PLT_40,PLT_42'
+sample_name_abbreviations_str = 'RBC_35,RBC_36,RBC_37,RBC_38,RBC_39,RBC_40,RBC_42'
 sample_name_abbreviations = sample_name_abbreviations_str.split(',');
 
 ##reset previous average calculations
 #exnorm01.reset_dataStage01_quantification_averages(
-#     'BloodProject01',
-#     sample_name_abbreviations_I=sample_name_abbreviations);
+#    'BloodProject01',
+#    sample_name_abbreviations_I=sample_name_abbreviations);
+	
 ## calculate replicates using the formula ave(broth),i - ave(blanks,broth) for specific samples
 #exnorm01.execute_analyzeAverages_blanks(
 #    'BloodProject01',
-#    blank_sample_names_I=blank_sample_names,
+#    blank_sample_name_abbreviations_I=blank_sample_names,
 #    sample_name_abbreviations_I=sample_name_abbreviations);
-# export the data to ddt
-#exnorm01.export_dataStage01NormalizedAndAverages_js(
-#        'BloodProject01',
-#        sample_name_abbreviations_I=sample_name_abbreviations,
-#        sample_names_I=[],
-#        component_names_I=[],
-#        cv_threshold_I=40,
-#        extracellular_threshold_I=80,
-#        data_dir_I='tmp'
-#    );
 
-#check for duplicate dilutions
-exnorm01.execute_findDuplicateDilutions(
+# export the data to ddt
+exnorm01.export_dataStage01NormalizedAndAverages_js(
         'BloodProject01',
-        );
+        sample_name_abbreviations_I=sample_name_abbreviations,
+        sample_names_I=[],
+        blank_sample_names_I=[],
+        blank_sample_name_abbreviations_I=blank_sample_names,
+        component_names_I=[],
+        cv_threshold_I=40,
+        extracellular_threshold_I=80,
+        data_dir_I='tmp'
+    );
+
+##check for duplicate dilutions
+#exnorm01.execute_findDuplicateDilutions(
+#        'BloodProject01',
+#        );
 
 #make the replicates methods table
 from SBaaS_quantification.stage01_quantification_replicates_execute import stage01_quantification_replicates_execute
@@ -211,21 +215,21 @@ sampleNames_sampleNameAbbreviations_componentName_listDict = [
     'sample_name_abbreviations':sample_name_abbreviations,
      'component_names':component_names},
     ]
-for row in sampleNameShorts_componentName_listDict:
-    #reset previous calculations
-    exreps01.reset_dataStage01_quantification_replicates(
-        'BloodProject01',
-        sample_name_short_I=row['sample_name_shorts'],
-        component_names_I=row['component_names'],
-        );
-for row in sampleNames_sampleNameAbbreviations_componentName_listDict:
-    # calculate replicates using the formula broth,i - ave(filtrate) for specific samples
-    exreps01.execute_analyzeReplicates(
-        'BloodProject01',
-        sample_name_abbreviations_I=row['sample_name_abbreviations'],
-        component_names_I=row['component_names'],
-        sample_names_I=row['sample_names'],
-        );
+#for row in sampleNameShorts_componentName_listDict:
+#    #reset previous calculations
+#    exreps01.reset_dataStage01_quantification_replicates(
+#        'BloodProject01',
+#        sample_name_short_I=row['sample_name_shorts'],
+#        component_names_I=row['component_names'],
+#        );
+#for row in sampleNames_sampleNameAbbreviations_componentName_listDict:
+#    # calculate replicates using the formula broth,i - ave(filtrate) for specific samples
+#    exreps01.execute_analyzeReplicates(
+#        'BloodProject01',
+#        sample_name_abbreviations_I=row['sample_name_abbreviations'],
+#        component_names_I=row['component_names'],
+#        sample_names_I=row['sample_names'],
+#        );
 
 from SBaaS_quantification.stage01_quantification_physiologicalRatios_execute import stage01_quantification_physiologicalRatios_execute
 exphysratio01 = stage01_quantification_physiologicalRatios_execute(session,engine,pg_settings.datadir_settings);

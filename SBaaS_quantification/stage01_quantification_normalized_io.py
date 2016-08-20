@@ -417,9 +417,16 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
             return data_json_O;
         with open(filename_str,'w') as file:
             file.write(ddtutilities.get_allObjects());
-    def export_dataStage01NormalizedAndAverages_js(self,experiment_id_I,sample_name_abbreviations_I=[],sample_names_I=[],component_names_I=[],
-                                                   cv_threshold_I=40,extracellular_threshold_I=80,
-                                                   data_dir_I='tmp'):
+    def export_dataStage01NormalizedAndAverages_js(self,
+                experiment_id_I,
+                sample_name_abbreviations_I=[],
+                sample_names_I=[],
+                component_names_I=[],
+                blank_sample_names_I=[],
+                blank_sample_name_abbreviations_I=[],
+                cv_threshold_I=40,
+                extracellular_threshold_I=80,
+                data_dir_I='tmp'):
         '''export data_stage01_quantification_normalized and averages for visualization with ddt'''
 
         calc = calculate_interface();
@@ -448,20 +455,44 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
         if type(uniqueRows)==type(listDict()):
             uniqueRows.convert_dataFrame2ListDict()
             uniqueRows = uniqueRows.get_listDict();
-        data_tmp = {};#reorganize the data into a dictionary for quick traversal of the replicates
+        replicates_tmp = {};#reorganize the data into a dictionary for quick traversal of the replicates
         for uniqueRow_cnt,uniqueRow in enumerate(uniqueRows):
             unique = (uniqueRow['sample_name_abbreviation'],
                       uniqueRow['experiment_id'],
                       uniqueRow['time_point'],
                       uniqueRow['component_name'],
                       uniqueRow['calculated_concentration_units'])
-            if not unique in data_tmp.keys():
-                data_tmp[unique] = [];
-            data_tmp[unique].append(uniqueRow);
-        sn_cn_all = [];
-        threshold_match = True;
-        #for uniqueRow_cnt,uniqueRow in enumerate(uniqueRows):
-        for unique,replicates in data_tmp.items():
+            if not unique in replicates_tmp.keys():
+                replicates_tmp[unique] = [];
+            replicates_tmp[unique].append(uniqueRow);
+        #3 filter in blank samples
+        uniqueBlanks=[];
+        if blank_sample_names_I or blank_sample_name_abbreviations_I:
+            uniqueBlanks = self.filter_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(
+                uniqueRows_all,
+                calculated_concentration_units_I=[],
+                component_names_I=component_names_I,
+                component_group_names_I=[],
+                sample_names_I=blank_sample_names_I,
+                sample_name_abbreviations_I=blank_sample_name_abbreviations_I,
+                time_points_I=[],
+                );
+        if type(uniqueBlanks)==type(listDict()):
+            uniqueBlanks.convert_dataFrame2ListDict()
+            uniqueBlanks = uniqueBlanks.get_listDict();
+        data_blanks_tmp = {}; #reorganize the data for a quick traversal of the components
+        for uniqueBlanks_cnt,uniqueBlank in enumerate(uniqueBlanks):
+            unique = (uniqueBlank['experiment_id'],
+                      uniqueBlank['time_point'],
+                      uniqueBlank['component_name'],
+                      uniqueBlank['calculated_concentration_units'])
+            if not unique in data_blanks_tmp.keys():
+                data_blanks_tmp[unique] = [];
+            data_blanks_tmp[unique].append(uniqueBlank);
+
+        #
+        unique_ave = [];
+        for unique,replicates in replicates_tmp.items():
             #get data from averages once per sample_name_abbreviation/component_name
             print('exporting sample_name_abbreviation ' + replicates[0]['sample_name_abbreviation'] + " and component_name " + replicates[0]['component_name']);
             # get the averages and %CV samples
@@ -499,6 +530,19 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                         data_norm_broth.append(row);
                         broth_conc.append(rep['calculated_concentration'])
                     data_norm_combined.append(row);
+
+                # add in blanks, if any
+                if data_blanks_tmp and unique[1:] in data_blanks_tmp.keys():
+                    for rep in data_blanks_tmp[unique[1:]]:
+                        row = {};
+                        row['extracellular_percent'] = row_ave['extracellular_percent']
+                        row['calculated_concentration_cv'] = row_ave['calculated_concentration_cv']
+                        row.update(rep)
+                        if uniqueRow['sample_desc'] == 'Broth':
+                            data_norm_filtrate.append(row);
+                            filtrate_conc.append(rep['calculated_concentration'])
+                        data_norm_combined.append(row);
+
 
                 #add data to aggregate and sample_name_abbreviations_all
                 if not broth_conc: broth_conc = [0];

@@ -472,9 +472,12 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
                     data_O.append(row)
         self.add_rows_table('data_stage01_quantification_averages',data_O);
     def execute_analyzeAverages_blanks(self,experiment_id_I,
-            sample_name_abbreviations_I=[],sample_names_I=[],
+            sample_name_abbreviations_I=[],
+            sample_names_I=[],
             component_names_I=[],
-            blank_sample_names_I=[]):
+            blank_sample_names_I=[],
+            blank_sample_name_abbreviations_I=[],
+            ):
         '''calculate the averages using the ave(broth),i - ave(blank,broth)
         NOTE: data_stage01_quantification_normalized must be populated
         Input:
@@ -528,14 +531,14 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
             
         #3 filter in blank samples
         uniqueBlanks=[];
-        if blank_sample_names_I:
+        if blank_sample_names_I or blank_sample_name_abbreviations_I:
             uniqueBlanks = self.filter_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(
                 uniqueRows_all,
                 calculated_concentration_units_I=[],
                 component_names_I=component_names_I,
                 component_group_names_I=[],
                 sample_names_I=blank_sample_names_I,
-                sample_name_abbreviations_I=[],
+                sample_name_abbreviations_I=blank_sample_name_abbreviations_I,
                 time_points_I=[],
                 );
         if type(uniqueBlanks)==type(listDict()):
@@ -553,7 +556,7 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
         for unique,replicates in data_tmp.items():
             print('analyzing averages for sample_name_abbreviation ' + replicates[0]['sample_name_abbreviation'] + ' and component_name ' + replicates[0]['component_name']);
             # get blank concentrations
-            if blank_sample_names_I:
+            if data_blanks_tmp and replicates[0]['component_name'] in data_blanks_tmp.keys():
                 concs = [d['calculated_concentration'] for d in data_blanks_tmp[replicates[0]['component_name']]
                          if not d['calculated_concentration'] is None and d['calculated_concentration']!=0];
                 conc_units = [d['calculated_concentration_units'] for d in data_blanks_tmp[replicates[0]['component_name']]
