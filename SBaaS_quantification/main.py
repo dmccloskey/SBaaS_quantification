@@ -153,6 +153,7 @@ blank_sample_names_str = 'RBC_Blank'
 blank_sample_names = blank_sample_names_str.split(',');
 
 sample_name_abbreviations_str = 'RBC_35,RBC_36,RBC_37,RBC_38,RBC_39,RBC_40,RBC_42'
+#sample_name_abbreviations_str = 'RBC_Blank'
 sample_name_abbreviations = sample_name_abbreviations_str.split(',');
 
 ##reset previous average calculations

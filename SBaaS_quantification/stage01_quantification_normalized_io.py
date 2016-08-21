@@ -482,16 +482,18 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
             uniqueBlanks = uniqueBlanks.get_listDict();
         data_blanks_tmp = {}; #reorganize the data for a quick traversal of the components
         for uniqueBlanks_cnt,uniqueBlank in enumerate(uniqueBlanks):
-            unique = (uniqueBlank['experiment_id'],
+            unique = (uniqueBlank['sample_name_abbreviation'],
+                      uniqueBlank['experiment_id'],
                       uniqueBlank['time_point'],
                       uniqueBlank['component_name'],
                       uniqueBlank['calculated_concentration_units'])
             if not unique in data_blanks_tmp.keys():
                 data_blanks_tmp[unique] = [];
+            #uniqueBlank['sample_desc']='Filtrate';
             data_blanks_tmp[unique].append(uniqueBlank);
 
-        #
-        unique_ave = [];
+        #add in blanks
+        replicates_tmp.update(data_blanks_tmp);
         for unique,replicates in replicates_tmp.items():
             #get data from averages once per sample_name_abbreviation/component_name
             print('exporting sample_name_abbreviation ' + replicates[0]['sample_name_abbreviation'] + " and component_name " + replicates[0]['component_name']);
@@ -523,32 +525,31 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                     row['extracellular_percent'] = row_ave['extracellular_percent']
                     row['calculated_concentration_cv'] = row_ave['calculated_concentration_cv']
                     row.update(rep)
-                    if uniqueRow['sample_desc'] == 'Filtrate':
+                    if rep['sample_desc'] == 'Filtrate':
                         data_norm_filtrate.append(row);
                         filtrate_conc.append(rep['calculated_concentration'])
-                    if uniqueRow['sample_desc'] == 'Broth':
+                    if rep['sample_desc'] == 'Broth':
                         data_norm_broth.append(row);
                         broth_conc.append(rep['calculated_concentration'])
                     data_norm_combined.append(row);
 
-                # add in blanks, if any
-                if data_blanks_tmp and unique[1:] in data_blanks_tmp.keys():
-                    for rep in data_blanks_tmp[unique[1:]]:
-                        row = {};
-                        row['extracellular_percent'] = row_ave['extracellular_percent']
-                        row['calculated_concentration_cv'] = row_ave['calculated_concentration_cv']
-                        row.update(rep)
-                        if uniqueRow['sample_desc'] == 'Broth':
-                            data_norm_filtrate.append(row);
-                            filtrate_conc.append(rep['calculated_concentration'])
-                        data_norm_combined.append(row);
-
+                ## add in blanks, if any
+                #if data_blanks_tmp and unique[1:] in data_blanks_tmp.keys():
+                #    for rep in data_blanks_tmp[unique[1:]]:
+                #        row = {};
+                #        row['extracellular_percent'] = row_ave['extracellular_percent']
+                #        row['calculated_concentration_cv'] = row_ave['calculated_concentration_cv']
+                #        row.update(rep)
+                #        if uniqueRow['sample_desc'] == 'Broth':
+                #            data_norm_filtrate.append(row);
+                #            filtrate_conc.append(rep['calculated_concentration'])
+                #        data_norm_combined.append(row);
 
                 #add data to aggregate and sample_name_abbreviations_all
                 if not broth_conc: broth_conc = [0];
                 if not filtrate_conc: filtrate_conc = [0];
-                row_ave['calculated_concentration_min']=min(broth_conc)
-                row_ave['calculated_concentration_max']=max(broth_conc)
+                row_ave['calculated_concentration_min']=min(broth_conc+filtrate_conc)
+                row_ave['calculated_concentration_max']=max(broth_conc+filtrate_conc)
                 row_ave['calculated_concentration_broth_min']=min(broth_conc)
                 row_ave['calculated_concentration_broth_max']=max(broth_conc)
                 row_ave['calculated_concentration_filtrate_min']=min(filtrate_conc)
@@ -705,11 +706,12 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                     ];
         data4_nestkeys = ['component_name'];
         data4_keymap = {'xdata':'component_name',
+                        'ydata':'calculated_concentration_average',
                         'ydatamean':'calculated_concentration_average',
                         'ydatalb':'calculated_concentration_lb',
                         'ydataub':'calculated_concentration_ub',
-                        'ydatamin':'calculated_concentration_min',
-                        'ydatamax':'calculated_concentration_max',
+                        #'ydatamin':'calculated_concentration_min',
+                        #'ydatamax':'calculated_concentration_max',
                         #'ydataiq1':None,
                         #'ydataiq3':None,
                         #'ydatamedian':None,
@@ -757,7 +759,11 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
             svgtileparameters_averages_filtrate_O = {'tileheader':'Filtrate data','tiletype':'svg','tileid':"tile5",'rowid':"row2",'colid':"col2",
                 'tileclass':"panel panel-default",'rowclass':"row",'colclass':"col-sm-4"};
             svgtileparameters_averages_filtrate_O.update(svgparameters_averages_filtrate_O);
-        svgparameters_averages_combined_O = {"svgtype":'boxandwhiskersplot2d_02',"svgkeymap":[data4_keymap,data1_keymap],
+        svgparameters_averages_combined_O = {
+                            #"svgtype":'boxandwhiskersplot2d_02',
+                            "svgtype":'boxandwhiskersplot2d_01',
+                            #"svgkeymap":[data4_keymap,data1_keymap],
+                            "svgkeymap":[data4_keymap],
                             'svgid':'svg6',
                             "svgmargin":{ 'top': 50, 'right': 150, 'bottom': 50, 'left': 50 },
                             "svgwidth":250,"svgheight":250,
@@ -793,7 +799,8 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
         tile2datamap_O = {
             "filtermenu2":[5],
             "tile4":[3,0],
-            "tile6":[5,2],
+            #"tile6":[5,2],
+            "tile6":[5],
             "tile7":[2],
             "tile8":[5]
             };
