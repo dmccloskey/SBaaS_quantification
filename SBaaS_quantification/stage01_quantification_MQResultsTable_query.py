@@ -4,6 +4,7 @@ from SBaaS_LIMS.lims_experiment_postgresql_models import *
 from SBaaS_LIMS.lims_sample_postgresql_models import *
 
 from .stage01_quantification_MQResultsTable_postgresql_models import *
+from .stage01_quantification_analysis_postgresql_models import data_stage01_quantification_analysis
 
 from SBaaS_base.sbaas_base_query_update import sbaas_base_query_update
 from SBaaS_base.sbaas_base_query_drop import sbaas_base_query_drop
@@ -1053,7 +1054,6 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
 
-    
     # query sample names from data_stage01_quantification_mqresultstable
     def getGroupJoin_experimentAndQuantitationMethodAndMQResultsTable_experimentID_dataStage01QuantificationMQResultsTable(self,
         experiment_id_I,
@@ -1140,4 +1140,132 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             return data_O;
         except SQLAlchemyError as e:
             print(e);
-
+    # Join between data_stage01_quantification_mqresultstable and data_stage01_quantification_analysis
+    def getRowsJoin_analysisID_dataStage01QuantificationMQResultsTable(self,
+        analysis_id_I,
+        experiment_ids_I=[],
+        sample_types_I=[],
+        sample_names_I=[],
+        sample_ids_I=[],
+        sample_name_shorts_I=[],
+        sample_name_abbreviations_I=[],
+        component_names_I=[],
+        component_group_names_I=[],
+        ):
+        '''Query mqresultstable rows by analysis_id'''
+        try:
+            data = self.session.query(
+                    data_stage01_quantification_MQResultsTable,
+                    #data_stage01_quantification_analysis.experiment_id,
+                    #data_stage01_quantification_analysis.analysis_id,
+                    #data_stage01_quantification_analysis.sample_name_short,
+                    #data_stage01_quantification_analysis.sample_name_abbreviation,
+                    ).filter(
+                    data_stage01_quantification_analysis.analysis_id.like(analysis_id_I),
+                    data_stage01_quantification_analysis.sample_name.like(data_stage01_quantification_MQResultsTable.sample_name),
+                    data_stage01_quantification_MQResultsTable.used_.is_(True),
+                    data_stage01_quantification_MQResultsTable.is_.is_(False),
+                    #).group_by(
+                    ).order_by(
+                    data_stage01_quantification_MQResultsTable.acquisition_date_and_time.asc(),
+                    data_stage01_quantification_MQResultsTable.sample_name.asc(),
+                    data_stage01_quantification_MQResultsTable.component_name.asc(),
+                    data_stage01_quantification_MQResultsTable.component_group_name.asc()
+                    ).all();
+            data_O = [d.__repr__dict__() for d in data];
+            return data_O
+            #if data:
+            #    data_O = listDict(record_I=data);
+            #    data_O.convert_record2DataFrame();
+            #    data_O.filterIn_byDictList({
+            #                                'sample_id':sample_ids_I,
+            #                                'sample_name':sample_names_I,
+            #                                'sample_name_short':sample_name_shorts_I,
+            #                                'sample_name_abbreviation':sample_name_abbreviations_I,
+            #                                'sample_type':sample_types_I,
+            #                                'component_name':component_names_I,
+            #                                'component_group_name':component_group_names_I,
+            #                               });
+            #    data_O.convert_dataFrame2ListDict();
+            #return data_O.get_listDict();
+        except SQLAlchemyError as e:
+            print(e);
+    def getRowsJoin_analysisID_dataStage01QuantificationMQResultsTable_limsQuantitationMethod(self,
+        analysis_id_I
+        ):
+        '''Query mqresultstable and quantitation_method rows by analysis_id'''
+        try:
+            cmd = '''
+    SELECT subquery3.experiment_id, 
+        subquery3.quantitation_method_id, 
+        quantitation_method.q1_mass, 
+        quantitation_method.q3_mass, 
+        quantitation_method.met_id, 
+        quantitation_method.component_name, 
+        quantitation_method.is_name, 
+        quantitation_method.fit, 
+        quantitation_method.weighting, 
+        quantitation_method.intercept, 
+        quantitation_method.slope, 
+        quantitation_method.correlation, 
+        quantitation_method.use_area, 
+        quantitation_method.lloq, 
+        quantitation_method.uloq, 
+        quantitation_method.points, 
+        subquery3.sample_name,
+        subquery3.component_name,
+        subquery3.concentration_ratio,
+        subquery3.area_ratio,
+        subquery3.height_ratio
+    FROM quantitation_method, (
+        SELECT subquery2.experiment_id, 
+        subquery2.quantitation_method_id, 
+        data_stage01_quantification_mqresultstable.sample_name,
+        data_stage01_quantification_mqresultstable.component_name,
+        data_stage01_quantification_mqresultstable.concentration_ratio,
+        data_stage01_quantification_mqresultstable.area_ratio,
+        data_stage01_quantification_mqresultstable.height_ratio
+        FROM data_stage01_quantification_mqresultstable, (
+            SELECT experiment.quantitation_method_id, 
+                   subquery1.experiment_id,
+                   experiment.sample_name 
+            FROM experiment, (
+                SELECT experiment_id 
+                FROM data_stage01_quantification_analysis
+                WHERE analysis_id LIKE '%s' 
+                GROUP BY experiment_id 
+                ORDER BY experiment_id ASC
+                ) subquery1
+            WHERE experiment.id LIKE subquery1.experiment_id 
+            GROUP BY experiment.quantitation_method_id, 
+                subquery1.experiment_id,
+                experiment.sample_name  
+            ORDER BY experiment.quantitation_method_id ASC
+            ) subquery2
+        WHERE data_stage01_quantification_mqresultstable.sample_type LIKE '%s' AND
+            data_stage01_quantification_mqresultstable.sample_name LIKE subquery2.sample_name AND
+            NOT (data_stage01_quantification_mqresultstable.is_) AND
+            data_stage01_quantification_mqresultstable.used_
+        GROUP BY subquery2.experiment_id, 
+            subquery2.quantitation_method_id, 
+            data_stage01_quantification_mqresultstable.sample_name,
+            data_stage01_quantification_mqresultstable.component_name,
+            data_stage01_quantification_mqresultstable.concentration_ratio,
+            data_stage01_quantification_mqresultstable.area_ratio,
+            data_stage01_quantification_mqresultstable.height_ratio
+        ORDER BY subquery2.quantitation_method_id ASC, 
+            data_stage01_quantification_mqresultstable.component_name ASC, 
+            data_stage01_quantification_mqresultstable.sample_name ASC
+        ) subquery3
+    WHERE quantitation_method.id LIKE subquery3.quantitation_method_id AND 
+        subquery3.component_name LIKE quantitation_method.component_name
+    ORDER BY quantitation_method.id ASC,
+        quantitation_method.component_name ASC, 
+        subquery3.sample_name
+            ''' %(analysis_id_I,'Standard')
+            result = self.session.execute(cmd);
+            data = result.fetchall();
+            data_O = [dict(d) for d in data];
+            return data_O;
+        except SQLAlchemyError as e:
+            print(e);

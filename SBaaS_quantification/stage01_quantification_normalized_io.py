@@ -130,7 +130,7 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
         '''export data_stage01_quantification_averages to csv'''
         pass
 
-    def export_dataStage01NormalizedAndAverages_v1_js(self,experiment_id_I,sample_name_abbreviations_I=[],sample_names_I=[],component_names_I=[],
+    def export_dataStage01NormalizedAndAverages_checkCVAndExtracelluar_js(self,experiment_id_I,sample_name_abbreviations_I=[],sample_names_I=[],component_names_I=[],
                                                    cv_threshold_I=40,extracellular_threshold_I=80,
                                                    data_dir_I='tmp'):
         '''export data_stage01_quantification_normalized and averages for visualization with ddt'''
@@ -418,12 +418,10 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
         with open(filename_str,'w') as file:
             file.write(ddtutilities.get_allObjects());
     def export_dataStage01NormalizedAndAverages_js(self,
-                experiment_id_I,
+                analysis_id_I,
                 sample_name_abbreviations_I=[],
                 sample_names_I=[],
                 component_names_I=[],
-                blank_sample_names_I=[],
-                blank_sample_name_abbreviations_I=[],
                 cv_threshold_I=40,
                 extracellular_threshold_I=80,
                 data_dir_I='tmp'):
@@ -439,8 +437,8 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
 
         #SPLIT 1:
         #1 query unique calculated_concentration_units/sample_name_abbreviations/component_names/component_group_names/time_points/sample_names/sample_ids/sample_description
-        uniqueRows_all = self.getQueryResult_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(
-                experiment_id_I
+        uniqueRows_all = self.getQueryResult_groupNormalizedAveragesSamples_analysisID_dataStage01QuantificationNormalizedAndAverages(
+                analysis_id_I
             );
         #2 filter in broth samples
         uniqueRows = self.filter_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(
@@ -457,7 +455,8 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
             uniqueRows = uniqueRows.get_listDict();
         replicates_tmp = {};#reorganize the data into a dictionary for quick traversal of the replicates
         for uniqueRow_cnt,uniqueRow in enumerate(uniqueRows):
-            unique = (uniqueRow['sample_name_abbreviation'],
+            unique = (
+                      uniqueRow['sample_name_abbreviation'],
                       uniqueRow['experiment_id'],
                       uniqueRow['time_point'],
                       uniqueRow['component_name'],
@@ -465,42 +464,13 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
             if not unique in replicates_tmp.keys():
                 replicates_tmp[unique] = [];
             replicates_tmp[unique].append(uniqueRow);
-        #3 filter in blank samples
-        uniqueBlanks=[];
-        if blank_sample_names_I or blank_sample_name_abbreviations_I:
-            uniqueBlanks = self.filter_groupNormalizedAveragesSamples_experimentID_dataStage01QuantificationNormalizedAndAverages_limsSampleAndSampleID(
-                uniqueRows_all,
-                calculated_concentration_units_I=[],
-                component_names_I=component_names_I,
-                component_group_names_I=[],
-                sample_names_I=blank_sample_names_I,
-                sample_name_abbreviations_I=blank_sample_name_abbreviations_I,
-                time_points_I=[],
-                );
-        if type(uniqueBlanks)==type(listDict()):
-            uniqueBlanks.convert_dataFrame2ListDict()
-            uniqueBlanks = uniqueBlanks.get_listDict();
-        data_blanks_tmp = {}; #reorganize the data for a quick traversal of the components
-        for uniqueBlanks_cnt,uniqueBlank in enumerate(uniqueBlanks):
-            unique = (uniqueBlank['sample_name_abbreviation'],
-                      uniqueBlank['experiment_id'],
-                      uniqueBlank['time_point'],
-                      uniqueBlank['component_name'],
-                      uniqueBlank['calculated_concentration_units'])
-            if not unique in data_blanks_tmp.keys():
-                data_blanks_tmp[unique] = [];
-            #uniqueBlank['sample_desc']='Filtrate';
-            data_blanks_tmp[unique].append(uniqueBlank);
-
-        #add in blanks
-        replicates_tmp.update(data_blanks_tmp);
         for unique,replicates in replicates_tmp.items():
             #get data from averages once per sample_name_abbreviation/component_name
-            print('exporting sample_name_abbreviation ' + replicates[0]['sample_name_abbreviation'] + " and component_name " + replicates[0]['component_name']);
+            #print('exporting sample_name_abbreviation ' + replicates[0]['sample_name_abbreviation'] + " and component_name " + replicates[0]['component_name']);
             # get the averages and %CV samples
             row_ave = {};
-            #row_ave = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentName_dataStage01Averages(experiment_id_I,sna,tp,cn);
-            row_ave = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentNameAndCalculatedConcentrationCVAndExtracellularPercent_dataStage01Averages(experiment_id_I,
+            row_ave = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentNameAndCalculatedConcentrationCVAndExtracellularPercent_dataStage01Averages(
+                    replicates[0]['experiment_id'],
                     replicates[0]['sample_name_abbreviation'],
                     replicates[0]['time_point'],
                     replicates[0]['component_name'],
@@ -516,12 +486,14 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                 stdev = calc.convert_cv2StDev(row_ave['calculated_concentration_average'],row_ave['calculated_concentration_cv']);
                 row_ave['calculated_concentration_lb'] = row_ave['calculated_concentration_average']-stdev;
                 row_ave['calculated_concentration_ub'] = row_ave['calculated_concentration_average']+stdev;
+                row_ave['analysis_id'] = analysis_id_I;
 
                 # get data from normalized
                 filtrate_conc = [];
                 broth_conc = [];
                 for rep in replicates:
                     row = {};
+                    row['analysis_id'] = analysis_id_I;
                     row['extracellular_percent'] = row_ave['extracellular_percent']
                     row['calculated_concentration_cv'] = row_ave['calculated_concentration_cv']
                     row.update(rep)
@@ -533,18 +505,6 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                         broth_conc.append(rep['calculated_concentration'])
                     data_norm_combined.append(row);
 
-                ## add in blanks, if any
-                #if data_blanks_tmp and unique[1:] in data_blanks_tmp.keys():
-                #    for rep in data_blanks_tmp[unique[1:]]:
-                #        row = {};
-                #        row['extracellular_percent'] = row_ave['extracellular_percent']
-                #        row['calculated_concentration_cv'] = row_ave['calculated_concentration_cv']
-                #        row.update(rep)
-                #        if uniqueRow['sample_desc'] == 'Broth':
-                #            data_norm_filtrate.append(row);
-                #            filtrate_conc.append(rep['calculated_concentration'])
-                #        data_norm_combined.append(row);
-
                 #add data to aggregate and sample_name_abbreviations_all
                 if not broth_conc: broth_conc = [0];
                 if not filtrate_conc: filtrate_conc = [0];
@@ -555,83 +515,10 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                 row_ave['calculated_concentration_filtrate_min']=min(filtrate_conc)
                 row_ave['calculated_concentration_filtrate_max']=max(filtrate_conc)
                 data_ave.append(row_ave);
-            
-        ##SPLIT 3:
-        ## get sample_name_abbreviations
-        #if sample_name_abbreviations_I:
-        #    sample_name_abbreviations = sample_name_abbreviations_I
-        #else:
-        #    sample_name_abbreviations = [];
-        #    #TODO: slow join...
-        #    sample_name_abbreviations = self.get_sampleNameAbbreviations_experimentID_dataStage01Normalized(experiment_id_I);
-        #for sna in sample_name_abbreviations:
-        #    print('exporting sample_name_abbreviation ' + sna);
-        #    # get component names
-        #    if component_names_I:
-        #        component_names = component_names_I
-        #    else:
-        #        component_names = [];
-        #        #TODO: slow join...
-        #        component_names = self.get_componentsNames_experimentIDAndSampleNameAbbreviation_dataStage01Normalized(experiment_id_I,sna);
-        #    for cn in component_names:
-        #        print('exporting component_name ' + cn);
-        #        component_group_name = self.get_componentGroupName_experimentIDAndComponentName_dataStage01Normalized(experiment_id_I,cn);
-        #        # get time points
-        #        #TODO: slow join...
-        #        time_points = self.get_timePoint_experimentIDAndSampleNameAbbreviation_dataStage01Normalized(experiment_id_I,sna);
-        #        for tp in time_points:
-        #            print('exporting time_point ' + tp);
-        #            # get the averages and %CV samples
-        #            row = {};
-        #            #row = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentName_dataStage01Averages(experiment_id_I,sna,tp,cn);
-        #            row = self.get_row_experimentIDAndSampleNameAbbreviationAndTimePointAndComponentNameAndCalculatedConcentrationCVAndExtracellularPercent_dataStage01Averages(experiment_id_I,
-        #                                                                sna,tp,cn,
-        #                                                                cv_threshold_I=cv_threshold_I,
-        #                                                                extracellular_threshold_I=extracellular_threshold_I);
-        #            if not row: continue;
-        #            stdev = calc.convert_cv2StDev(row['calculated_concentration_filtrate_average'],row['calculated_concentration_filtrate_cv']);
-        #            row['calculated_concentration_filtrate_lb'] = row['calculated_concentration_filtrate_average']-stdev;
-        #            row['calculated_concentration_filtrate_ub'] = row['calculated_concentration_filtrate_average']+stdev;
-        #            stdev = calc.convert_cv2StDev(row['calculated_concentration_broth_average'],row['calculated_concentration_broth_cv']);
-        #            row['calculated_concentration_broth_lb'] = row['calculated_concentration_broth_average']-stdev;
-        #            row['calculated_concentration_broth_ub'] = row['calculated_concentration_broth_average']+stdev;
-        #            stdev = calc.convert_cv2StDev(row['calculated_concentration_average'],row['calculated_concentration_cv']);
-        #            row['calculated_concentration_lb'] = row['calculated_concentration_average']-stdev;
-        #            row['calculated_concentration_ub'] = row['calculated_concentration_average']+stdev;
-        #            data_ave.append(row);
-        #            # get filtrate sample names
-        #            sample_names = [];
-        #            sample_description = 'Filtrate';
-        #            #TODO: slow join...
-        #            sample_names = self.get_sampleNames_experimentIDAndSampleNameAbbreviationAndSampleDescriptionAndComponentNameAndTimePoint_dataStage01Normalized(experiment_id_I,sna,sample_description,cn,tp);
-        #            if sample_names_I: # screen out sample names that are not in the input
-        #                sample_names = [x for x in sample_names if x in sample_names_I];
-        #            for sn in sample_names:
-        #                # get the row
-        #                row = None;
-        #                row = self.get_row_sampleNameAndComponentName_dataStage01Normalized(sn,cn);
-        #                if not(row): continue;
-        #                row['sample_name_abbreviation'] = sna;
-        #                data_norm_filtrate.append(row);
-        #                data_norm_combined.append(row);
-        #            # get filtrate sample names
-        #            sample_names = [];
-        #            sample_description = 'Broth';
-        #            #TODO: slow join...
-        #            sample_names = self.get_sampleNames_experimentIDAndSampleNameAbbreviationAndSampleDescriptionAndComponentNameAndTimePoint_dataStage01Normalized(experiment_id_I,sna,sample_description,cn,tp);
-        #            if sample_names_I: # screen out sample names that are not in the input
-        #                sample_names = [x for x in sample_names if x in sample_names_I];
-        #            for sn in sample_names:
-        #                # get the row
-        #                row = None;
-        #                row = self.get_row_sampleNameAndComponentName_dataStage01Normalized(sn,cn);
-        #                if not(row): continue;
-        #                row['sample_name_abbreviation'] = sna;
-        #                data_norm_broth.append(row);
-        #                data_norm_combined.append(row);
 
         # dump chart parameters to a js files
-        data1_keys = ['experiment_id',
+        data1_keys = ['analysis_id',
+                      'experiment_id',
                       'sample_name',
                       'sample_id',
                       'sample_name_abbreviation',
@@ -653,7 +540,8 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                         #'ydatamedian':None,
                         'serieslabel':'sample_name_abbreviation',
                         'featureslabel':'sample_name'};
-        data2_keys = ['experiment_id',
+        data2_keys = ['analysis_id',
+                      'experiment_id',
                       'sample_name_abbreviation',
                       'time_point',
                       'component_group_name',
@@ -674,7 +562,8 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                         #'ydatamedian':None,
                         'serieslabel':'sample_name_abbreviation',
                         'featureslabel':'component_name'};
-        data3_keys = ['experiment_id',
+        data3_keys = ['analysis_id',
+                      'experiment_id',
                       'sample_name_abbreviation',
                       'time_point',
                       'component_group_name',
@@ -695,7 +584,8 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
                         #'ydatamedian':None,
                         'serieslabel':'sample_name_abbreviation',
                         'featureslabel':'component_name'};
-        data4_keys = ['experiment_id',
+        data4_keys = ['analysis_id',
+                      'experiment_id',
                       'sample_name_abbreviation',
                       'time_point',
                       'component_group_name',
@@ -799,13 +689,14 @@ class stage01_quantification_normalized_io(stage01_quantification_normalized_que
         tile2datamap_O = {
             "filtermenu2":[5],
             "tile4":[3,0],
+            "tile5":[4,1],
             #"tile6":[5,2],
             "tile6":[5],
             "tile7":[2],
             "tile8":[5]
             };
-        if data_norm_filtrate: tile2datamap_O.update({"tile5":[4,1]})
-        else: tile2datamap_O.update({"tile5":[4]})
+        #if data_norm_filtrate: tile2datamap_O.update({"tile5":[4,1]})
+        #else: tile2datamap_O.update({"tile5":[4]})
         filtermenuobject_O = [
             #{"filtermenuid":"filtermenu1","filtermenuhtmlid":"filtermenuform1",
             #"filtermenusubmitbuttonid":"submit1","filtermenuresetbuttonid":"reset1",

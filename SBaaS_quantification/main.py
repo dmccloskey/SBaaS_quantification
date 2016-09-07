@@ -33,69 +33,27 @@ sys.path.append(pg_settings.datadir_settings['github']+'/quantification_analysis
 sys.path.append(pg_settings.datadir_settings['github']+'/matplotlib_utilities')
 
 #make the results table
+from SBaaS_quantification.stage01_quantification_analysis_execute import stage01_quantification_analysis_execute
+analysis01 = stage01_quantification_analysis_execute(session,engine,pg_settings.datadir_settings);
+analysis01.initialize_supportedTables();
+analysis01.initialize_tables();
+
+#make the results table
 from SBaaS_quantification.stage01_quantification_MQResultsTable_execute import stage01_quantification_MQResultsTable_execute
 exmqrt01 = stage01_quantification_MQResultsTable_execute(session,engine,pg_settings.datadir_settings);
 exmqrt01.initialize_supportedTables();
-exmqrt01.initialize_dataStage01_quantification_MQResultsTable();
-#exmqrt01.drop_dataStage01_quantification_MQResultsTable();
-#exmqrt01.initialize_dataStage01_quantification_MQResultsTable();
-#exmqrt01.execute_deleteExperimentFromMQResultsTable('chemoCLim01',sample_types_I = ['Quality Control','Unknown','Standard','Blank'])
-#exmqrt01.import_dataStage01MQResultsTable_add('data/tests/analysis_quantification/150805_140521_Quantification_chemoCLim01_calibrators01.csv');
-#exmqrt01.import_dataStage01MQResultsTable_add('data/tests/analysis_quantification/150805_Quantification_chemoCLim01_samples02.csv');
-#exmqrt01.export_dataStage01MQResultsTable_metricPlot_js('chemoCLim01',component_names_I = ['fdp.fdp_1.Light'],measurement_I='calculated_concentration');
+exmqrt01.initialize_tables();
 
-#exmqrt01.import_dataStage01MQResultsTable_update(
-#        pg_settings.datadir_settings['workspace_data']+'/_input/160331_Quantification_ALEsKOs01_updates02.csv');
-
-##export a metric plot
-#exmqrt01.export_dataStage01MQResultsTable_metricPlot_js(
-#    'ALEsKOs01',
-#    sample_names_I = ['141219_0_QC_Broth-1',
-#        '141219_0_QC_Broth-2',
-#        '141219_0_QC_Broth-3',
-#        '141219_0_QC_Broth-4',
-#        '141219_0_QC_Broth-5',
-#        '141219_0_QC_Broth-7',
-#        '141219_0_QC_Broth-8',
-#        '141219_0_QC_Broth-9',
-#        '141219_0_QC_Broth-10',
-#        '141219_0_QC_Broth-11',
-#        '141219_0_QC_Broth-12',
-#        '141219_0_QC_Broth-13',
-#        '141219_0_QC_Broth-14',
-#        '141219_0_QC_Broth-15',
-#        '141219_0_QC_Broth-16',
-#        '141219_0_QC_Broth-17',
-#        '141219_0_QC_Broth-18',
-#        '141219_0_QC_Broth-19',
-#        '141219_0_QC_Broth-20',
-#        '141219_0_QC_Broth-21',
-#        '141219_0_QC_Broth-22',
-#        '141219_0_QC_Broth-23',
-#        '141219_0_QC_Broth-24',
-#        '141219_0_QC_Broth-25',
-#        '141219_0_QC_Broth-26',
-#        '141219_0_QC_Broth-27',
-#        '141219_0_QC_Broth-28',
-#        '141219_0_QC_Broth-29',
-#        '141219_0_QC_Broth-30',
-#        '141219_0_QC_Broth-31',
-#        '141219_0_QC_Broth-32',
-#        '141219_0_QC_Broth-33',
-#        '141219_0_QC_Broth-34',
-#    ],
-#    component_names_I = ['fdp.fdp_1.Light',
-#                         'gthrd.gthrd_1.Light',
-#                         'nadph.nadph_1.Light',
-#                         'icit.icit_2.Light',
-#                         'gln-L.gln-L_1.Light'],
-#    measurement_I='calculated_concentration')
+#exmqrt01.export_dataStage01MQResultsTable_js(
+#    analysis_id_I = 'BloodProject01_RBC_QC',
+#    features_I = ['calculated_concentration','retention_time']
+#    )
 
 # normalize samples to biomass
 from SBaaS_quantification.stage01_quantification_normalized_execute import stage01_quantification_normalized_execute
 exnorm01 = stage01_quantification_normalized_execute(session,engine,pg_settings.datadir_settings);
 exnorm01.initialize_supportedTables();
-exnorm01.initialize_dataStage01_quantification_normalized();
+exnorm01.initialize_tables();
 
 # normalize samples to the measured biomass of the experiment
 sampleName_componentName_listDict = [
@@ -124,12 +82,6 @@ sampleName_componentName_listDict = [
 #        conversion_name_I='gDW2OD_lab',
 #        sample_names_I = row['sample_names'],
 #        component_names_I = row['component_names'])
-
-# normalize samples to biomass
-from SBaaS_quantification.stage01_quantification_normalized_execute import stage01_quantification_normalized_execute
-exnorm01 = stage01_quantification_normalized_execute(session,engine,pg_settings.datadir_settings);
-exnorm01.initialize_supportedTables();
-exnorm01.initialize_tables();
 
 ## reset previous normalizations
 #sampleName_componentName_listDict = [
@@ -167,14 +119,9 @@ sample_name_abbreviations = sample_name_abbreviations_str.split(',');
 #    blank_sample_name_abbreviations_I=blank_sample_names,
 #    sample_name_abbreviations_I=sample_name_abbreviations);
 
-# export the data to ddt
+## export the data to ddt
 exnorm01.export_dataStage01NormalizedAndAverages_js(
-        'BloodProject01',
-        sample_name_abbreviations_I=sample_name_abbreviations,
-        sample_names_I=[],
-        blank_sample_names_I=[],
-        blank_sample_name_abbreviations_I=blank_sample_names,
-        component_names_I=[],
+        'BloodProject01_PLT_pre-post',
         cv_threshold_I=40,
         extracellular_threshold_I=80,
         data_dir_I='tmp'
@@ -252,6 +199,7 @@ exquant01.initialize_lims_quantitationMethod();
 
 ##export the method
 #exquant01.export_quantitationMethod_js('141220');
+#exquant01.export_quantitationMethods_js('BloodProject01_PLT_pre-post')
 
 #make the missing values table
 from SBaaS_quantification.stage01_quantification_replicatesMI_execute import stage01_quantification_replicatesMI_execute

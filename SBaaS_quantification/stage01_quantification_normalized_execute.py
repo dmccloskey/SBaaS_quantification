@@ -58,17 +58,6 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
             conversion = None;
             conversion_units = None;
             conversion, conversion_units = self.get_conversionAndConversionUnits_biologicalMaterialAndConversionName(biological_material_I,conversion_name_I);
-            if not(cvs and cvs_units and od600 and dil and dil_units):
-                print('cvs, cvs_units, or od600 are missing from physiological parameters');
-                print('or dil and dil_units are missing from sample descripton');
-                exit(-1);
-            elif not(conversion and conversion_units):
-                print('biological_material or conversion name is incorrect');
-                exit(-1);  
-            else:
-                #calculate the cell volume or biomass depending on the conversion units
-                #cell_volume, cell_volume_units = calc.calculate_cellVolume_CVSAndCVSUnitsAndODAndConversionAndConversionUnits(cvs,cvs_units,od600,conversion,conversion_units);
-                cell_volume, cell_volume_units = calc.calculate_biomass_CVSAndCVSUnitsAndODAndConversionAndConversionUnits(cvs,cvs_units,od600,conversion,conversion_units);
             for row_cnt,row in enumerate(groupJoin):
                 print('normalizing samples2Biomass for component_name ' + row['component_name']);
                 # get physiological parameters
@@ -78,6 +67,17 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
                 dil = None;
                 dil_units = None;
                 cvs, cvs_units, od600, dil,dil_units = self.get_CVSAndCVSUnitsAndODAndDilAndDilUnits_sampleName(row['sample_name']);
+                if not(cvs and cvs_units and od600 and dil and dil_units):
+                    print('cvs, cvs_units, or od600 are missing from physiological parameters');
+                    print('or dil and dil_units are missing from sample descripton');
+                    exit(-1);
+                elif not(conversion and conversion_units):
+                    print('biological_material or conversion name is incorrect');
+                    exit(-1);  
+                else:
+                    #calculate the cell volume or biomass depending on the conversion units
+                    #cell_volume, cell_volume_units = calc.calculate_cellVolume_CVSAndCVSUnitsAndODAndConversionAndConversionUnits(cvs,cvs_units,od600,conversion,conversion_units);
+                    cell_volume, cell_volume_units = calc.calculate_biomass_CVSAndCVSUnitsAndODAndConversionAndConversionUnits(cvs,cvs_units,od600,conversion,conversion_units);
                 # get the calculated concentration
                 calc_conc = None;
                 calc_conc_units = None;
@@ -104,10 +104,10 @@ class stage01_quantification_normalized_execute(stage01_quantification_normalize
                 # update data_stage01_quantification_normalized
                 if norm_conc:
                     row = {'experiment_id':experiment_id_I,
-                            'sample_name':sn,
-                            'sample_id':sample_ids[sn_cnt],
-                            'component_group_name':component_group_names[cn_cnt],
-                            'component_name':cn,
+                            'sample_name':row['sample_name'],
+                            'sample_id':row['sample_id'],
+                            'component_group_name':row['component_group_name'],
+                            'component_name':row['component_name'],
                             'calculated_concentration':norm_conc,
                             'calculated_concentration_units':norm_conc_units,
                             'used_':True,};

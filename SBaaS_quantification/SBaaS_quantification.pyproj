@@ -28,6 +28,10 @@
     <Compile Include="lims_quantitationMethod_postgresql_models.py" />
     <Compile Include="lims_quantitationMethod_query.py" />
     <Compile Include="main.py" />
+    <Compile Include="stage01_quantification_analysis_execute.py" />
+    <Compile Include="stage01_quantification_analysis_io.py" />
+    <Compile Include="stage01_quantification_analysis_postgresql_models.py" />
+    <Compile Include="stage01_quantification_analysis_query.py" />
     <Compile Include="stage01_quantification_replicatesMI_execute.py" />
     <Compile Include="stage01_quantification_replicatesMI_io.py" />
     <Compile Include="stage01_quantification_replicatesMI_postgresql_models.py" />

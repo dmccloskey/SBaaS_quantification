@@ -1,6 +1,7 @@
 ﻿from .stage01_quantification_normalized_postgresql_models import *
 from SBaaS_LIMS.lims_sample_postgresql_models import *
 from SBaaS_LIMS.lims_experiment_postgresql_models import *
+from .stage01_quantification_analysis_postgresql_models import data_stage01_quantification_analysis
 
 from SBaaS_base.sbaas_base_query_update import sbaas_base_query_update
 from SBaaS_base.sbaas_base_query_drop import sbaas_base_query_drop
@@ -803,5 +804,50 @@ class stage01_quantification_normalized_query(sbaas_template_query):
                                            'time_point':time_points_I,
                                            });
             return data_O;
+        except SQLAlchemyError as e:
+            print(e);
+    def getQueryResult_groupNormalizedAveragesSamples_analysisID_dataStage01QuantificationNormalizedAndAverages(self,
+                analysis_id_I
+            ):
+        """query unique calculated_concentration_units,sample_name_abbreviations,component_names,
+        component_group_names,time_points,sample_names,sample_ids,sample_description
+        BY analysis_id_I
+        """
+        try:
+            data = self.session.query(
+                    data_stage01_quantification_analysis.analysis_id,
+                    data_stage01_quantification_normalized.sample_name,
+                    data_stage01_quantification_normalized.component_name,
+                    data_stage01_quantification_normalized.component_group_name,
+                    data_stage01_quantification_normalized.sample_id,
+                    data_stage01_quantification_normalized.experiment_id,
+                    data_stage01_quantification_normalized.calculated_concentration_units,
+                    data_stage01_quantification_analysis.time_point,
+                    data_stage01_quantification_analysis.sample_desc,
+                    data_stage01_quantification_analysis.sample_name_short,
+                    data_stage01_quantification_analysis.sample_name_abbreviation,
+                    data_stage01_quantification_normalized.calculated_concentration).filter(
+                    data_stage01_quantification_analysis.analysis_id.like(analysis_id_I),
+                    data_stage01_quantification_normalized.experiment_id.like(data_stage01_quantification_analysis.experiment_id),
+                    data_stage01_quantification_normalized.sample_name.like(data_stage01_quantification_analysis.sample_name),
+                    data_stage01_quantification_normalized.used_.is_(True)).group_by(
+                    data_stage01_quantification_analysis.analysis_id,
+                    data_stage01_quantification_normalized.sample_name,
+                    data_stage01_quantification_normalized.component_name,
+                    data_stage01_quantification_normalized.component_group_name,
+                    data_stage01_quantification_normalized.sample_id,
+                    data_stage01_quantification_analysis.sample_name_short,
+                    data_stage01_quantification_normalized.experiment_id,
+                    data_stage01_quantification_normalized.calculated_concentration_units,
+                    data_stage01_quantification_analysis.time_point,
+                    data_stage01_quantification_analysis.sample_desc,
+                    data_stage01_quantification_analysis.sample_name_abbreviation,
+                    data_stage01_quantification_normalized.calculated_concentration).order_by(
+                    data_stage01_quantification_normalized.calculated_concentration_units.asc(),
+                    data_stage01_quantification_analysis.sample_name_abbreviation.asc(),
+                    data_stage01_quantification_analysis.time_point.asc(),
+                    data_stage01_quantification_normalized.component_name.asc(),
+                    data_stage01_quantification_analysis.sample_desc.asc(),).all();
+            return data;
         except SQLAlchemyError as e:
             print(e);
