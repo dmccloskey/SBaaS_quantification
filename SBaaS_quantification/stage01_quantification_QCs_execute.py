@@ -29,12 +29,15 @@ class stage01_quantification_QCs_execute(stage01_quantification_QCs_io,
         
         print('execute_analyzeQCs...')
         # get sample name abbreviations
-        sample_name_abbreviations = [];
         data_O = [];
-        for st in sample_types_I:
-            sample_name_abbreviations_tmp = [];
-            sample_name_abbreviations_tmp = self.get_sampleNameAbbreviations_experimentIDAndSampleType(experiment_id_I,st);
-            sample_name_abbreviations.extend(sample_name_abbreviations_tmp);
+        sample_name_abbreviations = [];
+        if sample_name_abbreviations_I:
+            sample_name_abbreviations = sample_name_abbreviations_I;
+        else:
+            for st in sample_types_I:
+                sample_name_abbreviations_tmp = [];
+                sample_name_abbreviations_tmp = self.get_sampleNameAbbreviations_experimentIDAndSampleType(experiment_id_I,st);
+                sample_name_abbreviations.extend(sample_name_abbreviations_tmp);
         # create database table
         for sna in sample_name_abbreviations:
             # get dilutions
