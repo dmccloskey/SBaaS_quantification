@@ -6,7 +6,9 @@ from python_statistics.calculate_interface import calculate_interface
 
 class stage01_quantification_QCs_execute(stage01_quantification_QCs_io,
                                                     lims_experiment_query):
-    def execute_analyzeQCs(self,experiment_id_I,sample_types_I=['QC']):
+    def execute_analyzeQCs(self,experiment_id_I,
+        sample_types_I=['QC'],
+        sample_name_abbreviations_I=[]):
         '''calculate the average and coefficient of variation for QCs
 
         NOTE: analytical replicates are those samples with the same 
