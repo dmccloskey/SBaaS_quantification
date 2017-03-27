@@ -166,6 +166,19 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
                         d['accuracy_']=d['Accuracy'];
                         d['comment_']=d['Comment'];
                         d['use_calculated_concentration']=d['Use_Calculated_Concentration'];
+                        d['start_time_at_5']=d['Start Time at 5%'];
+                        d['end_time_at_5']=d['End Time at 5%'];
+                        d['width_at_5']=d['Width at 5%'];
+                        d['start_time_at_10']=d['Start Time at 10%'];
+                        d['end_time_at_10']=d['End Time at 10%'];
+                        d['width_at_10']=d['Width at 10%'];
+                        d['slope_of_baseline']=d['Slope of Baseline'];
+                        d['tailing_factor']=d['Tailing Factor'];
+                        d['asymmetry_factor']=d['Asymmetry Factor'];
+                        d['ion_ratio']=d['Ion Ratio'];
+                        d['expected_ion_ratio']=d['Expected Ion Ratio'];
+                        d['points_across_baseline']=d['Points Across Baseline'];
+                        d['points_across_half_height']=d['Points Across Half Height'];
                         data_add = data_stage01_quantification_MQResultsTable(d
                             #d['Index'],
                             #d['Sample Index'],

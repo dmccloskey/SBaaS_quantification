@@ -79,6 +79,19 @@ class data_stage01_quantification_MQResultsTable(Base):
     accuracy_=Column(Float);
     comment_=Column(Text);
     use_calculated_concentration=Column(Boolean,default=True);
+    start_time_at_5=Column(Float);
+    end_time_at_5=Column(Float);
+    width_at_5=Column(Float);
+    start_time_at_10=Column(Float);
+    end_time_at_10=Column(Float);
+    width_at_10=Column(Float);
+    slope_of_baseline=Column(Float);
+    tailing_factor=Column(Float);
+    asymmetry_factor=Column(Float);
+    ion_ratio=Column(Float);
+    expected_ion_ratio=Column(Float);
+    points_across_baseline=Column(Float);
+    points_across_half_height=Column(Float);
 
     __table_args__ = (
             UniqueConstraint('component_name','sample_name','acquisition_date_and_time'),
@@ -161,6 +174,19 @@ class data_stage01_quantification_MQResultsTable(Base):
         self.sample_index=row_dict_I['sample_index'];
         self.index_=row_dict_I['index_'];
         self.sample_type=row_dict_I['sample_type'];
+        self.start_time_at_5=row_dict_I['start_time_at_5']
+        self.end_time_at_5=row_dict_I['end_time_at_5']
+        self.width_at_5=row_dict_I['width_at_5']
+        self.start_time_at_10=row_dict_I['start_time_at_10']
+        self.end_time_at_10=row_dict_I['end_time_at_10']
+        self.width_at_10=row_dict_I['width_at_10']
+        self.slope_of_baseline=row_dict_I['slope_of_baseline']
+        self.tailing_factor=row_dict_I['tailing_factor']
+        self.asymmetry_factor=row_dict_I['asymmetry_factor']
+        self.ion_ratio=row_dict_I['ion_ratio']
+        self.expected_ion_ratio=row_dict_I['expected_ion_ratio']
+        self.points_across_baseline=row_dict_I['points_across_baseline']
+        self.points_across_half_height=row_dict_I['points_across_half_height']
 
     def __set__row__(self,index__I,sample_index_I,original_filename_I,
                  sample_name_I,sample_id_I,sample_comment_I,sample_type_I,
@@ -183,7 +209,19 @@ class data_stage01_quantification_MQResultsTable(Base):
                  is_total_width_I,width_at_50_I,is_width_at_50_I,
                  signal_2_noise_I,is_signal_2_noise_I,baseline_delta_2_height_I,
                  is_baseline_delta_2_height_I,modified__I,relative_rt_I,used__I,
-                 calculated_concentration_I,accuracy__I,comment__I,use_calculated_concentration_I):
+                 calculated_concentration_I,accuracy__I,comment__I,use_calculated_concentration_I,start_time_at_5_I,
+                end_time_at_5_I,
+                width_at_5_I,
+                start_time_at_10_I,
+                end_time_at_10_I,
+                width_at_10_I,
+                slope_of_baseline_I,
+                tailing_factor_I,
+                asymmetry_factor_I,
+                ion_ratio_I,
+                expected_ion_ratio_I,
+                points_across_baseline_I,
+                points_across_half_height_I,):
         self.index_=index__I;
         self.sample_index=sample_index_I;
         self.original_filename=original_filename_I;
@@ -259,6 +297,19 @@ class data_stage01_quantification_MQResultsTable(Base):
         self.accuracy_=accuracy__I;
         self.comment_=comment__I;
         self.use_calculated_concentration=use_calculated_concentration_I;
+        self.start_time_at_5=start_time_at_5_I
+        self.end_time_at_5=end_time_at_5_I
+        self.width_at_5=width_at_5_I
+        self.start_time_at_10=start_time_at_10_I
+        self.end_time_at_10=end_time_at_10_I
+        self.width_at_10=width_at_10_I
+        self.slope_of_baseline=slope_of_baseline_I
+        self.tailing_factor=tailing_factor_I
+        self.asymmetry_factor=asymmetry_factor_I
+        self.ion_ratio=ion_ratio_I
+        self.expected_ion_ratio=expected_ion_ratio_I
+        self.points_across_baseline=points_across_baseline_I
+        self.points_across_half_height=points_across_half_height_I
 
     #TODO:
     #define relations
@@ -343,6 +394,19 @@ class data_stage01_quantification_MQResultsTable(Base):
             'accuracy_':self.accuracy_,
             'comment_':self.comment_,
             'use_calculated_concentration':self.use_calculated_concentration,
+            'start_time_at_5':d['start_time_at_5'],
+            'end_time_at_5':d['end_time_at_5'],
+            'width_at_5':d['width_at_5'],
+            'start_time_at_10':d['start_time_at_10'],
+            'end_time_at_10':d['end_time_at_10'],
+            'width_at_10':d['width_at_10'],
+            'slope_of_baseline':d['slope_of_baseline'],
+            'tailing_factor':d['tailing_factor'],
+            'asymmetry_factor':d['asymmetry_factor'],
+            'ion_ratio':d['ion_ratio'],
+            'expected_ion_ratio':d['expected_ion_ratio'],
+            'points_across_baseline':d['points_across_baseline'],
+            'points_across_half_height':d['points_across_half_height'],
             }
     
     def __repr__json__(self):
