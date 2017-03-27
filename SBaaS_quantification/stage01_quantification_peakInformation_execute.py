@@ -8,7 +8,8 @@ from math import sqrt
 
 class stage01_quantification_peakInformation_execute(stage01_quantification_peakInformation_io,
                                                     lims_experiment_query):
-    def execute_analyzePeakInformation(self,experiment_id_I,sample_names_I=[],
+    def execute_analyzePeakInformation(self,experiment_id_I=[],analysis_id_I=[],
+                            sample_names_I=[],sample_ids_I=[],
                             sample_types_I=['Standard'],
                             component_names_I=[],
                             peakInfo_I = ['height','retention_time','width_at_50','signal_2_noise'],
@@ -35,46 +36,61 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
                 acquisition_date_and_time.append(dt);
         else: acquisition_date_and_time=[None,None]
         data_O = [];
-        component_names_all = [];
-        # get sample names
-        if sample_names_I and sample_types_I and len(sample_types_I)==1:
-            sample_names = sample_names_I;
-            sample_types = [sample_types_I[0] for sn in sample_names];
-        else:
-            sample_names = [];
-            sample_types = [];
-            for st in sample_types_I:
-                sample_names_tmp = [];
-                sample_names_tmp = self.get_sampleNames_experimentIDAndSampleType(experiment_id_I,st);
-                sample_names.extend(sample_names_tmp);
-                sample_types_tmp = [];
-                sample_types_tmp = [st for sn in sample_names_tmp];
-                sample_types.extend(sample_types_tmp);
-        print(str(len(sample_names)) + ' total samples');
-        for sn in sample_names:
-            print('analyzing peakInformation for sample_name ' + sn);
-            # get sample description
-            desc = {};
-            desc = self.get_description_experimentIDAndSampleID_sampleDescription(experiment_id_I,sn);
-            # get component names
-            if component_names_I:
-                component_names = component_names_I;
-            else:
-                component_names = [];
-                component_names = self.get_componentsNames_experimentIDAndSampleName(experiment_id_I,sn);
-            component_names_all.extend(component_names);
-            for cn in component_names:
-                # get rt, height, s/n
-                sst_data = {};
-                sst_data = self.get_peakInfo_sampleNameAndComponentName(sn,cn,acquisition_date_and_time);
-                if sst_data:
-                    tmp = {};
-                    tmp.update(sst_data);
-                    tmp.update(desc);
-                    tmp.update({'sample_name':sn});
-                    data_O.append(tmp);
+
+        data_O = self.get_rows_dataStage01QuantificationMQResultsTable(
+            analysis_id_I = analysis_id_I,
+            experiment_id_I = experiment_id_I,
+            sample_name_I = sample_names_I,
+            sample_id_I = sample_ids_I,
+            sample_type_I = sample_types_I,
+            component_name_I = component_names_I,
+            acquisition_date_and_time_I = acquisition_date_and_time,
+            )
+
+        component_names_all = [d['component_name'] for d in data_O];
+        sample_names = [d['sample_name'] for d in data_O];
+        sample_types = [d['sample_type'] for d in data_O];
+
+        #component_names_all = []
+        ## get sample names
+        #if sample_names_I and sample_types_I and len(sample_types_I)==1:
+        #    sample_names = sample_names_I;
+        #    sample_types = [sample_types_I[0] for sn in sample_names];
+        #else:
+        #    sample_names = [];
+        #    sample_types = [];
+        #    for st in sample_types_I:
+        #        sample_names_tmp = [];
+        #        sample_names_tmp = self.get_sampleNames_experimentIDAndSampleType(experiment_id_I,st);
+        #        sample_names.extend(sample_names_tmp);
+        #        sample_types_tmp = [];
+        #        sample_types_tmp = [st for sn in sample_names_tmp];
+        #        sample_types.extend(sample_types_tmp);
+        #print(str(len(sample_names)) + ' total samples');
+        #for sn in sample_names:
+        #    print('analyzing peakInformation for sample_name ' + sn);
+        #    # get sample description
+        #    desc = {};
+        #    desc = self.get_description_experimentIDAndSampleID_sampleDescription(experiment_id_I,sn);
+        #    # get component names
+        #    if component_names_I:
+        #        component_names = component_names_I;
+        #    else:
+        #        component_names = [];
+        #        component_names = self.get_componentsNames_experimentIDAndSampleName(experiment_id_I,sn);
+        #    component_names_all.extend(component_names);
+        #    for cn in component_names:
+        #        # get rt, height, s/n
+        #        sst_data = {};
+        #        sst_data = self.get_peakInfo_sampleNameAndComponentName(sn,cn,acquisition_date_and_time);
+        #        if sst_data:
+        #            tmp = {};
+        #            tmp.update(sst_data);
+        #            tmp.update(desc);
+        #            tmp.update({'sample_name':sn});
+        #            data_O.append(tmp);
         #TODO:
-        # 1. make a calculation method
+        # 1. optimize using pandas or numpy
         # calculate statistics for specific parameters
         data_add = [];
         component_names_unique = list(set(component_names_all));
@@ -101,7 +117,8 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
                             sample_types_parameter.append(sample_types[sn_cnt])
                             component_group_name = d['component_group_name'];
                 ave,var,lb,ub = None,None,None,None;
-                if len(data_parameters[parameter])>1:ave,var,lb,ub = calc.calculate_ave_var(data_parameters[parameter]);
+                if len(data_parameters[parameter])>1:
+                    ave,var,lb,ub = calc.calculate_ave_var(data_parameters[parameter]);
                 if ave:
                     cv = sqrt(var)/ave*100;
                     data_parameters_stats[parameter] = {'ave':ave,'var':var,'cv':cv,'lb':lb,'ub':ub};

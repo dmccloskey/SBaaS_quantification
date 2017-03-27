@@ -428,7 +428,20 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
                             'calculated_concentration':d['Calculated Concentration'],
                             'accuracy_':d['Accuracy'],
                             'comment_':d['Comment'],
-                            'use_calculated_concentration':d['Use_Calculated_Concentration']},
+                            'use_calculated_concentration':d['Use_Calculated_Concentration'],
+                            'start_time_at_5':d['start_time_at_5'],
+                            'end_time_at_5':d['end_time_at_5'],
+                            'width_at_5':d['width_at_5'],
+                            'start_time_at_10':d['start_time_at_10'],
+                            'end_time_at_10':d['end_time_at_10'],
+                            'width_at_10':d['width_at_10'],
+                            'slope_of_baseline':d['slope_of_baseline'],
+                            'tailing_factor':d['tailing_factor'],
+                            'asymmetry_factor':d['asymmetry_factor'],
+                            'ion_ratio':d['ion_ratio'],
+                            'expected_ion_ratio':d['expected_ion_ratio'],
+                            'points_across_baseline':d['points_across_baseline'],
+                            'points_across_half_height':d['points_across_half_height'],},
                             synchronize_session=False);
                 except SQLAlchemyError as e:
                     print(e);
@@ -1067,6 +1080,185 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
 
+    def get_rows_dataStage01QuantificationMQResultsTable(
+        self,
+        analysis_id_I = [],
+        experiment_id_I = [],
+        sample_name_I = [],
+        sample_id_I = [],
+        sample_type_I = [],
+        component_name_I = [],
+        acquisition_date_and_time_I = [],
+        ):
+        '''Query rows from data_stage01_quantification_MQResultsTable
+
+        '''
+
+        try:
+            subquery1 = '''SELECT 
+                "data_stage01_quantification_analysis"."analysis_id",
+                "data_stage01_quantification_analysis"."experiment_id",
+                "data_stage01_quantification_analysis"."sample_name",
+                "data_stage01_quantification_analysis"."sample_id",
+                "data_stage01_quantification_analysis"."sample_name_short",
+                "data_stage01_quantification_analysis"."sample_name_abbreviation",
+                "data_stage01_quantification_analysis"."time_point",
+                "data_stage01_quantification_analysis"."analysis_type",
+                "data_stage01_quantification_analysis"."sample_desc",
+                "data_stage01_quantification_analysis"."used_",
+                "data_stage01_quantification_analysis"."comment_"
+            '''
+            subquery1 += '''FROM "data_stage01_quantification_analysis"
+            '''
+            subquery1 += '''
+                WHERE "data_stage01_quantification_analysis"."used_"
+            '''
+            if analysis_id_I:
+                cmd_q = '''AND "data_stage01_quantification_analysis".analysis_id =ANY ('{%s}'::text[]) '''%(
+                    self.convert_list2string(analysis_id_I));
+                subquery1+=cmd_q;
+            if experiment_id_I:
+                cmd_q = '''AND "data_stage01_quantification_analysis".experiment_id =ANY ('{%s}'::text[]) '''%(
+                    self.convert_list2string(experiment_id_I));
+                subquery1+=cmd_q;
+            if sample_name_I:
+                cmd_q = '''AND "data_stage01_quantification_analysis".sample_name =ANY ('{%s}'::text[]) '''%(
+                    self.convert_list2string(sample_name_I));
+                subquery1+=cmd_q;
+            if sample_id_I:
+                cmd_q = '''AND "data_stage01_quantification_analysis".sample_id =ANY ('{%s}'::text[]) '''%(
+                    self.convert_list2string(sample_id_I));
+                subquery1+=cmd_q;
+            subquery1 += '''
+                ORDER BY "data_stage01_quantification_analysis"."analysis_id" ASC,
+                "data_stage01_quantification_analysis"."experiment_id" ASC,
+                "data_stage01_quantification_analysis"."sample_name" ASC
+            '''
+            cmd = '''SELECT "data_stage01_quantification_mqresultstable"."id",
+                "data_stage01_quantification_mqresultstable"."index_",
+                "data_stage01_quantification_mqresultstable"."sample_index",
+                "data_stage01_quantification_mqresultstable"."original_filename",
+                "data_stage01_quantification_mqresultstable"."sample_name",
+                "data_stage01_quantification_mqresultstable"."sample_id",
+                "data_stage01_quantification_mqresultstable"."sample_comment",
+                "data_stage01_quantification_mqresultstable"."sample_type",
+                "data_stage01_quantification_mqresultstable"."acquisition_date_and_time",
+                "data_stage01_quantification_mqresultstable"."rack_number",
+                "data_stage01_quantification_mqresultstable"."plate_number",
+                "data_stage01_quantification_mqresultstable"."vial_number",
+                "data_stage01_quantification_mqresultstable"."dilution_factor",
+                "data_stage01_quantification_mqresultstable"."injection_volume",
+                "data_stage01_quantification_mqresultstable"."operator_name",
+                "data_stage01_quantification_mqresultstable"."acq_method_name",
+                "data_stage01_quantification_mqresultstable"."is_",
+                "data_stage01_quantification_mqresultstable"."component_name",
+                "data_stage01_quantification_mqresultstable"."component_index",
+                "data_stage01_quantification_mqresultstable"."component_comment",
+                "data_stage01_quantification_mqresultstable"."is_comment",
+                "data_stage01_quantification_mqresultstable"."mass_info",
+                "data_stage01_quantification_mqresultstable"."is_mass",
+                "data_stage01_quantification_mqresultstable"."is_name",
+                "data_stage01_quantification_mqresultstable"."component_group_name",
+                "data_stage01_quantification_mqresultstable"."conc_units",
+                "data_stage01_quantification_mqresultstable"."failed_query",
+                "data_stage01_quantification_mqresultstable"."is_failed_query",
+                "data_stage01_quantification_mqresultstable"."peak_comment",
+                "data_stage01_quantification_mqresultstable"."is_peak_comment",
+                "data_stage01_quantification_mqresultstable"."actual_concentration",
+                "data_stage01_quantification_mqresultstable"."is_actual_concentration",
+                "data_stage01_quantification_mqresultstable"."concentration_ratio",
+                "data_stage01_quantification_mqresultstable"."expected_rt",
+                "data_stage01_quantification_mqresultstable"."is_expected_rt",
+                "data_stage01_quantification_mqresultstable"."integration_type",
+                "data_stage01_quantification_mqresultstable"."is_integration_type",
+                "data_stage01_quantification_mqresultstable"."area",
+                "data_stage01_quantification_mqresultstable"."is_area",
+                "data_stage01_quantification_mqresultstable"."corrected_area",
+                "data_stage01_quantification_mqresultstable"."is_corrected_area",
+                "data_stage01_quantification_mqresultstable"."area_ratio",
+                "data_stage01_quantification_mqresultstable"."height",
+                "data_stage01_quantification_mqresultstable"."is_height",
+                "data_stage01_quantification_mqresultstable"."corrected_height",
+                "data_stage01_quantification_mqresultstable"."is_corrected_height",
+                "data_stage01_quantification_mqresultstable"."height_ratio",
+                "data_stage01_quantification_mqresultstable"."area_2_height",
+                "data_stage01_quantification_mqresultstable"."is_area_2_height",
+                "data_stage01_quantification_mqresultstable"."corrected_area2height",
+                "data_stage01_quantification_mqresultstable"."is_corrected_area2height",
+                "data_stage01_quantification_mqresultstable"."region_height",
+                "data_stage01_quantification_mqresultstable"."is_region_height",
+                "data_stage01_quantification_mqresultstable"."quality",
+                "data_stage01_quantification_mqresultstable"."is_quality",
+                "data_stage01_quantification_mqresultstable"."retention_time",
+                "data_stage01_quantification_mqresultstable"."is_retention_time",
+                "data_stage01_quantification_mqresultstable"."start_time",
+                "data_stage01_quantification_mqresultstable"."is_start_time",
+                "data_stage01_quantification_mqresultstable"."end_time",
+                "data_stage01_quantification_mqresultstable"."is_end_time",
+                "data_stage01_quantification_mqresultstable"."total_width",
+                "data_stage01_quantification_mqresultstable"."is_total_width",
+                "data_stage01_quantification_mqresultstable"."width_at_50",
+                "data_stage01_quantification_mqresultstable"."is_width_at_50",
+                "data_stage01_quantification_mqresultstable"."signal_2_noise",
+                "data_stage01_quantification_mqresultstable"."is_signal_2_noise",
+                "data_stage01_quantification_mqresultstable"."baseline_delta_2_height",
+                "data_stage01_quantification_mqresultstable"."is_baseline_delta_2_height",
+                "data_stage01_quantification_mqresultstable"."modified_",
+                "data_stage01_quantification_mqresultstable"."relative_rt",
+                "data_stage01_quantification_mqresultstable"."used_",
+                "data_stage01_quantification_mqresultstable"."calculated_concentration",
+                "data_stage01_quantification_mqresultstable"."accuracy_",
+                "data_stage01_quantification_mqresultstable"."comment_",
+                "data_stage01_quantification_mqresultstable"."use_calculated_concentration",
+                "data_stage01_quantification_mqresultstable"."start_time_at_5",
+                "data_stage01_quantification_mqresultstable"."end_time_at_5",
+                "data_stage01_quantification_mqresultstable"."width_at_5",
+                "data_stage01_quantification_mqresultstable"."start_time_at_10",
+                "data_stage01_quantification_mqresultstable"."end_time_at_10",
+                "data_stage01_quantification_mqresultstable"."width_at_10",
+                "data_stage01_quantification_mqresultstable"."slope_of_baseline",
+                "data_stage01_quantification_mqresultstable"."tailing_factor",
+                "data_stage01_quantification_mqresultstable"."asymmetry_factor",
+                "data_stage01_quantification_mqresultstable"."ion_ratio",
+                "data_stage01_quantification_mqresultstable"."expected_ion_ratio",
+                "data_stage01_quantification_mqresultstable"."points_across_baseline",
+                "data_stage01_quantification_mqresultstable"."points_across_half_height"
+            '''
+            cmd += '''
+                FROM "data_stage01_quantification_mqresultstable",
+                (%s) AS subquery1
+            ''' %(subquery1)
+            cmd += '''WHERE "data_stage01_quantification_mqresultstable"."used_" 
+                AND "subquery1".sample_name  = "data_stage01_quantification_mqresultstable"."sample_name"
+            '''
+            if component_name_I:
+                cmd_q = '''AND "data_stage01_quantification_mqresultstable".component_name_I =ANY ('{%s}'::text[]) '''%(
+                    self.convert_list2string(component_name_I));
+                cmd+=cmd_q;
+            if sample_type_I:
+                cmd_q = '''AND "data_stage01_quantification_mqresultstable".sample_type =ANY ('{%s}'::text[]) '''%(
+                    self.convert_list2string(sample_type_I));
+                cmd+=cmd_q;
+            if acquisition_date_and_time_I and not acquisition_date_and_time_I[0] is None:
+                cmd_q = '''AND "data_stage01_quantification_mqresultstable".acquisition_date_and_time >= %s'''%(
+                    acquisition_date_and_time_I[0]);
+                cmd+=cmd_q;
+                cmd_q = '''AND "data_stage01_quantification_mqresultstable".acquisition_date_and_time <= %s'''%(
+                    acquisition_date_and_time_I[1]);
+                cmd+=cmd_q;
+            cmd += '''
+                ORDER BY "subquery1"."analysis_id" ASC,
+                "subquery1"."experiment_id" ASC,
+                "subquery1"."sample_name" ASC, 
+                "data_stage01_quantification_mqresultstable"."component_name" ASC;
+            '''
+            result = self.session.execute(cmd);
+            data = result.fetchall();
+            data_O = [dict(d) for d in data];
+            return data_O;
+        except SQLAlchemyError as e:
+            print(e);
+
     # query sample names from data_stage01_quantification_mqresultstable
     def getGroupJoin_experimentAndQuantitationMethodAndMQResultsTable_experimentID_dataStage01QuantificationMQResultsTable(self,
         experiment_id_I,
@@ -1187,20 +1379,6 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
                     ).all();
             data_O = [d.__repr__dict__() for d in data];
             return data_O
-            #if data:
-            #    data_O = listDict(record_I=data);
-            #    data_O.convert_record2DataFrame();
-            #    data_O.filterIn_byDictList({
-            #                                'sample_id':sample_ids_I,
-            #                                'sample_name':sample_names_I,
-            #                                'sample_name_short':sample_name_shorts_I,
-            #                                'sample_name_abbreviation':sample_name_abbreviations_I,
-            #                                'sample_type':sample_types_I,
-            #                                'component_name':component_names_I,
-            #                                'component_group_name':component_group_names_I,
-            #                               });
-            #    data_O.convert_dataFrame2ListDict();
-            #return data_O.get_listDict();
         except SQLAlchemyError as e:
             print(e);
     def getRowsJoin_analysisID_dataStage01QuantificationMQResultsTable_limsQuantitationMethod(self,
@@ -1282,3 +1460,5 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
             return data_O;
         except SQLAlchemyError as e:
             print(e);
+
+

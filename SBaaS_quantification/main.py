@@ -56,5 +56,18 @@ exreps01 = stage01_quantification_replicates_execute(session,engine,pg_settings.
 exreps01.initialize_supportedTables();
 exreps01.initialize_dataStage01_quantification_replicates();
 
-exreps01.reset_dataStage01_quantification_replicates('BloodProject01')
-exreps01.execute_analyzeReplicates('BloodProject01')
+#make the quantitation methods table
+from SBaaS_quantification.stage01_quantification_peakInformation_execute import stage01_quantification_peakInformation_execute
+expeak01 = stage01_quantification_peakInformation_execute(session,engine,pg_settings.datadir_settings);
+expeak01.initialize_supportedTables();
+expeak01.initialize_tables();
+
+#analyze peakInformation
+expeak01.execute_analyzePeakInformation(
+        analysis_id_I = ['RapidRIP01_SST01'], 
+        experiment_id_I = ['RapidRIP01'],
+        sample_names_I = [],
+        sample_types_I = ['Standard'],
+        peakInfo_I = ['height','retention_time','width_at_50',
+                      'signal_2_noise','points_across_baseline'],
+        acquisition_date_and_time_I=[]);
