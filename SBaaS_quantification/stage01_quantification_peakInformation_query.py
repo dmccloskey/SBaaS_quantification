@@ -90,6 +90,38 @@ class stage01_quantification_peakInformation_query(sbaas_template_query):
             return data_O;
         except SQLAlchemyError as e:
             print(e);
+    def get_row_analysisID_dataStage01PeakInformation(
+        self,analysis_id_I,
+        experiment_id_I, peakInfo_parameter_I, component_name_I
+        ):
+        """Query rows"""
+        try:
+            data = self.session.query(data_stage01_quantification_peakInformation).filter(
+                    data_stage01_quantification_peakInformation.experiment_id.like(experiment_id_I),
+                    data_stage01_quantification_peakInformation.component_name.like(component_name_I),
+                    data_stage01_quantification_peakInformation.peakInfo_parameter.like(peakInfo_parameter_I),
+                    data_stage01_quantification_peakInformation.used_.is_(True)).all();
+            data_O = {};
+            if len(data)>1:
+                print('more than 1 calculated_concentration retrieved per component_name')
+            if data:
+                for d in data:
+                    data_O = {'experiment_id':d.experiment_id,
+            'component_group_name':d.component_group_name,
+            'component_name':d.component_name,
+            'peakInfo_parameter':d.peakInfo_parameter,
+            'peakInfo_ave':d.peakInfo_ave,
+            'peakInfo_cv':d.peakInfo_cv,
+            'peakInfo_lb':d.peakInfo_lb,
+            'peakInfo_ub':d.peakInfo_ub,
+            'peakInfo_units':d.peakInfo_units,
+            'sample_names':d.sample_names,
+            'sample_types':d.sample_types,
+            'acqusition_date_and_times':d.acqusition_date_and_times,
+            'peakInfo_data':d.peakInfo_data};
+            return data_O;
+        except SQLAlchemyError as e:
+            print(e);
     # Query component_names from data_stage01_quantificaton_peakInformation
     def get_componentNames_experimentID_dataStage01PeakInformation(self,experiment_id_I):
         '''Query component_names that are used for the experiment'''

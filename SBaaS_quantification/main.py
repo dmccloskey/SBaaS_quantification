@@ -63,11 +63,15 @@ expeak01.initialize_supportedTables();
 expeak01.initialize_tables();
 
 #analyze peakInformation
-expeak01.execute_analyzePeakInformation(
-        analysis_id_I = ['RapidRIP01_SST01'], 
-        experiment_id_I = ['RapidRIP01'],
-        sample_names_I = [],
-        sample_types_I = ['Standard'],
-        peakInfo_I = ['height','retention_time','width_at_50',
-                      'signal_2_noise','points_across_baseline'],
-        acquisition_date_and_time_I=[]);
+sample_name_abbreviations_I = ['SST_FluxEPI', 'SST_FluxMRM', 'SST_QuantEPI', 'SST_QuantMRM', 'SST_Screening']
+for sample_name_abbreviation in sample_name_abbreviations_I:
+    print(sample_name_abbreviation)
+    expeak01.execute_analyzePeakInformation(
+            analysis_id_I = ['RapidRIP01_SST01'], 
+            experiment_id_I = ['RapidRIP01'],
+            sample_names_I = [],
+            sample_name_abbreviations_I = sample_name_abbreviation,
+            sample_types_I = ['Standard'],
+            peakInfo_I = ['height','retention_time','width_at_50',
+                          'signal_2_noise','points_across_baseline'],
+            acquisition_date_and_time_I=[]);

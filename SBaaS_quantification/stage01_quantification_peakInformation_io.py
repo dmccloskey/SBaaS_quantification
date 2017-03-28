@@ -393,16 +393,20 @@ class stage01_quantification_peakInformation_io(stage01_quantification_peakInfor
             mplot.boxAndWhiskersPlot(data_plot_parameters[0],data_plot_component_names,data_plot_units[0],'samples',data_plot_data,data_plot_mean,data_plot_ci,filename_I=filename,show_plot_I=False);
 
             
-    def export_boxAndWhiskersPlot_peakInformation_js(self,experiment_id_I,
-                            peakInfo_parameter_I = ['height','retention_time','width_at_50','signal_2_noise'],
-                            component_names_I=[],
-                            data_dir_I='tmp'):
+    def export_boxAndWhiskersPlot_peakInformation_js(
+        self,
+        experiment_id_I=[],
+        analysis_id_I=[],
+        sample_names_I=[],
+        sample_ids_I=[],
+        sample_name_abbreviations_I=[],
+        sample_types_I=['Standard'],
+        component_names_I=[],
+        peakInfo_I = ['height','retention_time','width_at_50','signal_2_noise'],
+        data_dir_I='tmp'):
         '''Export data for a box and whiskers plot from peakInformation
         INPUT:
-        experiment_id_I
-        peakInfo_paramters_I,
-        component_names_I,
-        data_dir_I
+
         '''
 
         print('export_boxAndWhiskersPlot...')

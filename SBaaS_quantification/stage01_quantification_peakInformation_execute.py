@@ -9,7 +9,7 @@ from math import sqrt
 class stage01_quantification_peakInformation_execute(stage01_quantification_peakInformation_io,
                                                     lims_experiment_query):
     def execute_analyzePeakInformation(self,experiment_id_I=[],analysis_id_I=[],
-                            sample_names_I=[],sample_ids_I=[],
+                            sample_names_I=[],sample_ids_I=[],sample_name_abbreviations_I=[],
                             sample_types_I=['Standard'],
                             component_names_I=[],
                             peakInfo_I = ['height','retention_time','width_at_50','signal_2_noise'],
@@ -22,6 +22,10 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
         component_names_I
         peakInfo_I
         acquisition_date_and_time_I = ['%m/%d/%Y %H:%M','%m/%d/%Y %H:%M']
+
+        DESCRIPTION:
+        peakInfo stats will be calculated per parameter, sample_name_abbreviation, and component_name
+
         '''
 
         print('execute_peakInformation...')
@@ -42,13 +46,15 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
             experiment_id_I = experiment_id_I,
             sample_name_I = sample_names_I,
             sample_id_I = sample_ids_I,
+            sample_name_abbreviation_I = sample_name_abbreviations_I,
             sample_type_I = sample_types_I,
             component_name_I = component_names_I,
             acquisition_date_and_time_I = acquisition_date_and_time,
             )
 
         component_names_all = [d['component_name'] for d in data_O];
-        sample_names = [d['sample_name'] for d in data_O];
+        sample_name_abbreviations_all = [d['sample_name_abbreviation'] for d in data_O];
+        sample_names_all = [d['sample_name'] for d in data_O];
         sample_types = [d['sample_type'] for d in data_O];
 
         #component_names_all = []
@@ -95,50 +101,74 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
         data_add = [];
         component_names_unique = list(set(component_names_all));
         component_names_unique.sort();
+        sample_names_unique = list(set(sample_names_all));
+        sample_names_unique.sort();
+        sample_name_abbreviations_unique = list(set(sample_name_abbreviations_all));
+        sample_name_abbreviations_unique.sort();
         # math utilities
         from math import sqrt
         calc = calculate_interface();
         for cn in component_names_unique:
-            data_parameters = {};
-            data_parameters_stats = {};
-            for parameter in peakInfo_I:
-                data_parameters[parameter] = [];
-                data_parameters_stats[parameter] = {'ave':None,'var':None,'cv':None,'lb':None,'ub':None};
-                acquisition_date_and_times = [];
-                sample_names_parameter = [];
-                sample_types_parameter = [];
-                component_group_name = None;
-                for sn_cnt,sn in enumerate(sample_names):
-                    for d in data_O:
-                        if d['sample_name'] == sn and d['component_name'] == cn and d[parameter]:
-                            data_parameters[parameter].append(d[parameter]);
-                            acquisition_date_and_times.append(d['acquisition_date_and_time'])
-                            sample_names_parameter.append(sn);
-                            sample_types_parameter.append(sample_types[sn_cnt])
-                            component_group_name = d['component_group_name'];
-                ave,var,lb,ub = None,None,None,None;
-                if len(data_parameters[parameter])>1:
-                    ave,var,lb,ub = calc.calculate_ave_var(data_parameters[parameter]);
-                if ave:
-                    cv = sqrt(var)/ave*100;
-                    data_parameters_stats[parameter] = {'ave':ave,'var':var,'cv':cv,'lb':lb,'ub':ub};
-                    # add data to the DB
-                    row = {'experiment_id':experiment_id_I,
-                        'component_group_name':component_group_name,
-                        'component_name':cn,
-                        'peakInfo_parameter':parameter,
-                        'peakInfo_ave':data_parameters_stats[parameter]['ave'],
-                        'peakInfo_cv':data_parameters_stats[parameter]['cv'],
-                        'peakInfo_lb':data_parameters_stats[parameter]['lb'],
-                        'peakInfo_ub':data_parameters_stats[parameter]['ub'],
-                        'peakInfo_units':None,
-                        'sample_names':sample_names_parameter,
-                        'sample_types':sample_types_parameter,
-                        'acqusition_date_and_times':acquisition_date_and_times,
-                        'peakInfo_data':data_parameters[parameter],
-                        'used_':True,
-                        'comment_':None,};
-                    data_add.append(row);
+            component_group_name = None;
+            for sna_cnt,sna in enumerate(sample_name_abbreviations_unique):
+                data_parameters = {};
+                data_parameters_stats = {};
+                acquisition_date_and_times = {};
+                sample_names_parameter = {};
+                sample_types_parameter = {};
+                experiment_ids_parameter = {};
+                analysis_ids_parameter = {};
+                #initialize the structures
+                for parameter in peakInfo_I:
+                    data_parameters[parameter] = [];
+                    data_parameters_stats[parameter] = {'n':None,'ave':None,'var':None,'cv':None,'lb':None,'ub':None};
+                    acquisition_date_and_times[parameter] = [];
+                    sample_names_parameter[parameter] = [];
+                    sample_types_parameter[parameter] = [];
+                    experiment_ids_parameter[parameter] = [];
+                    analysis_ids_parameter[parameter] = [];
+                # grab the data for the sample/component
+                for d in data_O:
+                    if d['sample_name_abbreviation'] == sna and d['component_name'] == cn:
+                        for parameter in peakInfo_I:
+                            if d[parameter]:
+                                data_parameters[parameter].append(d[parameter]);
+                                acquisition_date_and_times[parameter].append(d['acquisition_date_and_time'])
+                                sample_names_parameter[parameter].append(d['sample_name']);
+                                sample_types_parameter[parameter].append(d['sample_type'])
+                                experiment_ids_parameter[parameter].append(d['experiment_id']);
+                                analysis_ids_parameter[parameter].append(d['analysis_id'])
+                                component_group_name = d['component_group_name'];
+                for parameter in peakInfo_I:
+                    if not data_parameters[parameter]: continue;
+                    ave,var,lb,ub = None,None,None,None;
+                    if len(data_parameters[parameter])>1:
+                        ave,var,lb,ub = calc.calculate_ave_var(data_parameters[parameter]);
+                    if ave:
+                        cv = sqrt(var)/ave*100;
+                        n = len(data_parameters[parameter])
+                        data_parameters_stats[parameter] = {'n':n,'ave':ave,'var':var,'cv':cv,'lb':lb,'ub':ub};
+                        # add data to the DB
+                        row = {
+                            'analysis_id':analysis_ids_parameter[parameter][0],
+                            'experiment_id':experiment_ids_parameter[parameter][0],
+                            'component_group_name':component_group_name,
+                            'component_name':cn,
+                            'peakInfo_parameter':parameter,
+                            'peakInfo_n':data_parameters_stats[parameter]['n'],
+                            'peakInfo_ave':data_parameters_stats[parameter]['ave'],
+                            'peakInfo_cv':data_parameters_stats[parameter]['cv'],
+                            'peakInfo_lb':data_parameters_stats[parameter]['lb'],
+                            'peakInfo_ub':data_parameters_stats[parameter]['ub'],
+                            'peakInfo_units':None,
+                            'sample_names':sample_names_parameter[parameter],
+                            'sample_name_abbreviation':sna,
+                            'sample_types':sample_types_parameter[parameter],
+                            'acqusition_date_and_times':acquisition_date_and_times[parameter],
+                            'peakInfo_data':data_parameters[parameter],
+                            'used_':True,
+                            'comment_':None,};
+                        data_add.append(row);
         self.add_rows_table('data_stage01_quantification_peakInformation',data_add);
     def execute_analyzePeakResolution(self,experiment_id_I,sample_names_I=[],sample_types_I=['Standard'],component_name_pairs_I=[],
                             acquisition_date_and_time_I=[None,None]):

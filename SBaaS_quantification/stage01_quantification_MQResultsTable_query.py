@@ -1086,6 +1086,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
         experiment_id_I = [],
         sample_name_I = [],
         sample_id_I = [],
+        sample_name_abbreviation_I = [],
         sample_type_I = [],
         component_name_I = [],
         acquisition_date_and_time_I = [],
@@ -1129,6 +1130,10 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
                 cmd_q = '''AND "data_stage01_quantification_analysis".sample_id =ANY ('{%s}'::text[]) '''%(
                     self.convert_list2string(sample_id_I));
                 subquery1+=cmd_q;
+            if sample_name_abbreviation_I:
+                cmd_q = '''AND "data_stage01_quantification_analysis".sample_name_abbreviation =ANY ('{%s}'::text[]) '''%(
+                    self.convert_list2string(sample_name_abbreviation_I));
+                subquery1+=cmd_q;
             subquery1 += '''
                 ORDER BY "data_stage01_quantification_analysis"."analysis_id" ASC,
                 "data_stage01_quantification_analysis"."experiment_id" ASC,
@@ -1139,7 +1144,6 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
                 "data_stage01_quantification_mqresultstable"."sample_index",
                 "data_stage01_quantification_mqresultstable"."original_filename",
                 "data_stage01_quantification_mqresultstable"."sample_name",
-                "data_stage01_quantification_mqresultstable"."sample_id",
                 "data_stage01_quantification_mqresultstable"."sample_comment",
                 "data_stage01_quantification_mqresultstable"."sample_type",
                 "data_stage01_quantification_mqresultstable"."acquisition_date_and_time",
@@ -1222,7 +1226,15 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
                 "data_stage01_quantification_mqresultstable"."ion_ratio",
                 "data_stage01_quantification_mqresultstable"."expected_ion_ratio",
                 "data_stage01_quantification_mqresultstable"."points_across_baseline",
-                "data_stage01_quantification_mqresultstable"."points_across_half_height"
+                "data_stage01_quantification_mqresultstable"."points_across_half_height",
+                "subquery1"."analysis_id",
+                "subquery1"."experiment_id",
+                "subquery1"."sample_id",
+                "subquery1"."sample_name_short",
+                "subquery1"."sample_name_abbreviation",
+                "subquery1"."time_point",
+                "subquery1"."analysis_type",
+                "subquery1"."sample_desc"
             '''
             cmd += '''
                 FROM "data_stage01_quantification_mqresultstable",
