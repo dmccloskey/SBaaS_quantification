@@ -397,46 +397,55 @@ class stage01_quantification_peakInformation_io(stage01_quantification_peakInfor
         self,
         experiment_id_I=[],
         analysis_id_I=[],
-        sample_names_I=[],
-        sample_ids_I=[],
         sample_name_abbreviations_I=[],
-        sample_types_I=['Standard'],
         component_names_I=[],
+        component_group_names_I=[],
         peakInfo_I = ['height','retention_time','width_at_50','signal_2_noise'],
         data_dir_I='tmp'):
         '''Export data for a box and whiskers plot from peakInformation
         INPUT:
 
+        #TODO add in template for box and whiskers plot from stats
+
         '''
 
         print('export_boxAndWhiskersPlot...')
         data_O = [];
-        if peakInfo_parameter_I:
-            peakInfo_parameter = peakInfo_parameter_I;
-        else:
-            peakInfo_parameter = [];
-            peakInfo_parameter = self.get_peakInfoParameter_experimentID_dataStage01PeakInformation(experiment_id_I);
-        for parameter in peakInfo_parameter:
-            if component_names_I:
-                component_names = component_names_I;
-            else:
-                component_names = [];
-                component_names = self.get_componentNames_experimentIDAndPeakInfoParameter_dataStage01PeakInformation(experiment_id_I,parameter);
-            for cn in component_names:
-                print('generating boxAndWhiskersPlot for component_name ' + cn); 
-                # get the data 
-                row = [];
-                row = self.get_row_experimentIDAndPeakInfoParameterComponentName_dataStage01PeakInformation(experiment_id_I,parameter,cn);
-                if row:
-                    #TODO: fix type in database 'acqusition_date_and_times'
-                    tmp_list = [];
-                    for d in row['acqusition_date_and_times']:
-                        tmp = None;
-                        tmp = self.convert_datetime2string(d);
-                        tmp_list.append(tmp);
-                    row['acqusition_date_and_times'] = tmp_list;
-                    row['component_name'] = re.escape(row['component_name']);
-                    data_O.append(row);
+        #if peakInfo_parameter_I:
+        #    peakInfo_parameter = peakInfo_parameter_I;
+        #else:
+        #    peakInfo_parameter = [];
+        #    peakInfo_parameter = self.get_peakInfoParameter_experimentID_dataStage01PeakInformation(experiment_id_I);
+        #for parameter in peakInfo_parameter:
+        #    if component_names_I:
+        #        component_names = component_names_I;
+        #    else:
+        #        component_names = [];
+        #        component_names = self.get_componentNames_experimentIDAndPeakInfoParameter_dataStage01PeakInformation(experiment_id_I,parameter);
+        #    for cn in component_names:
+        #        print('generating boxAndWhiskersPlot for component_name ' + cn); 
+        #        # get the data 
+        #        row = [];
+        #        row = self.get_row_experimentIDAndPeakInfoParameterComponentName_dataStage01PeakInformation(experiment_id_I,parameter,cn);
+        #        if row:
+        #            #TODO: fix type in database 'acqusition_date_and_times'
+        #            tmp_list = [];
+        #            for d in row['acqusition_date_and_times']:
+        #                tmp = None;
+        #                tmp = self.convert_datetime2string(d);
+        #                tmp_list.append(tmp);
+        #            row['acqusition_date_and_times'] = tmp_list;
+        #            row['component_name'] = re.escape(row['component_name']);
+        #            data_O.append(row);
+
+        data_O = self.get_row_analysisID_dataStage01PeakInformation(
+            analysis_id_I=analysis_id_I,
+            experiment_id_I=experiment_id_I,
+            peakInfo_parameter_I=peakInfo_I,
+            component_name_I=component_names_I,
+            component_group_name_I=component_group_names_I,
+            sample_name_abbreviation_I=sample_name_abbreviations_I
+            )
         # dump chart parameters to a js files
         data1_keys = ['experiment_id',
                     'component_group_name',
@@ -447,8 +456,9 @@ class stage01_quantification_peakInformation_io(stage01_quantification_peakInfor
                     #'peakInfo_lb',
                     #'peakInfo_ub',
                     #'peakInfo_units',
-                    'sample_names',
-                    'sample_types',
+                    'sample_name_abbreviation',
+                    #'sample_names',
+                    #'sample_types',
                     #'acqusition_date_and_times'
                     ];
         data1_nestkeys = ['component_name'];
@@ -470,7 +480,7 @@ class stage01_quantification_peakInformation_io(stage01_quantification_peakInfor
             'tileclass':"panel panel-default",'rowclass':"row",'colclass':"col-sm-4"};
         formparameters_O = {'htmlid':'filtermenuform1',"htmltype":'form_01',"formsubmitbuttonidtext":{'id':'submit1','text':'submit'},"formresetbuttonidtext":{'id':'reset1','text':'reset'},"formupdatebuttonidtext":{'id':'update1','text':'update'}};
         formtileparameters_O.update(formparameters_O);
-        svgparameters_O = {"svgtype":'boxandwhiskersplot2d_01',"svgkeymap":[data1_keymap],
+        svgparameters_O = {"svgtype":'boxandwhiskersplot2d_02',"svgkeymap":[data1_keymap],
                             'svgid':'svg1',
                             "svgmargin":{ 'top': 50, 'right': 150, 'bottom': 50, 'left': 50 },
                             "svgwidth":500,"svgheight":350,
@@ -503,6 +513,7 @@ class stage01_quantification_peakInformation_io(stage01_quantification_peakInfor
             return data_json_O;
         with open(filename_str,'w') as file:
             file.write(ddtutilities.get_allObjects());
+
     def export_boxAndWhiskersPlot_peakResolution_js(self,experiment_id_I,
                             component_name_pairs_I=[],
                             peakInfo_parameter_I = ['rt_dif','resolution'],
