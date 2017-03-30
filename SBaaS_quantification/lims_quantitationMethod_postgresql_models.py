@@ -24,7 +24,24 @@ class quantitation_method(Base):
             #ForeignKeyConstraint(['id'],['quantitation_method_list.quantitation_method_id'], ondelete="CASCADE"),
             )
 
-    def __init__(self,id_I, q1_mass_I,q3_mass_I,met_id_I,component_name_I,is_name_I,fit_I,
+    def __init__(self,data_dict_I):
+        self.q1_mass=data_dict_I['q1_mass'];
+        self.slope=data_dict_I['slope'];
+        self.intercept=data_dict_I['intercept'];
+        self.weighting=data_dict_I['weighting'];
+        self.fit=data_dict_I['fit'];
+        self.component_name=data_dict_I['component_name'];
+        self.met_id=data_dict_I['met_id'];
+        self.q3_mass=data_dict_I['q3_mass'];
+        self.correlation=data_dict_I['correlation'];
+        self.id=data_dict_I['id'];
+        self.use_area=data_dict_I['use_area'];
+        self.is_name=data_dict_I['is_name'];
+        self.points=data_dict_I['points'];
+        self.uloq=data_dict_I['uloq'];
+        self.lloq=data_dict_I['lloq'];
+
+    def __set__row__(self,id_I, q1_mass_I,q3_mass_I,met_id_I,component_name_I,is_name_I,fit_I,
                  weighting_I,intercept_I,slope_I,correlation_I,use_area_I,lloq_I,uloq_I,
                  points_I):
         self.id = id_I;
@@ -63,6 +80,7 @@ class quantitation_method(Base):
     
     def __repr__json__(self):
         return json.dumps(self.__repr__dict__())
+
 #quantitation_method_list
 class quantitation_method_list(Base):
     #__table__ = make_table('quantitation_method_list')
@@ -70,3 +88,16 @@ class quantitation_method_list(Base):
     quantitation_method_id = Column(String(50), nullable = False)
     __table_args__ = (PrimaryKeyConstraint('quantitation_method_id'),
             )
+
+    def __init__(self,data_dict_I):
+        self.quantitation_method_id=data_dict_I['quantitation_method_id'];
+
+    def __set__row__(self,quantitation_method_id_I):
+        self.quantitation_method_id = quantitation_method_id_I;
+
+    def __repr__dict__(self):
+        return {'quantitation_method_id':self.quantitation_method_id,
+                }
+    
+    def __repr__json__(self):
+        return json.dumps(self.__repr__dict__())
