@@ -9,37 +9,6 @@ import rpy2.robjects as robjects
 class lims_quantitationMethod_execute(lims_quantitationMethod_io,
                                       lims_quantitationMethod_dependencies
                                     ):
-    def execute_exportCalibrationConcentrations(self, sampleAndComponent_fileName_I, concentrations_fileName_O):
-        '''export calibrator concentrations for "cut&paste" into Actual Concentration column in MultiQuant
-        when filtering Analytes only'''
-
-        #Input:
-        #   sampleAndComponent_fileName_I = .csv file specifying sample_name, sample_type, and component_group_name
-        #Output:
-        #   concentrations_fileName_O = .csv file specifying sample_name, sample_type, component_group_name, and actual_concentration
-        
-        concentrations_O = [];
-        met_id_conv_dict = {'Hexose_Pool_fru_glc-D':'glc-D',
-                            'Pool_2pg_3pg':'3pg'};
-        #import sampleAndComponents
-        samplesComponents = [];
-        samplesComponents = self.import_calibration_sampleAndComponents(sampleAndComponent_fileName_I);
-        for sc in samplesComponents:
-            # if met_id is a pool of metabolites, convert to the metabolite
-            # that is logged in calibrator tables and standards tables
-            if sc['met_id'] in list(met_id_conv_dict.keys()):
-                met_id_conv = met_id_conv_dict[sc['met_id']];
-            else:
-                met_id_conv = sc['met_id'];
-            #query calibrator_id and calibrator_level from sample
-            calibrator_id,calibrator_level = None,None;
-            calibrator_id,calibrator_level = self.get_calibratorIDAndLevel_sampleNameAndSampleType_sample(sc['sample_name'],sc['sample_type']);
-            #query calibrator_concentration from calibrator_concentrations
-            calibrator_concentration, concentration_units = 'N/A', None;
-            if calibrator_id and calibrator_level:
-                calibrator_concentration, concentration_units = self.get_calibratorConcentrationAndUnit_metIDAndCalibratorIDAndLevel_calibratorConcentrations(met_id_conv,calibrator_id,calibrator_level);
-            concentrations_O.append({'sample_name':sc['sample_name'], 'sample_type':sc['sample_type'],'component_group_name':sc['met_id'], 'actual_concentration':calibrator_concentration});
-        self.export_calibrationConcentrations(concentrations_O, concentrations_fileName_O)
 
     def execute_quantitationMethodUpdate(self, quant_method_ids_I = []):
         '''calculate regression parameters for all components

@@ -62,32 +62,8 @@ expeak01 = stage01_quantification_peakInformation_execute(session,engine,pg_sett
 expeak01.initialize_supportedTables();
 expeak01.initialize_tables();
 
-##analyze peakInformation
-sample_name_abbreviations_I = [
-#     'SST_FluxEPI', 'SST_FluxMRM',
-#     'SST_QuantEPI', 'SST_QuantMRM',
-    'SST_QuantEPI1', 'SST_QuantMRM1',
-#     'SST_Screening'
-]
-for sample_name_abbreviation in sample_name_abbreviations_I:
-    print(sample_name_abbreviation)
-    expeak01.execute_analyzePeakInformation(
-            analysis_id_I = ['RapidRIP01_SST01'], 
-            experiment_id_I = ['RapidRIP01'],
-            sample_names_I = [],
-            sample_name_abbreviations_I = sample_name_abbreviation,
-            sample_types_I = ['Standard'],
-            peakInfo_I = ['height','retention_time','width_at_50',
-                          'signal_2_noise','points_across_baseline'],
-            acquisition_date_and_time_I=[]);
-
-#export the data
-expeak01.export_boxAndWhiskersPlot_peakInformation_js(
-    experiment_id_I=['RapidRIP01'],
-    analysis_id_I=['RapidRIP01_SST01'],
-    #sample_name_abbreviations_I=['SST_QuantEPI', 'SST_QuantMRM', 'SST_Screening'],
-    sample_name_abbreviations_I=['SST_FluxEPI', 'SST_FluxMRM',],
-    component_names_I=[],
-    component_group_names_I=[],
-    peakInfo_I = ['points_across_baseline','signal_2_noise'],
-    data_dir_I='tmp')
+#make the quantitation methods table (move to SBaaS_quantification)
+from SBaaS_quantification.lims_quantitationMethod_execute import lims_quantitationMethod_execute
+exquant01 = lims_quantitationMethod_execute(session,engine,pg_settings.datadir_settings);
+exquant01.initialize_supportedTables();
+exquant01.initialize_tables();

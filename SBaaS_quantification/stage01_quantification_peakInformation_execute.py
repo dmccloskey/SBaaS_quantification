@@ -8,12 +8,17 @@ from math import sqrt
 
 class stage01_quantification_peakInformation_execute(stage01_quantification_peakInformation_io,
                                                     lims_experiment_query):
-    def execute_analyzePeakInformation(self,experiment_id_I=[],analysis_id_I=[],
-                            sample_names_I=[],sample_ids_I=[],sample_name_abbreviations_I=[],
-                            sample_types_I=['Standard'],
-                            component_names_I=[],
-                            peakInfo_I = ['height','retention_time','width_at_50','signal_2_noise'],
-                            acquisition_date_and_time_I=[None,None]):
+    def execute_analyzePeakInformation(
+        self,
+        experiment_id_I=[],
+        analysis_id_I=[],
+        sample_names_I=[],
+        sample_ids_I=[],
+        sample_name_abbreviations_I=[],
+        sample_types_I=['Standard'],
+        component_names_I=[],
+        peakInfo_I = ['height','retention_time','width_at_50','signal_2_noise'],
+        acquisition_date_and_time_I=[None,None]):
         '''Analyze retention-time, height, s/n, and assymetry
         INPUT:
         experiment_id_I
@@ -170,8 +175,16 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
                             'comment_':None,};
                         data_add.append(row);
         self.add_rows_table('data_stage01_quantification_peakInformation',data_add);
-    def execute_analyzePeakResolution(self,experiment_id_I,sample_names_I=[],sample_types_I=['Standard'],component_name_pairs_I=[],
-                            acquisition_date_and_time_I=[None,None]):
+    def execute_analyzePeakResolution(
+        self,
+        experiment_id_I=[],
+        analysis_id_I=[],
+        sample_names_I=[],
+        sample_ids_I=[],
+        sample_name_abbreviations_I=[],
+        sample_types_I=['Standard'],
+        component_name_pairs_I=[],
+        acquisition_date_and_time_I=[None,None]):
         '''Analyze resolution for critical pairs
         Input:
         experiment_id_I
@@ -191,7 +204,27 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
                 dt = datetime.fromtimestamp(mktime(time_struct))
                 acquisition_date_and_time.append(dt);
         else: acquisition_date_and_time=[None,None]
+        
+        #query all the data
+        component_name_pairs_flat = [item for sublist in component_name_pairs_I for item in sublist]
         data_O = [];
+        data_O = self.get_rows_dataStage01QuantificationMQResultsTable(
+            analysis_id_I = analysis_id_I,
+            experiment_id_I = experiment_id_I,
+            sample_name_I = sample_names_I,
+            sample_id_I = sample_ids_I,
+            sample_name_abbreviation_I = sample_name_abbreviations_I,
+            sample_type_I = sample_types_I,
+            component_name_I = component_name_pairs_flat,
+            acquisition_date_and_time_I = acquisition_date_and_time,
+            )
+
+        #re-organize the data
+
+        #calculate the resolution between all critical pairs
+        #calculate the statitics between sample_name_abbreviations
+
+
         component_names_pairs_all = [];
         # get sample names
         if sample_names_I and sample_types_I and len(sample_types_I)==1:
