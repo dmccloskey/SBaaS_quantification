@@ -207,8 +207,8 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
         
         #query all the data
         component_name_pairs_flat = [item for sublist in component_name_pairs_I for item in sublist]
-        data_O = [];
-        data_O = self.get_rows_dataStage01QuantificationMQResultsTable(
+        data_listDict = [];
+        data_listDict = self.get_rows_dataStage01QuantificationMQResultsTable(
             analysis_id_I = analysis_id_I,
             experiment_id_I = experiment_id_I,
             sample_name_I = sample_names_I,
@@ -219,93 +219,157 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
             acquisition_date_and_time_I = acquisition_date_and_time,
             )
 
-        #re-organize the data
+        #re-organize the data  
+        data_analysis = {'_del_':{'_del_':{'_del_':[]}}};
+        for row in data_listDict:
+            sna = row['sample_name_abbreviation']
+            sn = row['sample_name']
+            cn = row['component_name']
+            if not sna in data_analysis.keys(): data_analysis[sna]={};
+            if not sn in data_analysis[sna].keys(): data_analysis[sna][sn]={};
+            if not cn in data_analysis[sna][sn].keys(): data_analysis[sna][sn][cn]=[];
+            data_analysis[sna][sn][cn].append(row);
+        del data_analysis['_del_'];
 
         #calculate the resolution between all critical pairs
         #calculate the statitics between sample_name_abbreviations
-
-
-        component_names_pairs_all = [];
-        # get sample names
-        if sample_names_I and sample_types_I and len(sample_types_I)==1:
-            sample_names = sample_names_I;
-            sample_types = [sample_types_I[0] for sn in sample_names];
-        else:
-            sample_names = [];
-            sample_types = [];
-            for st in sample_types_I:
-                sample_names_tmp = [];
-                sample_names_tmp = self.get_sampleNames_experimentIDAndSampleType(experiment_id_I,st);
-                sample_names.extend(sample_names_tmp);
-                sample_types_tmp = [];
-                sample_types_tmp = [st for sn in sample_names_tmp];
-                sample_types.extend(sample_types_tmp);
-        for sn in sample_names:
-            print('analyzing peakInformation for sample_name ' + sn);
-            for component_name_pair in component_name_pairs_I:
-                # get critical pair data
-                cpd1 = {};
-                cpd2 = {};
-                cpd1 = self.get_peakInfo_sampleNameAndComponentName(sn,component_name_pair[0],acquisition_date_and_time);
-                cpd2 = self.get_peakInfo_sampleNameAndComponentName(sn,component_name_pair[1],acquisition_date_and_time);
-                if cpd1 and cpd2 and cpd1['retention_time'] and cpd2['retention_time']:
+        data_O = []
+        for sna,v1 in data_analysis.items():
+            cnp_data = {};
+            for sn,v2 in v1.items():
+                for cnp in component_name_pairs_I:
+                    cnp_data[cnp] = {
+                        'rt_diff':[],
+                        'resolution':[],
+                        'sample_names':[],
+                        'sample_types':[],
+                        'acquisition_date_and_times':[],
+                        'experiment_ids':[],
+                        };
+                    cpd1=v2[cnp[0]];
+                    cpd2=v2[cnp[1]];
                     # calculate the RT difference and resolution
                     rt_dif = 0.0;
                     rt_dif = abs(cpd1['retention_time']-cpd2['retention_time'])
                     resolution = 0.0;
                     resolution = rt_dif/(0.5*(cpd1['width_at_50']+cpd2['width_at_50']));
-                    # record data
-                    data_O.append({'component_name_pair':component_name_pair,
-                                   'rt_dif':rt_dif,
-                                   'resolution':resolution,
-                                   'component_group_name_pair':[cpd1['component_group_name'],cpd2['component_group_name']],
-                                   'sample_name':sn,
-                                   'acquisition_date_and_time':cpd1['acquisition_date_and_time']});
-        #TODO:
-        # 1. make a calculation method
-        # calculate statistics for specific parameters
-        data_add = [];
-        calc = calculate_interface();
-        for cnp in component_name_pairs_I:
-            data_parameters = {};
-            data_parameters_stats = {};
-            for parameter in ['rt_dif','resolution']:
-                data_parameters[parameter] = [];
-                data_parameters_stats[parameter] = {'ave':None,'var':None,'cv':None,'lb':None,'ub':None};
-                acquisition_date_and_times = [];
-                sample_names_parameter = [];
-                sample_types_parameter = [];
-                component_group_name_pair = None;
-                for sn_cnt,sn in enumerate(sample_names):
-                    for d in data_O:
-                        if d['sample_name'] == sn and d['component_name_pair'] == cnp and d[parameter]:
-                            data_parameters[parameter].append(d[parameter]);
-                            acquisition_date_and_times.append(d['acquisition_date_and_time'])
-                            sample_names_parameter.append(sn);
-                            sample_types_parameter.append(sample_types[sn_cnt])
-                            component_group_name_pair = d['component_group_name_pair'];
-                ave,var,lb,ub = None,None,None,None;
-                if len(data_parameters[parameter])>1:ave,var,lb,ub = calc.calculate_ave_var(data_parameters[parameter]);
-                if ave:
-                    cv = sqrt(var)/ave*100;
-                    data_parameters_stats[parameter] = {'ave':ave,'var':var,'cv':cv,'lb':lb,'ub':ub};
-                    # add data to the database:
-                    row = {'experiment_id':experiment_id_I,
-                        'component_group_name_pair':component_group_name_pair,
-                        'component_name_pair':cnp,
-                        'peakInfo_parameter':parameter,
-                        'peakInfo_ave':data_parameters_stats[parameter]['ave'],
-                        'peakInfo_cv':data_parameters_stats[parameter]['cv'],
-                        'peakInfo_lb':data_parameters_stats[parameter]['lb'],
-                        'peakInfo_ub':data_parameters_stats[parameter]['ub'],
-                        'peakInfo_units':None,
-                        'sample_names':sample_names_parameter,
-                        'sample_types':sample_types_parameter,
-                        'acqusition_date_and_times':acquisition_date_and_times,
-                        'peakInfo_data':data_parameters[parameter],
-                        'used_':True,
-                        'comment_':None,};
-                    data_add.append(row);
-        self.add_rows_table('data_stage01_quantification_peakResolution',data_add);
+                    # record the data
+                    cnp_data[cnp]['rt_diff'].append(rt_dif)
+                    cnp_data[cnp]['resolution'].append(resolution)
+                    cnp_data[cnp]['sample_names'].append(v2['sample_name'])
+                    cnp_data[cnp]['sample_types'].append(v2['sample_type'])
+                    cnp_data[cnp]['acquisition_date_and_times'].append(v2['cquisition_date_and_time'])
+                    cnp_data[cnp]['experiment_ids'].append(v2['experiment_id'])
+            #calculate the statistics
+            for cnp,v3 in cnp_data.items():
+                for parameter in ['rt_diff','resolution']:
+                    ave,var,lb,ub = None,None,None,None;
+                    if len(v3[parameter])>1:ave,var,lb,ub = calc.calculate_ave_var(v3[parameter]);
+                    if ave:
+                        cv = sqrt(var)/ave*100;
+                        # add data to the database:
+                        row = {'analysis_id':analysis_id_I,
+                            'experiment_id':v3['experiment_ids'][0],
+                            'component_group_name_pair':component_group_name_pair,
+                            'component_name_pair':cnp,
+                            'peakInfo_parameter':parameter,
+                            'peakInfo_n':len(v3[parameter]),
+                            'peakInfo_ave':ave,
+                            'peakInfo_cv':cv,
+                            'peakInfo_lb':lb,
+                            'peakInfo_ub':ub,
+                            'peakInfo_units':None,
+                            'sample_names':v3['sample_names'],
+                            'sample_types':v3['sample_types'],
+                            'acqusition_date_and_times':v3['acquisition_date_and_times'],
+                            'peakInfo_data':v3[parameter],
+                            #'peakInfo_data':{'ave':ave,'var':var,'cv':cv,'lb':lb,'ub':ub},
+                            'used_':True,
+                            'comment_':None,};
+                        data_add.append(row);
+        self.add_rows_table('data_stage01_quantification_peakResolution',data_O);
+
+        #component_names_pairs_all = [];
+        ## get sample names
+        #if sample_names_I and sample_types_I and len(sample_types_I)==1:
+        #    sample_names = sample_names_I;
+        #    sample_types = [sample_types_I[0] for sn in sample_names];
+        #else:
+        #    sample_names = [];
+        #    sample_types = [];
+        #    for st in sample_types_I:
+        #        sample_names_tmp = [];
+        #        sample_names_tmp = self.get_sampleNames_experimentIDAndSampleType(experiment_id_I,st);
+        #        sample_names.extend(sample_names_tmp);
+        #        sample_types_tmp = [];
+        #        sample_types_tmp = [st for sn in sample_names_tmp];
+        #        sample_types.extend(sample_types_tmp);
+        #for sn in sample_names:
+        #    print('analyzing peakInformation for sample_name ' + sn);
+        #    for component_name_pair in component_name_pairs_I:
+        #        # get critical pair data
+        #        cpd1 = {};
+        #        cpd2 = {};
+        #        cpd1 = self.get_peakInfo_sampleNameAndComponentName(sn,component_name_pair[0],acquisition_date_and_time);
+        #        cpd2 = self.get_peakInfo_sampleNameAndComponentName(sn,component_name_pair[1],acquisition_date_and_time);
+        #        if cpd1 and cpd2 and cpd1['retention_time'] and cpd2['retention_time']:
+        #            # calculate the RT difference and resolution
+        #            rt_dif = 0.0;
+        #            rt_dif = abs(cpd1['retention_time']-cpd2['retention_time'])
+        #            resolution = 0.0;
+        #            resolution = rt_dif/(0.5*(cpd1['width_at_50']+cpd2['width_at_50']));
+        #            # record data
+        #            data_O.append({'component_name_pair':component_name_pair,
+        #                           'rt_dif':rt_dif,
+        #                           'resolution':resolution,
+        #                           'component_group_name_pair':[cpd1['component_group_name'],cpd2['component_group_name']],
+        #                           'sample_name':sn,
+        #                           'acquisition_date_and_time':cpd1['acquisition_date_and_time']});
+        ##TODO:
+        ## 1. make a calculation method
+        ## calculate statistics for specific parameters
+        #data_add = [];
+        #calc = calculate_interface();
+        #for cnp in component_name_pairs_I:
+        #    data_parameters = {};
+        #    data_parameters_stats = {};
+        #    for parameter in ['rt_dif','resolution']:
+        #        data_parameters[parameter] = [];
+        #        data_parameters_stats[parameter] = {'ave':None,'var':None,'cv':None,'lb':None,'ub':None};
+        #        acquisition_date_and_times = [];
+        #        sample_names_parameter = [];
+        #        sample_types_parameter = [];
+        #        component_group_name_pair = None;
+        #        for sn_cnt,sn in enumerate(sample_names):
+        #            for d in data_O:
+        #                if d['sample_name'] == sn and d['component_name_pair'] == cnp and d[parameter]:
+        #                    data_parameters[parameter].append(d[parameter]);
+        #                    acquisition_date_and_times.append(d['acquisition_date_and_time'])
+        #                    sample_names_parameter.append(sn);
+        #                    sample_types_parameter.append(sample_types[sn_cnt])
+        #                    component_group_name_pair = d['component_group_name_pair'];
+        #        ave,var,lb,ub = None,None,None,None;
+        #        if len(data_parameters[parameter])>1:ave,var,lb,ub = calc.calculate_ave_var(data_parameters[parameter]);
+        #        if ave:
+        #            cv = sqrt(var)/ave*100;
+        #            data_parameters_stats[parameter] = {'ave':ave,'var':var,'cv':cv,'lb':lb,'ub':ub};
+        #            # add data to the database:
+        #            row = {'experiment_id':experiment_id_I,
+        #                'component_group_name_pair':component_group_name_pair,
+        #                'component_name_pair':cnp,
+        #                'peakInfo_parameter':parameter,
+        #                'peakInfo_ave':data_parameters_stats[parameter]['ave'],
+        #                'peakInfo_cv':data_parameters_stats[parameter]['cv'],
+        #                'peakInfo_lb':data_parameters_stats[parameter]['lb'],
+        #                'peakInfo_ub':data_parameters_stats[parameter]['ub'],
+        #                'peakInfo_units':None,
+        #                'sample_names':sample_names_parameter,
+        #                'sample_types':sample_types_parameter,
+        #                'acqusition_date_and_times':acquisition_date_and_times,
+        #                'peakInfo_data':data_parameters[parameter],
+        #                'used_':True,
+        #                'comment_':None,};
+        #            data_add.append(row);
+        #self.add_rows_table('data_stage01_quantification_peakResolution',data_add);
 
     
