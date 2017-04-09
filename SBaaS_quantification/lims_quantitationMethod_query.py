@@ -346,46 +346,169 @@ class lims_quantitationMethod_query(
         except SQLAlchemyError as e:
             print(e);
     # QC queries from quantitation_method
-    def get_LLOQAndULOQ(self,experiment_id_I):
+    def get_LLOQAndULOQ(self,
+        experiment_id_I,
+        sample_names_I=[],
+        component_names_I=[],
+        component_group_names_I=[],
+        calculated_concentration_units_I=[],
+        sample_types_I = ['Unknown','Quality Control']
+        ):
         '''query to populate the "checkLLOQAndULOQ" view
         TODO: appears to be broken'''
         try:
-            data = self.session.query(data_stage01_quantification_MQResultsTable.sample_name, 
-                        data_stage01_quantification_MQResultsTable.component_group_name, 
-                        data_stage01_quantification_MQResultsTable.component_name, 
-                        data_stage01_quantification_MQResultsTable.calculated_concentration, 
-                        data_stage01_quantification_MQResultsTable.conc_units, 
-                        quantitation_method.correlation, 
-                        quantitation_method.lloq, 
-                        quantitation_method.uloq, 
-                        quantitation_method.points,
-                        data_stage01_quantification_MQResultsTable.used_).filter(
-                        experiment.id.like(experiment_id_I),
-                        experiment.sample_name.like(data_stage01_quantification_MQResultsTable.sample_name),
-                        experiment.quantitation_method_id.like(quantitation_method.id),
-                        data_stage01_quantification_MQResultsTable.component_name.like(quantitation_method.component_name),
-                        data_stage01_quantification_MQResultsTable.used_,
-                        data_stage01_quantification_MQResultsTable.is_.is_(False),
-                        quantitation_method.points > 0,
-                        or_(data_stage01_quantification_MQResultsTable.sample_type.like('Unknown'),
-                            data_stage01_quantification_MQResultsTable.sample_type.like('Quality Control'))).order_by(
-                        data_stage01_quantification_MQResultsTable.component_name.asc(),
-                        data_stage01_quantification_MQResultsTable.sample_name.asc()).all();
-            check_O = [];
-            for c in data: 
-                check_1 = {};
-                check_1['sample_name'] = c.sample_name;
-                check_1['component_group_name'] = c.component_group_name;
-                check_1['component_name'] = c.component_name;
-                check_1['calculated_concentration'] = c.calculated_concentration;
-                check_1['calculated_concentration_units'] = c.conc_units;
-                check_1['correlation'] = c.correlation;
-                check_1['lloq'] = c.lloq;
-                check_1['uloq'] = c.uloq;
-                check_1['points'] = c.points;
-                check_1['used_'] = c.used_;
-                check_O.append(check_1);
-            return  check_O;
+            #data = self.session.query(data_stage01_quantification_MQResultsTable.sample_name, 
+            #            data_stage01_quantification_MQResultsTable.component_group_name, 
+            #            data_stage01_quantification_MQResultsTable.component_name, 
+            #            data_stage01_quantification_MQResultsTable.calculated_concentration, 
+            #            data_stage01_quantification_MQResultsTable.conc_units, 
+            #            quantitation_method.correlation, 
+            #            quantitation_method.lloq, 
+            #            quantitation_method.uloq, 
+            #            quantitation_method.points,
+            #            data_stage01_quantification_MQResultsTable.used_).filter(
+            #            experiment.id.like(experiment_id_I),
+            #            experiment.sample_name.like(data_stage01_quantification_MQResultsTable.sample_name),
+            #            experiment.quantitation_method_id.like(quantitation_method.id),
+            #            data_stage01_quantification_MQResultsTable.component_name.like(quantitation_method.component_name),
+            #            data_stage01_quantification_MQResultsTable.used_,
+            #            data_stage01_quantification_MQResultsTable.is_.is_(False),
+            #            quantitation_method.points > 0,
+            #            or_(data_stage01_quantification_MQResultsTable.sample_type.like('Unknown'),
+            #                data_stage01_quantification_MQResultsTable.sample_type.like('Quality Control'))).order_by(
+            #            data_stage01_quantification_MQResultsTable.component_name.asc(),
+            #            data_stage01_quantification_MQResultsTable.sample_name.asc()).all();
+            #check_O = [];
+            #for c in data: 
+            #    check_1 = {};
+            #    check_1['sample_name'] = c.sample_name;
+            #    check_1['component_group_name'] = c.component_group_name;
+            #    check_1['component_name'] = c.component_name;
+            #    check_1['calculated_concentration'] = c.calculated_concentration;
+            #    check_1['calculated_concentration_units'] = c.conc_units;
+            #    check_1['correlation'] = c.correlation;
+            #    check_1['lloq'] = c.lloq;
+            #    check_1['uloq'] = c.uloq;
+            #    check_1['points'] = c.points;
+            #    check_1['used_'] = c.used_;
+            #    check_O.append(check_1);
+            #return  check_O;
+
+            subquery1 = '''SELECT experiment.id as experiment_id, 
+                experiment.sample_name, 
+                experiment.quantitation_method_id '''
+            subquery1 += '''FROM experiment '''
+            subquery1 += '''WHERE ''' 
+            if experiment_id_I:
+                cmd_q = '''experiment.id =ANY ('{%s}'::text[]) ''' %(
+                    self.convert_list2string(experiment_id_I));
+                subquery1+=cmd_q;
+            if sample_names_I:
+                cmd_q = '''AND experiment.sample_name =ANY ('{%s}'::text[]) ''' %(
+                    self.convert_list2string(sample_names_I));
+                subquery1+=cmd_q;
+            subquery1 += '''ORDER BY experiment.id ASC, 
+                        experiment.sample_name, 
+                        experiment.quantitation_method_id '''
+
+            subquery2 = '''SELECT subquery1.experiment_id,
+                subquery1.sample_name,
+                subquery1.quantitation_method_id,
+                "data_stage01_quantification_mqresultstable".component_name, 
+                "data_stage01_quantification_mqresultstable".component_group_name, 
+                "data_stage01_quantification_mqresultstable".calculated_concentration,
+                "data_stage01_quantification_mqresultstable".conc_units AS calculated_concentration_units,  
+                "data_stage01_quantification_mqresultstable".used_  
+                '''
+            subquery2 += '''FROM "data_stage01_quantification_mqresultstable", 
+                         (%s) AS subquery1 ''' %subquery1
+            subquery2 += '''WHERE "data_stage01_quantification_mqresultstable".used_ 
+                    AND NOT "data_stage01_quantification_mqresultstable".is_ 
+                    AND "data_stage01_quantification_mqresultstable".sample_name = subquery1.sample_name '''
+            if sample_types_I:
+                cmd_q = '''AND "data_stage01_quantification_mqresultstable".sample_type =ANY ('{%s}'::text[]) ''' %(
+                    self.convert_list2string(sample_types_I));
+                subquery2+=cmd_q;
+            if component_names_I:
+                cmd_q = '''AND "data_stage01_quantification_mqresultstable".component_name =ANY ('{%s}'::text[]) ''' %(
+                    self.convert_list2string(component_names_I));
+                subquery2+=cmd_q;
+            if component_group_names_I:
+                cmd_q = '''AND "data_stage01_quantification_mqresultstable".component_group_name =ANY ('{%s}'::text[]) ''' %(
+                    self.convert_list2string(component_group_names_I));
+                subquery2+=cmd_q;
+            if calculated_concentration_units_I:
+                cmd_q = '''AND "data_stage01_quantification_mqresultstable".conc_units =ANY ('{%s}'::text[]) ''' %(
+                    self.convert_list2string(calculated_concentration_units_I));
+                subquery2+=cmd_q;
+            subquery2 += '''GROUP BY subquery1.experiment_id,
+                subquery1.sample_name,
+                subquery1.quantitation_method_id,
+                "data_stage01_quantification_mqresultstable".component_name, 
+                "data_stage01_quantification_mqresultstable".component_group_name, 
+                "data_stage01_quantification_mqresultstable".calculated_concentration,
+                "data_stage01_quantification_mqresultstable".conc_units,  
+                "data_stage01_quantification_mqresultstable".used_  
+                '''
+            subquery2 += '''ORDER BY subquery1.experiment_id ASC,
+                subquery1.sample_name ASC,
+                subquery1.quantitation_method_id ASC,
+                "data_stage01_quantification_mqresultstable".component_name ASC, 
+                "data_stage01_quantification_mqresultstable".component_group_name ASC, 
+                "data_stage01_quantification_mqresultstable".calculated_concentration ASC,
+                "data_stage01_quantification_mqresultstable".conc_units ASC,  
+                "data_stage01_quantification_mqresultstable".used_ ASC
+                '''
+
+            query1 = '''SELECT subquery2.experiment_id,
+                subquery2.sample_name,
+                subquery2.quantitation_method_id,
+                "subquery2".component_name, 
+                "subquery2".component_group_name, 
+                "subquery2".calculated_concentration,
+                "subquery2".calculated_concentration_units,  
+                "subquery2".used_, 
+                quantitation_method.correlation, 
+                quantitation_method.lloq, 
+                quantitation_method.uloq, 
+                quantitation_method.points
+                '''
+            query1 += '''FROM quantitation_method, 
+                (%s) AS subquery2 ''' %subquery2
+            query1 += '''WHERE quantitation_method.id = subquery2.quantitation_method_id 
+                AND quantitation_method.component_name = subquery2.component_name 
+                AND quantitation_method.points > 0 '''
+            query1 += '''GROUP BY subquery2.experiment_id,
+                subquery2.sample_name,
+                subquery2.quantitation_method_id,
+                "subquery2".component_name, 
+                "subquery2".component_group_name, 
+                "subquery2".calculated_concentration,
+                "subquery2".calculated_concentration_units,  
+                "subquery2".used_, 
+                quantitation_method.correlation, 
+                quantitation_method.lloq, 
+                quantitation_method.uloq, 
+                quantitation_method.points
+                '''
+            query1 += '''ORDER BY subquery2.experiment_id ASC,
+                subquery2.sample_name ASC,
+                subquery2.quantitation_method_id ASC,
+                "subquery2".component_name ASC, 
+                "subquery2".component_group_name ASC, 
+                "subquery2".calculated_concentration ASC,
+                "subquery2".calculated_concentration_units ASC,  
+                "subquery2".used_ ASC, 
+                quantitation_method.correlation ASC, 
+                quantitation_method.lloq ASC, 
+                quantitation_method.uloq ASC, 
+                quantitation_method.points ASC
+                '''
+    
+            result = self.session.execute(query1);
+            data = result.fetchall();
+            data_O = [dict(d) for d in data];
+            return data_O;
         except SQLAlchemyError as e:
             print(e);
         return

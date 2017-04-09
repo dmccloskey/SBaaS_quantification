@@ -56,6 +56,8 @@ exreps01 = stage01_quantification_replicates_execute(session,engine,pg_settings.
 exreps01.initialize_supportedTables();
 exreps01.initialize_dataStage01_quantification_replicates();
 
+#exreps01.execute_analyzeReplicates('BloodProject01')
+
 #make the quantitation methods table
 from SBaaS_quantification.stage01_quantification_peakInformation_execute import stage01_quantification_peakInformation_execute
 expeak01 = stage01_quantification_peakInformation_execute(session,engine,pg_settings.datadir_settings);
@@ -67,3 +69,20 @@ from SBaaS_quantification.lims_quantitationMethod_execute import lims_quantitati
 exquant01 = lims_quantitationMethod_execute(session,engine,pg_settings.datadir_settings);
 exquant01.initialize_supportedTables();
 exquant01.initialize_tables();
+
+#make the QC methods tables
+from SBaaS_quantification.stage01_quantification_QCs_execute import stage01_quantification_QCs_execute
+exqcs01 = stage01_quantification_QCs_execute(session,engine,pg_settings.datadir_settings);
+exqcs01.initialize_supportedTables();
+exqcs01.initialize_tables();
+
+import time as time
+#analyze the LLOQ
+st = time.time();
+exqcs01.execute_LLOQAndULOQ('BloodProject01',                            
+    calculated_concentration_units_I=['uM'],
+    sample_names_I = ['150601_0_BloodProject01_RBC_140_Broth-1'],
+    sample_types_I = ['Unknown']
+    );
+elapsed_time = time.time() - st;
+print("Elapsed time: %.2fs" % elapsed_time)

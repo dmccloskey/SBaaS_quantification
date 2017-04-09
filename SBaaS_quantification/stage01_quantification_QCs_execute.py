@@ -79,7 +79,14 @@ class stage01_quantification_QCs_execute(stage01_quantification_QCs_io,
                         'calculated_concentration_CV':conc_CV,
                         'calculated_concentration_units':conc_units});
         self.add_dataStage01_quantification_QCs(data_O);
-    def execute_LLOQAndULOQ(self,experiment_id_I):
+    def execute_LLOQAndULOQ(
+        self,experiment_id_I,
+        sample_names_I=[],
+        component_names_I=[],
+        component_group_names_I=[],
+        calculated_concentration_units_I=[],
+        sample_types_I = ['Unknown','Quality Control']
+        ):
         '''check the lloq and uloq from the calibrators
         against the calculated concentration
         NOTE: a table is used to store the view'''
@@ -87,9 +94,14 @@ class stage01_quantification_QCs_execute(stage01_quantification_QCs_io,
         print('execute_LLOQAndULOQ...')
         # query data for the view
         check = [];
-        check = self.get_LLOQAndULOQ(experiment_id_I);
-        for c in check:
-            c['experiment_id'] = experiment_id_I;
+        check = self.get_LLOQAndULOQ(experiment_id_I,
+            sample_names_I=sample_names_I,
+            component_names_I=component_names_I,
+            component_group_names_I=component_group_names_I,
+            calculated_concentration_units_I=calculated_concentration_units_I,
+            sample_types_I = sample_types_I);
+        #for c in check:
+        #    c['experiment_id'] = experiment_id_I;
         # add data to the database
         self.add_dataStage01_quantification_LLOQAndULOQ(check);
     def execute_analyzeDilutions(self,experiment_id_I):
