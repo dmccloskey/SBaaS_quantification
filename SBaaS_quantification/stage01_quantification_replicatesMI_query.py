@@ -714,56 +714,6 @@ class stage01_quantification_replicatesMI_query(sbaas_template_query):
         except SQLAlchemyError as e:
             print(e);
 
-    def add_dataStage01QuantificationReplicatesMI(self, data_I):
-        '''add rows of data_stage01_quantification_replicatesMI'''
-        if data_I:
-            for d in data_I:
-                try:
-                    data_add = data_stage01_quantification_replicatesMI(d
-                        #d['experiment_id_I'],
-                        #d['sample_name_short_I'],
-                        ##d['sample_name_abbreviation_I'],
-                        #d['time_point_I '],
-                        ##d['time_point_units_I'],
-                        #d['component_group_name_I'],
-                        #d['component_name_I'],
-                        #d['imputation_method_I'],
-                        #d['imputation_options_I'],
-                        #d['calculated_concentration_I'],
-                        #d['calculated_concentration_units_I'],
-                        #d['used__I'],
-                        #d['comment__I']
-                        );
-                    self.session.add(data_add);
-                except SQLAlchemyError as e:
-                    print(e);
-            self.session.commit();
-    def update_dataStage01QuantificationReplicatesMI(self,data_I):
-        '''update rows of data_stage02_quantification_lineage'''
-        if data_I:
-            for d in data_I:
-                try:
-                    data_update = self.session.query(data_stage01_quantification_replicatesMI).filter(
-                           data_stage01_quantification_replicatesMI.id==d['id']).update(
-                            {'experiment_id_I':d['experiment_id_I'],
-                            'sample_name_short_I':d['sample_name_short_I'],
-                            #'sample_name_abbreviation_I':d['#sample_name_abbreviation_I'],
-                            'time_point_I ':d['time_point_I '],
-                            #'time_point_units_I':d['#time_point_units_I'],
-                            'component_group_name_I':d['component_group_name_I'],
-                            'component_name_I':d['component_name_I'],
-                            'imputation_method_I':d['imputation_method_I'],
-                            'imputation_options_I':d['imputation_options_I'],
-                            'calculated_concentration_I':d['calculated_concentration_I'],
-                            'calculated_concentration_units_I':d['calculated_concentration_units_I'],
-                            'used__I':d['used__I'],
-                            'comment__I':d['comment__I']},
-                            synchronize_session=False);
-                except SQLAlchemyError as e:
-                    print(e);
-            self.session.commit();
-
-
     #Query unique rows from data_stage01_quantification_replicatesMI
     def get_sampleNameAbbreviationsAndCalculatedConcentrationUnitsAndTimePointsAndComponentNames_experimentID_dataStage01QuantificationReplicatesMI(
         self,experiment_id_I,sample_name_abbreviations_I,time_points_I,calculated_concentration_units_I,exp_type_I=4):
@@ -809,5 +759,66 @@ class stage01_quantification_replicatesMI_query(sbaas_template_query):
                                            });
                 data_O.convert_dataFrame2ListDict();
             return data_O.get_listDict();
+        except SQLAlchemyError as e:
+            print(e);
+
+    def get_rows_experimentIDsAndSampleNames_dataStage01QuantificationReplicatesMI(
+        self,
+        experiment_ids_I = [],
+        sample_name_shorts_I=[],
+        component_names_I=[],
+        component_group_names_I=[],
+        calculated_concentration_units_I=[],
+        used__I=True):
+        '''Query rows from data_stage01_quantification_replicatesmi
+        INPUT:
+        experiment_id_I = string
+        sample_names_I = string list of names
+        used__I = boolean
+        OUTPUT:
+        [{}]
+        '''
+        from SBaaS_base.postgresql_orm import execute_query
+        try:
+            cmd = '''SELECT  experiment_id, 
+                sample_name_short,
+                time_point, 
+                component_group_name, component_name,
+                imputation_method,
+                imputation_options,
+                calculated_concentration,calculated_concentration_units,
+                used_,
+                comment_
+            FROM "data_stage01_quantification_replicatesmi"
+            WHERE '''
+            if experiment_ids_I:
+                cmd_q = '''"data_stage01_quantification_replicatesmi"."experiment_id" =ANY ('{%s}'::text[]) ''' %(self.convert_list2string(experiment_ids_I));
+                cmd+=cmd_q;
+            if sample_name_shorts_I:
+                cmd_q = '''AND "data_stage01_quantification_replicatesmi"."sample_name" =ANY ('{%s}'::text[]) ''' %(self.convert_list2string(sample_name_shorts_I));
+                cmd+=cmd_q;
+            if component_names_I:
+                cmd_q = '''AND "data_stage01_quantification_replicatesmi"."component_name" =ANY ('{%s}'::text[]) ''' %(self.convert_list2string(component_names_I));
+                cmd+=cmd_q;
+            if component_group_names_I:
+                cmd_q = '''AND "data_stage01_quantification_replicatesmi"."component_group_name" =ANY ('{%s}'::text[]) ''' %(self.convert_list2string(component_group_names_I));
+                cmd+=cmd_q;
+            if calculated_concentration_units_I:
+                cmd_q = '''AND "data_stage01_quantification_replicatesmi"."calculated_concentration_units" =ANY ('{%s}'::text[]) ''' %(self.convert_list2string(calculated_concentration_units_I));
+                cmd+=cmd_q;
+            if used__I:
+                cmd += '''AND used_ '''
+            cmd += '''ORDER BY
+            mutation_position ASC,
+            mutation_type ASC,
+            mutation_genes ASC,
+            mutation_frequency ASC;'''
+            data_O = [dict(d) for d in execute_query(self.session,cmd,
+                verbose_I=False,
+                execute_I=True,
+                commit_I=False,
+                return_response_I=True,
+                return_cmd_I=False)];
+            return data_O;
         except SQLAlchemyError as e:
             print(e);
