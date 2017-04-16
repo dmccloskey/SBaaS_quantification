@@ -795,7 +795,7 @@ class stage01_quantification_replicatesMI_query(sbaas_template_query):
                 cmd_q = '''"data_stage01_quantification_replicatesmi"."experiment_id" =ANY ('{%s}'::text[]) ''' %(self.convert_list2string(experiment_ids_I));
                 cmd+=cmd_q;
             if sample_name_shorts_I:
-                cmd_q = '''AND "data_stage01_quantification_replicatesmi"."sample_name" =ANY ('{%s}'::text[]) ''' %(self.convert_list2string(sample_name_shorts_I));
+                cmd_q = '''AND "data_stage01_quantification_replicatesmi"."sample_name_short" =ANY ('{%s}'::text[]) ''' %(self.convert_list2string(sample_name_shorts_I));
                 cmd+=cmd_q;
             if component_names_I:
                 cmd_q = '''AND "data_stage01_quantification_replicatesmi"."component_name" =ANY ('{%s}'::text[]) ''' %(self.convert_list2string(component_names_I));
@@ -809,10 +809,10 @@ class stage01_quantification_replicatesMI_query(sbaas_template_query):
             if used__I:
                 cmd += '''AND used_ '''
             cmd += '''ORDER BY
-            mutation_position ASC,
-            mutation_type ASC,
-            mutation_genes ASC,
-            mutation_frequency ASC;'''
+            experiment_id ASC,
+            sample_name_short ASC,
+            component_name ASC,
+            calculated_concentration_units ASC;'''
             data_O = [dict(d) for d in execute_query(self.session,cmd,
                 verbose_I=False,
                 execute_I=True,
