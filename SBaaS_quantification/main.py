@@ -56,18 +56,40 @@ exreps01 = stage01_quantification_replicates_execute(session,engine,pg_settings.
 exreps01.initialize_supportedTables();
 exreps01.initialize_dataStage01_quantification_replicates();
 
-sample_name_abbreviations_str = 'RBC_140,RBC_141,RBC_142,RBC_143,RBC_150,RBC_151,RBC_152,RBC_153,RBC_154,RBC_155,RBC_30,RBC_31,RBC_32,RBC_33,RBC_34,RBC_35,RBC_36,RBC_37,RBC_38,RBC_39,RBC_40,RBC_42,S01_D01_RBC_25C_0hr,S01_D01_RBC_25C_22hr,S01_D01_RBC_25C_2hr,S01_D01_RBC_25C_6.5hr,S01_D01_RBC_37C_22hr,S01_D02_RBC_25C_0hr,S01_D02_RBC_25C_22hr,S01_D02_RBC_25C_2hr,S01_D02_RBC_25C_6.5hr,S01_D02_RBC_37C_22hr,S01_D03_RBC_25C_0hr,S01_D03_RBC_25C_22hr,S01_D03_RBC_25C_2hr,S01_D03_RBC_25C_6.5hr,S01_D03_RBC_37C_22hr,S01_D04_RBC_25C_0hr,S01_D04_RBC_25C_22hr,S01_D04_RBC_25C_2hr,S01_D04_RBC_25C_6.5hr,S01_D04_RBC_37C_22hr,S01_D05_RBC_25C_0hr,S01_D05_RBC_25C_22hr,S01_D05_RBC_25C_2hr,S01_D05_RBC_25C_6.5hr,S01_D05_RBC_37C_22hr,S02_D01_RBC_25C_0hr,S02_D01_RBC_25C_22hr,S02_D01_RBC_25C_2hr,S02_D01_RBC_25C_6.5hr,S02_D01_RBC_37C_22hr,S02_D02_RBC_25C_0hr,S02_D02_RBC_25C_22hr,S02_D02_RBC_25C_2hr,S02_D02_RBC_25C_6.5hr,S02_D02_RBC_37C_22hr,S02_D03_RBC_25C_0hr,S02_D03_RBC_25C_22hr,S02_D03_RBC_25C_2hr,S02_D03_RBC_25C_6.5hr,S02_D03_RBC_37C_22hr,S02_D04_RBC_25C_0hr,S02_D04_RBC_25C_22hr,S02_D04_RBC_25C_2hr,S02_D04_RBC_25C_6.5hr,S02_D04_RBC_37C_22hr,S02_D05_RBC_25C_0hr,S02_D05_RBC_25C_22hr,S02_D05_RBC_25C_2hr,S02_D05_RBC_25C_6.5hr,S02_D05_RBC_37C_22hr'
-# sample_name_abbreviations_str = 'PLT_140,PLT_141,PLT_142,PLT_143,PLT_150,PLT_151,PLT_152,PLT_153,PLT_154,PLT_155,PLT_30,PLT_31,PLT_32,PLT_33,PLT_34,PLT_35,PLT_36,PLT_37,PLT_38,PLT_39,PLT_40,PLT_42,S01_D01_PLT_25C_0hr,S01_D01_PLT_25C_22hr,S01_D01_PLT_25C_2hr,S01_D01_PLT_25C_6.5hr,S01_D01_PLT_37C_22hr,S01_D02_PLT_25C_0hr,S01_D02_PLT_25C_22hr,S01_D02_PLT_25C_2hr,S01_D02_PLT_25C_6.5hr,S01_D02_PLT_37C_22hr,S01_D03_PLT_25C_0hr,S01_D03_PLT_25C_22hr,S01_D03_PLT_25C_2hr,S01_D03_PLT_25C_6.5hr,S01_D03_PLT_37C_22hr,S01_D04_PLT_25C_0hr,S01_D04_PLT_25C_22hr,S01_D04_PLT_25C_2hr,S01_D04_PLT_25C_6.5hr,S01_D04_PLT_37C_22hr,S01_D05_PLT_25C_0hr,S01_D05_PLT_25C_22hr,S01_D05_PLT_25C_2hr,S01_D05_PLT_25C_6.5hr,S01_D05_PLT_37C_22hr,S02_D01_PLT_25C_0hr,S02_D01_PLT_25C_22hr,S02_D01_PLT_25C_2hr,S02_D01_PLT_25C_6.5hr,S02_D01_PLT_37C_22hr,S02_D02_PLT_25C_0hr,S02_D02_PLT_25C_22hr,S02_D02_PLT_25C_2hr,S02_D02_PLT_25C_6.5hr,S02_D02_PLT_37C_22hr,S02_D03_PLT_25C_0hr,S02_D03_PLT_25C_22hr,S02_D03_PLT_25C_2hr,S02_D03_PLT_25C_6.5hr,S02_D03_PLT_37C_22hr,S02_D04_PLT_25C_0hr,S02_D04_PLT_25C_22hr,S02_D04_PLT_25C_2hr,S02_D04_PLT_25C_6.5hr,S02_D04_PLT_37C_22hr,S02_D05_PLT_25C_0hr,S02_D05_PLT_25C_22hr,S02_D05_PLT_25C_2hr,S02_D05_PLT_25C_6.5hr,S02_D05_PLT_37C_22hr'
-sample_name_abbreviations = sample_name_abbreviations_str.split(',')
-
-exreps01.execute_analyzeReplicates('BloodProject01',
-      sample_name_abbreviations_I = sample_name_abbreviations)
-
 #make the quantitation methods table
 from SBaaS_quantification.stage01_quantification_peakInformation_execute import stage01_quantification_peakInformation_execute
 expeak01 = stage01_quantification_peakInformation_execute(session,engine,pg_settings.datadir_settings);
 expeak01.initialize_supportedTables();
 expeak01.initialize_tables();
+
+reset_dataStage01_quantification_peakInformation(self,
+            tables_I = ['data_stage01_quantification_peakInformation',
+                        'data_stage01_quantification_peakResolution'],
+            experiment_id_I = 'RapidRIP01',
+            analysis_id_I = 'RapidRIP01_GradTests01',
+            warn_I=False)
+expeak01.execute_analyzePeakResolution(
+    experiment_id_I=[],
+    analysis_id_I=['RapidRIP01_GradTests01'],
+    sample_names_I=[],
+    sample_ids_I=[],
+    sample_name_abbreviations_I=[],
+    sample_types_I=['Standard'],
+    component_name_pairs_I=[
+        ['g1p.g1p_1.Light','g6p.g6p_1.Light'],
+        ['ru5p-D.ru5p-D_1.Light','r5p.r5p_1.Light'],
+        ['accoa.accoa_1.Light','coa.coa_1.Light'],
+        ['atp.atp_1.Light','adp.adp_1.Light'],
+        ['adp.adp_1.Light','amp.amp_1.Light'],
+        ['nadh.nadh_1.Light','nad.nad_1.Light'],
+        ['nadph.nadph_1.Light','nadp.nadp_1.Light'],
+        ['fum.fum_1.Light','succ.succ_1.Light'],
+        ['acon-C.acon-C_1.Light','fum.fum_1.Light'],
+        ['pyr.pyr_1.Light','lac-D.lac-D_1.Light'],
+        ['glu-L.glu-L_1.Light','arg-L.arg-L_1.Light'],
+        ['icit.icit_2.Light','cit.cit_1.Light'],
+        ],
+    acquisition_date_and_time_I=[None,None])
 
 #make the quantitation methods table (move to SBaaS_quantification)
 from SBaaS_quantification.lims_quantitationMethod_execute import lims_quantitationMethod_execute
@@ -80,14 +102,3 @@ from SBaaS_quantification.stage01_quantification_QCs_execute import stage01_quan
 exqcs01 = stage01_quantification_QCs_execute(session,engine,pg_settings.datadir_settings);
 exqcs01.initialize_supportedTables();
 exqcs01.initialize_tables();
-
-#import time as time
-##analyze the LLOQ
-#st = time.time();
-#exqcs01.execute_LLOQAndULOQ('BloodProject01',                            
-#    calculated_concentration_units_I=['uM'],
-#    sample_names_I = ['150601_0_BloodProject01_RBC_140_Broth-1'],
-#    sample_types_I = ['Unknown']
-#    );
-#elapsed_time = time.time() - st;
-#print("Elapsed time: %.2fs" % elapsed_time)

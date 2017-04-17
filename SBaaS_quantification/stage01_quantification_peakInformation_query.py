@@ -320,23 +320,51 @@ class stage01_quantification_peakInformation_query(sbaas_template_query):
             return names_O;
         except SQLAlchemyError as e:
             print(e);
-    def drop_dataStage01_quantification_peakInformation(self):
+
+    #def reset_dataStage01_quantification_peakInformation(self,experiment_id_I = None):
+    #    try:
+    #        if experiment_id_I:
+    #            reset = self.session.query(data_stage01_quantification_peakInformation).filter(data_stage01_quantification_peakInformation.experiment_id.like(experiment_id_I)).delete(synchronize_session=False);
+    #            self.session.commit();
+    #    except SQLAlchemyError as e:
+    #        print(e);
+    #def reset_dataStage01_quantification_peakResolution(self,experiment_id_I = None):
+    #    try:
+    #        if experiment_id_I:
+    #            reset = self.session.query(data_stage01_quantification_peakResolution).filter(data_stage01_quantification_peakResolution.experiment_id.like(experiment_id_I)).delete(synchronize_session=False);
+    #            self.session.commit();
+    #    except SQLAlchemyError as e:
+    #        print(e);
+    def reset_dataStage01_quantification_peakInformation(self,
+            tables_I = ['data_stage01_quantification_peakInformation',
+                        'data_stage01_quantification_peakResolution'],
+            experiment_id_I = None,
+            analysis_id_I = None,
+            warn_I=True):
         try:
-            data_stage01_quantification_peakInformation.__table__.drop(self.engine,True);
-            data_stage01_quantification_peakResolution.__table__.drop(self.engine,True);
-        except SQLAlchemyError as e:
-            print(e);
-    def initialize_dataStage01_quantification_peakInformation(self):
-        try:
-            data_stage01_quantification_peakInformation.__table__.create(self.engine,True);
-            data_stage01_quantification_peakResolution.__table__.create(self.engine,True);
-        except SQLAlchemyError as e:
-            print(e);
-    def reset_dataStage01_quantification_peakInformation(self,experiment_id_I = None):
-        try:
-            if experiment_id_I:
-                reset = self.session.query(data_stage01_quantification_peakInformation).filter(data_stage01_quantification_peakInformation.experiment_id.like(experiment_id_I)).delete(synchronize_session=False);
-                reset = self.session.query(data_stage01_quantification_peakResolution).filter(data_stage01_quantification_peakResolution.experiment_id.like(experiment_id_I)).delete(synchronize_session=False);
-                self.session.commit();
-        except SQLAlchemyError as e:
+            querydelete = sbaas_base_query_delete(session_I=self.session,engine_I=self.engine,settings_I=self.settings,data_I=self.data);
+            for table in tables_I:
+                query = {};
+                query['delete_from'] = [{'table_name':table}];
+                query['where'] = []
+                if analysis_id_I:
+                    query['where'].append({
+                        'table_name':table,
+                        'column_name':'analysis_id',
+                        'value':analysis_id_I,
+		                'operator':'LIKE',
+                        'connector':'AND'
+                        })
+                if experiment_id_I:
+                    query['where'].append({
+                        'table_name':table,
+                        'column_name':'experiment_id',
+                        'value':experiment_id_I,
+		                'operator':'LIKE',
+                        'connector':'AND'
+                        })
+                table_model = self.convert_tableStringList2SqlalchemyModelDict([table]);
+                query = querydelete.make_queryFromString(table_model,query);
+                querydelete.reset_table_sqlalchemyModel(query_I=query,warn_I=warn_I);
+        except Exception as e:
             print(e);

@@ -193,6 +193,7 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
         component_name_pairs_I = [[component_name_1,component_name_2],...]
         acquisition_date_and_time_I = ['%m/%d/%Y %H:%M','%m/%d/%Y %H:%M']
         '''
+        calc = calculate_interface();
 
         print('execute_peakInformation_resolution...')
         #convert string date time to datetime
@@ -238,28 +239,34 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
             cnp_data = {};
             for sn,v2 in v1.items():
                 for cnp in component_name_pairs_I:
-                    cnp_data[cnp] = {
+                    cnp_tup = tuple(cnp);
+                    if cnp_tup not in cnp_data.keys():
+                        cnp_data[cnp_tup] = {
                         'rt_diff':[],
                         'resolution':[],
                         'sample_names':[],
                         'sample_types':[],
+                        'component_group_name_pair':[],
                         'acquisition_date_and_times':[],
                         'experiment_ids':[],
+                        'analysis_ids':[],
                         };
                     cpd1=v2[cnp[0]];
                     cpd2=v2[cnp[1]];
                     # calculate the RT difference and resolution
                     rt_dif = 0.0;
-                    rt_dif = abs(cpd1['retention_time']-cpd2['retention_time'])
+                    rt_dif = abs(cpd1[0]['retention_time']-cpd2[0]['retention_time'])
                     resolution = 0.0;
-                    resolution = rt_dif/(0.5*(cpd1['width_at_50']+cpd2['width_at_50']));
+                    resolution = rt_dif/(0.5*(cpd1[0]['width_at_50']+cpd2[0]['width_at_50']));
                     # record the data
-                    cnp_data[cnp]['rt_diff'].append(rt_dif)
-                    cnp_data[cnp]['resolution'].append(resolution)
-                    cnp_data[cnp]['sample_names'].append(v2['sample_name'])
-                    cnp_data[cnp]['sample_types'].append(v2['sample_type'])
-                    cnp_data[cnp]['acquisition_date_and_times'].append(v2['cquisition_date_and_time'])
-                    cnp_data[cnp]['experiment_ids'].append(v2['experiment_id'])
+                    cnp_data[cnp_tup]['rt_diff'].append(rt_dif)
+                    cnp_data[cnp_tup]['resolution'].append(resolution)
+                    cnp_data[cnp_tup]['sample_names'].append(cpd1[0]['sample_name'])
+                    cnp_data[cnp_tup]['component_group_name_pair'].append([cpd1[0]['component_group_name'],cpd2[0]['component_group_name']])
+                    cnp_data[cnp_tup]['sample_types'].append(cpd1[0]['sample_type'])
+                    cnp_data[cnp_tup]['acquisition_date_and_times'].append(cpd1[0]['acquisition_date_and_time'])
+                    cnp_data[cnp_tup]['experiment_ids'].append(cpd1[0]['experiment_id'])
+                    cnp_data[cnp_tup]['analysis_ids'].append(cpd1[0]['analysis_id'])
             #calculate the statistics
             for cnp,v3 in cnp_data.items():
                 for parameter in ['rt_diff','resolution']:
@@ -268,10 +275,10 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
                     if ave:
                         cv = sqrt(var)/ave*100;
                         # add data to the database:
-                        row = {'analysis_id':analysis_id_I,
+                        row = {'analysis_id':v3['analysis_ids'][0],
                             'experiment_id':v3['experiment_ids'][0],
-                            'component_group_name_pair':component_group_name_pair,
-                            'component_name_pair':cnp,
+                            'component_group_name_pair':v3['component_group_name_pair'][0],
+                            'component_name_pair':list(cnp),
                             'peakInfo_parameter':parameter,
                             'peakInfo_n':len(v3[parameter]),
                             'peakInfo_ave':ave,
@@ -280,13 +287,14 @@ class stage01_quantification_peakInformation_execute(stage01_quantification_peak
                             'peakInfo_ub':ub,
                             'peakInfo_units':None,
                             'sample_names':v3['sample_names'],
+                            'sample_name_abbreviation':sna,
                             'sample_types':v3['sample_types'],
                             'acqusition_date_and_times':v3['acquisition_date_and_times'],
                             'peakInfo_data':v3[parameter],
                             #'peakInfo_data':{'ave':ave,'var':var,'cv':cv,'lb':lb,'ub':ub},
                             'used_':True,
                             'comment_':None,};
-                        data_add.append(row);
+                        data_O.append(row);
         self.add_rows_table('data_stage01_quantification_peakResolution',data_O);
 
         #component_names_pairs_all = [];

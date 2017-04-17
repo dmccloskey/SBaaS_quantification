@@ -1244,7 +1244,7 @@ class stage01_quantification_MQResultsTable_query(sbaas_template_query):
                 AND "subquery1".sample_name  = "data_stage01_quantification_mqresultstable"."sample_name"
             '''
             if component_name_I:
-                cmd_q = '''AND "data_stage01_quantification_mqresultstable".component_name_I =ANY ('{%s}'::text[]) '''%(
+                cmd_q = '''AND "data_stage01_quantification_mqresultstable".component_name =ANY ('{%s}'::text[]) '''%(
                     self.convert_list2string(component_name_I));
                 cmd+=cmd_q;
             if sample_type_I:
