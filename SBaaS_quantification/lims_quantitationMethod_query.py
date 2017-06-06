@@ -59,21 +59,39 @@ class lims_quantitationMethod_query(
             for d in data_I:
                 if not d['IS'] or d['IS'] == 'False': # ignore internal standards
                     try:
-                        data_add = quantitation_method(QMethod_id_I,
-                                                    d['Q1 Mass - 1'],
-                                                    d['Q3 Mass - 1'],
-                                                    d['Group Name'],
-                                                    d['Name'],
-                                                    d['IS Name'],
-                                                    d['Regression Type'],
-                                                    d['Regression Weighting'],
-                                                    None,
-                                                    None,
-                                                    None,
-                                                    d['Use Area'],
-                                                    None,
-                                                    None,
-                                                    None);
+                        d['id']=QMethod_id_I;
+                        d['q1_mass']=d['Q1 Mass - 1']
+                        d['q3_mass']=d['Q3 Mass - 1']
+                        d['met_id']=d['Group Name']
+                        d['component_name']=d['Name']
+                        d['is_name']=d['IS Name']
+                        d['fit']=d['Regression Type']
+                        d['weighting']=d['Regression Weighting']
+                        d['intercept']=None
+                        d['slope']=None
+                        d['correlation']=None
+                        d['use_area']=d['Use Area']
+                        d['lloq']=None
+                        d['uloq']=None
+                        d['points']=None
+
+                        data_add = quantitation_method(d
+                            #QMethod_id_I,
+                            #d['Q1 Mass - 1'],
+                            #d['Q3 Mass - 1'],
+                            #d['Group Name'],
+                            #d['Name'],
+                            #d['IS Name'],
+                            #d['Regression Type'],
+                            #d['Regression Weighting'],
+                            #None,
+                            #None,
+                            #None,
+                            #d['Use Area'],
+                            #None,
+                            #None,
+                            #None
+                                                    );
                         self.session.add(data_add);
                     except SQLAlchemyError as e:
                         print(e);
