@@ -40,7 +40,7 @@ class lims_quantitationMethod_query(
                     query['delete_from'] = [{'table_name':table}];
                     query['where'] = [{
                             'table_name':table,
-                            'column_name':'id', #quantitation_method_id
+                            'column_name':'id',
                             'value':quantitation_method_id_I,
 		                    'operator':'LIKE',
                             'connector':'AND'
