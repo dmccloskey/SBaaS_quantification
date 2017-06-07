@@ -25,33 +25,55 @@ class lims_quantitationMethod_query(
                             'quantitation_method_list':quantitation_method_list
                         };
         self.set_supportedTables(tables_supported);
-        #table initializations:
-    def drop_lims_quantitationMethod(self):
+        
+    def reset_lims_quantitationMethod(self,
+            tables_I = [],
+            quantitation_method_id_I = None,
+            warn_I=True):
         try:
-            quantitation_method.__table__.drop(self.engine,True);
-            quantitation_method_list.__table__.drop(self.engine,True);
-
-        except SQLAlchemyError as e:
+            if not tables_I:
+                tables_I = list(self.get_supportedTables().keys());
+            querydelete = sbaas_base_query_delete(session_I=self.session,engine_I=self.engine,settings_I=self.settings,data_I=self.data);
+            for table in tables_I:
+                if table == 'quantitation_method':
+                    query = {};
+                    query['delete_from'] = [{'table_name':table}];
+                    query['where'] = [{
+                            'table_name':table,
+                            'column_name':'id', #quantitation_method_id
+                            'value':quantitation_method_id_I,
+		                    'operator':'LIKE',
+                            'connector':'AND'
+                            }
+	                    ];
+                elif table == 'quantitation_method_list':
+                    query = {};
+                    query['delete_from'] = [{'table_name':table}];
+                    query['where'] = [{
+                            'table_name':table,
+                            'column_name':'quantitation_method_id',
+                            'value':quantitation_method_id_I,
+		                    'operator':'LIKE',
+                            'connector':'AND'
+                            }
+	                    ];
+                table_model = self.convert_tableStringList2SqlalchemyModelDict([table]);
+                query = querydelete.make_queryFromString(table_model,query);
+                querydelete.reset_table_sqlalchemyModel(query_I=query,warn_I=warn_I);
+        except Exception as e:
             print(e);
-    def reset_lims_quantitationMethod(self,quantitation_method_id_I=None):
-        try:
-            if quantitation_method_id_I:
-                reset = self.session.query(quantitation_method).filter(quantitation_method.id.like(quantitation_method_id_I)).delete(synchronize_session=False);
-                reset = self.session.query(quantitation_method_list).filter(
-                    quantitation_method_list.quantitation_method_id.like(quantitation_method_id_I)).delete(synchronize_session=False);
-            else:
-                reset = self.session.query(quantitation_method).delete(synchronize_session=False);
-                reset = self.session.query(quantitation_method_list).delete(synchronize_session=False);
-            self.session.commit();
-        except SQLAlchemyError as e:
-            print(e);
-    def initialize_lims_quantitationMethod(self):
-        try:
-            quantitation_method.__table__.create(self.engine,True);
-            quantitation_method_list.__table__.create(self.engine,True);
-
-        except SQLAlchemyError as e:
-            print(e);
+    #def reset_lims_quantitationMethod(self,quantitation_method_id_I=None):
+    #    try:
+    #        if quantitation_method_id_I:
+    #            reset = self.session.query(quantitation_method).filter(quantitation_method.id.like(quantitation_method_id_I)).delete(synchronize_session=False);
+    #            reset = self.session.query(quantitation_method_list).filter(
+    #                quantitation_method_list.quantitation_method_id.like(quantitation_method_id_I)).delete(synchronize_session=False);
+    #        else:
+    #            reset = self.session.query(quantitation_method).delete(synchronize_session=False);
+    #            reset = self.session.query(quantitation_method_list).delete(synchronize_session=False);
+    #        self.session.commit();
+    #    except SQLAlchemyError as e:
+    #        print(e);;
 
     def add_quantitationMethod(self, QMethod_id_I, data_I):
         '''add rows of quantitation_method'''
