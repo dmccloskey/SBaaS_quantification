@@ -44,48 +44,25 @@ exmqrt01 = stage01_quantification_MQResultsTable_execute(session,engine,pg_setti
 exmqrt01.initialize_supportedTables();
 exmqrt01.initialize_tables();
 
-#reset_dataStage01_quantification_peakInformation(self,
-#            tables_I = ['data_stage01_quantification_peakInformation',
-#                        'data_stage01_quantification_peakResolution'],
-#            experiment_id_I = 'RapidRIP01',
-#            analysis_id_I = 'RapidRIP01_GradTests01',
-#            warn_I=False)
-#expeak01.execute_analyzePeakResolution(
-#    experiment_id_I=[],
-#    analysis_id_I=['RapidRIP01_GradTests01'],
-#    sample_names_I=[],
-#    sample_ids_I=[],
-#    sample_name_abbreviations_I=[],
-#    sample_types_I=['Standard'],
-#    component_name_pairs_I=[
-#        ['g1p.g1p_1.Light','g6p.g6p_1.Light'],
-#        ['ru5p-D.ru5p-D_1.Light','r5p.r5p_1.Light'],
-#        ['accoa.accoa_1.Light','coa.coa_1.Light'],
-#        ['atp.atp_1.Light','adp.adp_1.Light'],
-#        ['adp.adp_1.Light','amp.amp_1.Light'],
-#        ['nadh.nadh_1.Light','nad.nad_1.Light'],
-#        ['nadph.nadph_1.Light','nadp.nadp_1.Light'],
-#        ['fum.fum_1.Light','succ.succ_1.Light'],
-#        ['acon-C.acon-C_1.Light','fum.fum_1.Light'],
-#        ['pyr.pyr_1.Light','lac-D.lac-D_1.Light'],
-#        ['glu-L.glu-L_1.Light','arg-L.arg-L_1.Light'],
-#        ['icit.icit_2.Light','cit.cit_1.Light'],
-#        ],
-#    acquisition_date_and_time_I=[None,None])
-
 #make the quantitation methods table (move to SBaaS_quantification)
 from SBaaS_quantification.lims_quantitationMethod_execute import lims_quantitationMethod_execute
 exquant01 = lims_quantitationMethod_execute(session,engine,pg_settings.datadir_settings);
 exquant01.initialize_supportedTables();
 exquant01.initialize_tables();
 
-exquant01.import_quantitationMethod_add(
-    '170330',    
-    'F:/Users/dmccloskey-sbrg/Dropbox (UCSD SBRG)/absciexQTRAP5500_dataProcessing/multiQuant/_output'+\
-    '/170330_QMethod.csv');
-
 #make the QC methods tables
 from SBaaS_quantification.stage01_quantification_QCs_execute import stage01_quantification_QCs_execute
 exqcs01 = stage01_quantification_QCs_execute(session,engine,pg_settings.datadir_settings);
 exqcs01.initialize_supportedTables();
 exqcs01.initialize_tables();
+
+#make the averages methods table
+from SBaaS_quantification.stage01_quantification_averages_execute import stage01_quantification_averages_execute
+exave01 = stage01_quantification_averages_execute(session,engine,pg_settings.datadir_settings);
+exave01.initialize_supportedTables();
+exave01.initialize_tables();
+
+#calculate the geometric averages
+exave01.execute_calculateGeoAverages_replicates(
+    'BloodProject01',
+    calculated_concentration_units_I=['uM']);
