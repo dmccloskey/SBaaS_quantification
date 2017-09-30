@@ -135,7 +135,8 @@ class stage01_quantification_averages_execute(stage01_quantification_averages_io
                     conc_units = 'M'; 
                     conc = conc*1e-6;
                 elif (unique_row['calculated_concentration_units'] == 'umol*gDW-1'):
-                    conc_units = 'mol*gDW-1';
+                    conc_units = 'M'; 
+                    #conc_units = 'mol*gDW-1';
                     conc = conc*1e-6;
                 elif (unique_row['calculated_concentration_units'] == 'height_ratio' \
                     or unique_row['calculated_concentration_units'] == 'area_ratio'):

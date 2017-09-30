@@ -64,5 +64,7 @@ exave01.initialize_tables();
 
 #calculate the geometric averages
 exave01.execute_calculateGeoAverages_replicates(
-    'BloodProject01',
-    calculated_concentration_units_I=['uM']);
+    'IndustrialStrains03',
+    calculated_concentration_units_I=['umol*gDW-1']);
+    #'BloodProject01',
+    #calculated_concentration_units_I=['uM']);
