@@ -62,9 +62,14 @@ exave01 = stage01_quantification_averages_execute(session,engine,pg_settings.dat
 exave01.initialize_supportedTables();
 exave01.initialize_tables();
 
-#calculate the geometric averages
-exave01.execute_calculateGeoAverages_replicates(
-    'IndustrialStrains03',
-    calculated_concentration_units_I=['umol*gDW-1']);
-    #'BloodProject01',
-    #calculated_concentration_units_I=['uM']);
+##calculate the geometric averages
+#exave01.execute_calculateGeoAverages_replicates(
+#    'IndustrialStrains03',
+#    calculated_concentration_units_I=['umol*gDW-1']);
+#    #'BloodProject01',
+#    #calculated_concentration_units_I=['uM']);
+
+# export the calibrator concentrations
+exquant01.export_calibrationConcentrations(
+    pg_settings.datadir_settings['workspace_data']+'/_input/150516_Quantification_BloodProject01_samplesAndComponents.csv',
+    pg_settings.datadir_settings['workspace_data']+'/_output/150516_calibration_concentrations.csv');

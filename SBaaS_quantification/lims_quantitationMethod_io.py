@@ -19,6 +19,20 @@ class lims_quantitationMethod_io(lims_quantitationMethod_query,
                                 lims_sample_query,
                                 sbaas_template_io
                                 ):
+    def import_calibration_sampleAndComponents(self, filename):
+        '''import calibration curve sample and component information'''
+        data = base_importData();
+        data.read_csv(filename);
+        data.format_data();
+        # split into separate data structures
+        samplesComponents_data = [];
+        for d in data.data:
+            samplesComponents_data.append({'sample_name':d['Sample Name'],
+                                           'sample_type':d['Sample Type'],
+                                           'met_id':d['Component Group Name']});
+
+        data.clear_data();
+        return samplesComponents_data;
         
     def export_calibrationConcentrations(self, sampleAndComponent_fileName_I, concentrations_fileName_O):
         '''export calibrator concentrations for "cut&paste" into Actual Concentration column in MultiQuant
@@ -34,10 +48,11 @@ class lims_quantitationMethod_io(lims_quantitationMethod_query,
                             'Pool_2pg_3pg':'3pg'};
         #import sampleAndComponents
         samplesComponents = [];
+        samplesComponents = self.import_calibration_sampleAndComponents(sampleAndComponent_fileName_I);
         
-        data = base_importData();
-        data.read_csv(sampleAndComponent_fileName_I);
-        samplesComponents = data.data;
+        #data = base_importData();
+        #data.read_csv(sampleAndComponent_fileName_I);
+        #samplesComponents = data.data;
         for sc in samplesComponents:
             # if met_id is a pool of metabolites, convert to the metabolite
             # that is logged in calibrator tables and standards tables

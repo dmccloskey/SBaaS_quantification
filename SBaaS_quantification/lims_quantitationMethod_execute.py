@@ -9,7 +9,6 @@ import rpy2.robjects as robjects
 class lims_quantitationMethod_execute(lims_quantitationMethod_io,
                                       lims_quantitationMethod_dependencies
                                     ):
-
     def execute_quantitationMethodUpdate(self, quant_method_ids_I = []):
         '''calculate regression parameters for all components
         that have not been determined'''
